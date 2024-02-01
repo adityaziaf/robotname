@@ -1,0 +1,14 @@
+<root BTCPP_format="3">
+    <!-- Behavior tree that looks for objects by naively looking through locations. -->
+    <BehaviorTree ID="MainTree">
+        <Sequence name="main_loop">
+            <findObject                   name="find_object" objectname="redball"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <!-- Description of Node Models (used by Groot2) -->
+    <TreeNodesModel>
+        <Action ID="findObject"/>
+            <input_port name="objectname"/>
+    </TreeNodesModel>
+</root>
