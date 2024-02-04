@@ -1,5 +1,5 @@
-
 import os
+
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
@@ -12,36 +12,43 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, Comm
 
 from launch_ros.actions import Node
 
-
 def generate_launch_description():
-    pkg_share = get_package_share_directory('robotname_localization')
-    slam_params_file = os.path.join(pkg_share,'config','online_async_slam.yaml')
-    ekf_params_file = os.path.join(pkg_share,'config','ekf.yaml')
+    pkg_share = get_package_share_directory('robotname_bringup')
     
-    ekf = IncludeLaunchDescription(
+    default_rviz_config_path = os.path.join(pkg_share, 'rviz/navigation.rviz')
+
+    gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            pkg_share,'launch'),'/ekf.launch.py']
+            get_package_share_directory('robotname_gazebo'),'launch'),'/gazebo.launch.py']
         ),
         launch_arguments={
-            'use_sim_time': LaunchConfiguration('use_sim_time'),
-            'ekf_params_file' : [os.path.join(ekf_params_file)]
-        }.items()
-    )
-    
-    slam = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            pkg_share,'launch'),'/online_async_slam.launch.py']
-        ),
-        launch_arguments={
-            'slams_params_file': [os.path.join(slam_params_file)],
             'use_sim_time' : LaunchConfiguration('use_sim_time'
             )
         }.items()
     )
-
+    
+    localization = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('robotname_localization'),'launch'),'/ekf.launch.py']
+        ),
+        launch_arguments={
+            'use_sim_time' : LaunchConfiguration('use_sim_time'
+            )
+        }.items()
+    )
+    
+    perception = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('robotname_perception'),'launch'),'/sim_composition.launch.py']
+        )
+    )
+    
     return LaunchDescription([
+        DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path,
+                                            description='Absolute path to rviz config file'),
         DeclareLaunchArgument(name='use_sim_time', default_value='True',
                                             description='Flag to enable use_sim_time'),
-        ekf,
-        slam
+        gazebo,
+        localization,
+        perception
     ])

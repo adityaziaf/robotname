@@ -347,7 +347,7 @@
     <origin xyz="0.265 0 -0.1" rpy="0 0 0" />
   </joint>
     
-  <!-- <gazebo reference="lidar_link">
+  <gazebo reference="lidar_link">
     <sensor name="lidar" type="ray">
       <always_on>true</always_on>
       <visualize>true</visualize>
@@ -379,7 +379,7 @@
         <frame_name>lidar_link</frame_name>
       </plugin>
     </sensor>
-  </gazebo> -->
+  </gazebo>
 
   <link name="camera_link">
     <visual>
