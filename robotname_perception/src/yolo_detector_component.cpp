@@ -82,7 +82,7 @@ namespace robotname_perception
         void rgbd_callback(const sensor_msgs::msg::Image::SharedPtr rgb_image, const sensor_msgs::msg::Image::SharedPtr depth_image, const sensor_msgs::msg::CameraInfo::SharedPtr rgb_cam_info)
         {
             cv_bridge::CvImagePtr rgb_ptr, depth_ptr;
-            robotname_msgs::msg::DetectionArray objects;
+            std::unique_ptr<robotname_msgs::msg::DetectionArray> objects(new robotname_msgs::msg::DetectionArray());
 
             /*parse rgb_camera_info information into ROS pinhole camera model*/
             realsense_cam_model.fromCameraInfo(rgb_cam_info);
@@ -127,33 +127,37 @@ namespace robotname_perception
                         - Extract z centroid point
                 */
                 //float depth_at = 0.001 * (depth_ptr->image.at<u_int16_t>(pixel.y, pixel.x));
-                //float depth_at = (depth_ptr->image.at<float>(pixel.y, pixel.x));
+                float depth_at = (depth_ptr->image.at<float>(pixel.y, pixel.x));
                 /*
                  * 2. Bounding Box z value
                         - Extract roi from object bbox
                         - Extract single median value from bbox
                 */
-                cv::Mat roi = depth_ptr->image(element.box);
-                float depth_at = 0.001 * calculateMedian(roi);
+                // cv::Mat roi = depth_ptr->image(element.box);
+                // float depth_at = 0.001 * calculateMedian(roi);
 
                 /* Use deproject from pixel to 3D coordinate*/
                 obj_coor = realsense_cam_model.projectPixelTo3dRay(pixel);
 
                 /* Pack information into vision msgs detections*/
-                object.header.frame_id = depth_ptr->header.frame_id;
-                object.header.stamp = this->get_clock()->now();
+                object.pose.header.frame_id = rgb_ptr->header.frame_id;
+                object.pose.header.stamp = rgb_ptr->header.stamp;
                 object.classname = yolo::coconame[element.class_id];
                 object.score = element.confidence;
-                object.point.x = obj_coor.z * depth_at;
-                object.point.y = -obj_coor.x * depth_at;
-                object.point.z = obj_coor.y * depth_at;
+                object.pose.pose.position.x = obj_coor.z * depth_at;
+                object.pose.pose.position.y = -obj_coor.x * depth_at;
+                object.pose.pose.position.z = -obj_coor.y * depth_at;
+                object.pose.pose.orientation.x = 0;
+                object.pose.pose.orientation.y = 0;
+                object.pose.pose.orientation.z = 0;
+                object.pose.pose.orientation.w = 1;
 
-                objects.detections.push_back(object);
+                objects->detections.push_back(object);
             }
 
             //rgb_ptr->image = yolomodel->annotated_img(rgb_ptr->image, result);
             //annotated_img_pub->publish(*rgb_ptr->toImageMsg());
-            detection_pub->publish(objects);
+            detection_pub->publish(std::move(objects));
         }
 
         float calculateMedian(cv::Mat& inputMat) {

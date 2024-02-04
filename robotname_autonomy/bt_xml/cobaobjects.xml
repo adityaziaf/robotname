@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4"
+      main_tree_to_execute="main">
+  <BehaviorTree ID="main">
+    <KeepRunningUntilFailure>
+      <ReactiveSequence>
+        <Script code="object:=&apos;redball&apos;"/>
+        <RetryUntilSuccessful num_attempts="-1">
+          <Fallback>
+            <FindObject object="{object}"
+                        id="{object_id}"/>
+            <ForceFailure>
+              <Spin anglestep="1.57"/>
+            </ForceFailure>
+          </Fallback>
+        </RetryUntilSuccessful>
+        <KeepRunningUntilFailure>
+          <Sequence>
+            <UpdateObject object="{object}"
+                          id="{object_id}"
+                          pose="{object_pose}"/>
+            <GoToPose goal="{object_pose}"/>
+          </Sequence>
+        </KeepRunningUntilFailure>
+      </ReactiveSequence>
+    </KeepRunningUntilFailure>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="FindObject"
+            editable="true">
+      <input_port name="object"/>
+      <output_port name="id"/>
+    </Action>
+    <Action ID="GoToPose"
+            editable="true">
+      <input_port name="goal"/>
+    </Action>
+    <Action ID="Spin"
+            editable="true">
+      <input_port name="anglestep"
+                  default="1.57"/>
+    </Action>
+    <Action ID="UpdateObject"
+            editable="true">
+      <input_port name="object"/>
+      <input_port name="id"/>
+      <output_port name="pose"/>
+    </Action>
+  </TreeNodesModel>
+
+</root>

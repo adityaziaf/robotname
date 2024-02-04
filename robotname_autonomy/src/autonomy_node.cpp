@@ -14,6 +14,7 @@
 #include "yaml-cpp/yaml.h"
 
 #include "robotname_autonomy/find_object.hpp"
+#include "robotname_autonomy/go_to_pose.hpp"
 
 using namespace std::chrono_literals;
 
@@ -52,7 +53,7 @@ class AutonomyNode : public rclcpp::Node {
             create_behavior_tree();
 
             // Create a timer to tick the behavior tree.
-            const auto timer_period = 500ms;
+            const auto timer_period = 100ms;
             timer_ = this->create_wall_timer(
                 timer_period,
                 std::bind(&AutonomyNode::update_behavior_tree, this));
@@ -67,16 +68,17 @@ class AutonomyNode : public rclcpp::Node {
             // factory.registerNodeType<SetLocations>("SetLocations");
             // factory.registerNodeType<GetLocationFromQueue>("GetLocationFromQueue");
             // factory.registerNodeType<GoToPose>("GoToPose", shared_from_this());
-            factory.registerNodeType<findObject>("findObject", shared_from_this());
+            factory.registerNodeType<findObject>("FindObject", shared_from_this());
+            //factory.registerNodeType<goToPose>("GoToPose", shared_from_this());
             
             // auto blackboard = BT::Blackboard::create();
-            // blackboard->set<std::string>("location_file", location_file_);
+            //blackboard->set<std::string>("location_file", location_file_);
             // tree_ = factory.createTreeFromFile(tree_xml_file_, blackboard);
             tree_ = factory.createTreeFromFile(tree_xml_file_);
             // Set up tree logging to monitor the tree in Groot2.
             // Default ports (1666/1667) are used by the Nav2 behavior tree, so we use another port.
             // NOTE: You must have the PRO version of Groot2 to view live tree updates.
-            publisher_ptr_ = std::make_unique<BT::Groot2Publisher>(tree_, 1668);
+            // publisher_ptr_ = std::make_unique<BT::Groot2Publisher>(tree_, 1668);
         }
 
         void update_behavior_tree() {

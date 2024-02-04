@@ -14,6 +14,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -99,6 +100,7 @@ ament_target_dependencies(transform_component
   robotname_msgs
   tf2
   tf2_ros
+  tf2_geometry_msgs
   geometry_msgs
 )
 rclcpp_components_register_nodes(transform_component "robotname_perception::transformComponent")

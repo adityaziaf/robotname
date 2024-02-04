@@ -44,7 +44,7 @@ class trackingComponent(Node):
 
             detections.append(
                 Detection(
-                    points=np.array([object.point.x, object.point.y]),
+                    points=np.array([object.pose.pose.position.x, object.pose.pose.position.y]),
                     scores=np.array([object.score]),
                     label=object.classname,
                 )

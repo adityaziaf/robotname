@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4" project_name="Project">
+    <include path="../bt_xml/cobaobjects.xml"/>
+    <include path="../bt_xml/findobject.xml"/>
+    <!-- Description of Node Models (used by Groot) -->
+    <TreeNodesModel>
+        <Action ID="FindObject" editable="true">
+            <input_port name="object"/>
+            <output_port name="id"/>
+        </Action>
+        <Action ID="GoToPose" editable="true">
+            <input_port name="goal"/>
+        </Action>
+        <Action ID="Spin" editable="true">
+            <input_port name="anglestep" default="1.57"/>
+        </Action>
+        <Action ID="UpdateObject" editable="true">
+            <input_port name="object"/>
+            <input_port name="id"/>
+            <output_port name="pose"/>
+        </Action>
+    </TreeNodesModel>
+</root>

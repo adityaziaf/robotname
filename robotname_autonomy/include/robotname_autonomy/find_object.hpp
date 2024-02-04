@@ -33,6 +33,6 @@ class findObject : public BT::StatefulActionNode
     
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
     std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-    std::string t_frame, s_frame;
+    std::string t_frame_, s_frame_;
 
 };

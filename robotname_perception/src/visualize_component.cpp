@@ -39,20 +39,13 @@ class visualizeComponent : public rclcpp::Node {
     for(auto object = msg->detections.begin() ; object != msg->detections.end();object++)
     {
         visualization_msgs::msg::Marker marker;
-        marker.header.frame_id = object->header.frame_id;
-        marker.header.stamp = object->header.stamp;
         marker.ns = object->classname;
         marker.id = object->id;
         // marker.text = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
         marker.type = visualization_msgs::msg::Marker::SPHERE;
         marker.action = visualization_msgs::msg::Marker::ADD;
-        marker.pose.position.x = object->point.x;
-        marker.pose.position.y = object->point.y;
-        marker.pose.position.z = object->point.z;
-        marker.pose.orientation.x = 0.0;
-        marker.pose.orientation.y = 0.0;
-        marker.pose.orientation.z = 0.0;
-        marker.pose.orientation.w = 1.0;
+        marker.set__header(object->pose.header);
+        marker.set__pose(object->pose.pose);
         marker.scale.x = 0.2;
         marker.scale.y = 0.2;
         marker.scale.z = 0.2;

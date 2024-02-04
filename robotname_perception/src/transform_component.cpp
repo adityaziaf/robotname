@@ -3,13 +3,17 @@
 #include <memory>
 #include <string>
 
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "robotname_msgs/msg/detection.hpp"
 #include "robotname_msgs/msg/detection_array.hpp"
 #include "robotname_perception/visibility_control.h"
+#include "tf2/LinearMath/Quaternion.h"
 #include "tf2/exceptions.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 
 namespace robotname_perception {
@@ -22,10 +26,8 @@ class transformComponent : public rclcpp::Node {
 
   explicit transformComponent(const rclcpp::NodeOptions &options)
       : Node("transformcomponent", options) {
-    this->declare_parameter("source_frame", "camera_color_optical_frame");
+    // this->declare_parameter("source_frame", "camera_color_optical_frame");
     this->declare_parameter("target_frame", "map");
-
-    this->get_parameter("source_frame", s_frame);
     this->get_parameter("target_frame", t_frame);
 
     detection_subs_ =
@@ -43,24 +45,25 @@ class transformComponent : public rclcpp::Node {
   ~transformComponent() {}
 
  private:
-  void callback(const robotname_msgs::msg::DetectionArray::SharedPtr msg) {
-    geometry_msgs::msg::TransformStamped t;
-    try {
-      t = tf_buffer_->lookupTransform(t_frame, s_frame, tf2::TimePointZero);
-    } catch (const tf2::TransformException &ex) {
-      RCLCPP_INFO(this->get_logger(), "Could not transform %s to %s: %s",
-                  s_frame.c_str(), t_frame.c_str(), ex.what());
-      return;
+  void callback(robotname_msgs::msg::DetectionArray::UniquePtr msg) {
+    if (!msg->detections.empty()) {
+      std::string s_frame = msg->detections.begin()->pose.header.frame_id;
+      try {
+        if (tf_buffer_->canTransform(t_frame, s_frame, tf2::TimePointZero)) {
+          for (auto object = msg->detections.begin();
+               object != msg->detections.end(); object++) {
+            geometry_msgs::msg::PoseStamped transformed =
+                tf_buffer_->transform(object->pose, t_frame);
+            object->set__pose(transformed);
+          }
+        }
+      } catch (const tf2::TransformException &ex) {
+        RCLCPP_INFO(this->get_logger(), "Could not transform %s to %s: %s",
+                    s_frame.c_str(), t_frame.c_str(), ex.what());
+                    return;
+      }
     }
-    for (auto object = msg->detections.begin(); object != msg->detections.end();
-         object++) {
-      object->header.frame_id = t_frame;
-      object->header.stamp = this->get_clock()->now();
-      object->point.x += t.transform.translation.x;
-      object->point.y += t.transform.translation.y;
-      object->point.z += t.transform.translation.z;
-    }
-    detection_pubs_->publish(*msg);
+    detection_pubs_->publish(std::move(msg));
   }
   rclcpp::Subscription<robotname_msgs::msg::DetectionArray>::SharedPtr
       detection_subs_;
@@ -68,7 +71,7 @@ class transformComponent : public rclcpp::Node {
       detection_pubs_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::string t_frame, s_frame;
+  std::string t_frame;
 };
 }  // namespace robotname_perception
 

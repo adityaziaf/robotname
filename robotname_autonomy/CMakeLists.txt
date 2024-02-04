@@ -23,6 +23,10 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(robotname_msgs REQUIRED)
 
+find_package(behaviortree_ros2)
+find_package(btcpp_ros2_interfaces)
+find_package(btcpp_ros2_samples)
+
 # Install directories
 install(DIRECTORY
   bt_xml launch

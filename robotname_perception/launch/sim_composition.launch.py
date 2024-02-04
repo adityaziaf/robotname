@@ -15,7 +15,7 @@ from launch_ros.descriptions import ComposableNode
 
 from launch_ros.actions import Node
 
-remappings = [('/color/image_raw', '/rgb_camera/image_raw'),
+remappings = [('/color/image_raw', '/depth_camera/image_raw'),
                 ('/color/camera_info', '/depth_camera/camera_info'),
                 ('/aligned_depth_to_color/image_raw', '/depth_camera/depth/image_raw')]
 
@@ -39,6 +39,12 @@ def generate_launch_description():
                     plugin='robotname_perception::transformComponent',
                     name='transform',
                     extra_arguments=[{'use_intra_process_comms': True}]
+                ),
+                ComposableNode(
+                    package='robotname_perception',
+                    plugin='robotname_perception::visualizeComponent',
+                    name='visualize',
+                    extra_arguments=[{'use_intra_process_comms': True}]
                 )
             ],
             output='screen',
@@ -49,6 +55,18 @@ def generate_launch_description():
         executable='tracking_component.py',
         output='screen'
     )
+    
+    # trans = Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name='static_transform_node',
+    #     arguments=[
+    #             '0', '0', '0',  # Translation (x, y, z)
+    #             '0', '0', '0', '1',  # Rotation (Quaternion: x, y, z, w)
+    #             'map', 'camera_link'  # Parent and child frame IDs
+    #         ],
+    #     output='screen'
+    # )
 
     return LaunchDescription([
             container,

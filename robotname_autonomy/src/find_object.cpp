@@ -12,14 +12,13 @@ findObject::findObject(const std::string& name,
                        const BT::NodeConfiguration& config,
                        rclcpp::Node::SharedPtr node_ptr)
     : BT::StatefulActionNode(name, config), node_{node_ptr} {
-  std::cout << "[" << this->name() << "] Initialized" << std::endl;
+  RCLCPP_INFO(node_->get_logger(),"[%s] Initialized", this->name().c_str());
 }
 
 BT::NodeStatus findObject::onStart() {
-
   received_image_ = false;
 
-  getInput<std::string>("objectname", objectname_);
+  getInput<std::string>("object", objectname_);
 
   objects_subs_ =
       node_->create_subscription<robotname_msgs::msg::DetectionArray>(
@@ -29,13 +28,15 @@ BT::NodeStatus findObject::onStart() {
   tf_buffer_ = std::make_unique<tf2_ros::Buffer>(node_->get_clock());
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
+  t_frame_ = "map";
+  s_frame_ = "base_link";
+
   return BT::NodeStatus::RUNNING;
 }
 
 BT::NodeStatus findObject::onRunning() {
   // std::string target_color = "blue";
-  std::cout << "[" << this->name() << "] Looking for " << objectname_
-            << " object" << std::endl;
+  RCLCPP_INFO(node_->get_logger(),"[%s] Looking for %s object", this->name().c_str(), objectname_.c_str());
 
   // Wait to receive an image
   // TODO Add timeout?
@@ -46,45 +47,50 @@ BT::NodeStatus findObject::onRunning() {
 
   geometry_msgs::msg::TransformStamped t;
   try {
-    t = tf_buffer_->lookupTransform("map", "camera_link", tf2::TimePointZero);
+    t = tf_buffer_->lookupTransform(t_frame_, s_frame_, tf2::TimePointZero);
   } catch (const tf2::TransformException& ex) {
-    RCLCPP_INFO(node_->get_logger(), "Could not transform %s to %s: %s",
-                s_frame.c_str(), t_frame.c_str(), ex.what());
+    RCLCPP_INFO(node_->get_logger(),"[%s] Could not transform %s to %s: %s", this->name().c_str(),
+           s_frame_.c_str(), t_frame_.c_str(), ex.what());
     return BT::NodeStatus::RUNNING;
   }
 
-  std::vector<std::pair<double, uint32_t>> target_objects;
+  std::vector<std::pair<double, int>> target_objects;
   bool object_founded;
 
-  for (auto object = latest_msg->detections.begin(); object != latest_msg->detections.end() ; object++) {
+  if (!latest_msg->detections.empty()) {
+    for (auto object = latest_msg->detections.begin();
+         object != latest_msg->detections.end(); object++) {
+      if (object->classname == objectname_) {
+        object_founded = true;
+        // calculate euclidean distance
+        double x_value =
+            object->pose.pose.position.x - t.transform.translation.x;
+        double y_value =
+            object->pose.pose.position.y - t.transform.translation.y;
+        double distance =
+            std::sqrt(std::pow(x_value, 2) + std::pow(y_value, 2));
+        target_objects.push_back(std::make_pair(distance, object->id));
+         RCLCPP_INFO(node_->get_logger(),"[%s] distance:%f, object_id:%d", this->name().c_str(), distance,
+               object->id);
+      }
+    }
 
-    if (object->classname == objectname_) {
-      object_founded = true;
-      // calculate euclidean distance
-      double x_value = object->point.x - t.transform.translation.x;
-      double y_value = object->point.y - t.transform.translation.y;
-      double distance = std::sqrt(std::pow(x_value, 2) + std::pow(y_value, 2));
-      target_objects.push_back(std::make_pair(distance,object->id));
-      RCLCPP_INFO(node_->get_logger(), "distance:%f, object_id:%d", distance, object->id);
+    if (object_founded) {
+      std::sort(target_objects.begin(), target_objects.end());
+       RCLCPP_INFO(node_->get_logger(),"[%s] classname:%s, object_id:%d, distance:%f", this->name().c_str(),
+             objectname_.c_str(), target_objects.begin()->second,
+             target_objects.begin()->first);
+      setOutput<int>("id", target_objects.begin()->second);
+      return BT::NodeStatus::SUCCESS;
     }
   }
-
-  if(object_founded)
-  {
-    std::sort(target_objects.begin(),target_objects.end());
-    RCLCPP_INFO(node_->get_logger(), "classname:%s, object_id:%d, distance:%f", objectname_.c_str(), target_objects.begin()->second, target_objects.begin()->first);
-    return BT::NodeStatus::SUCCESS;
-  }
-
-  return BT::NodeStatus::RUNNING;
+  return BT::NodeStatus::FAILURE;
 }
 
-void findObject::onHalted() { 
-  received_image_ = false; 
-}
+void findObject::onHalted() { received_image_ = false; }
 
 BT::PortsList findObject::providedPorts() {
-  return {BT::InputPort<std::string>("objectname")};
+  return {BT::InputPort<std::string>("object"), BT::OutputPort<int>("id")};
 }
 
 void findObject::detection_callback(

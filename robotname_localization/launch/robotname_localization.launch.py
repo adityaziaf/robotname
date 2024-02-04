@@ -39,9 +39,21 @@ def generate_launch_description():
         }.items()
     )
 
+    trans = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_transform_node',
+        arguments=[
+                '5.5', '5.7', '0.15',  # Translation (x, y, z)
+                '0', '0', '-0.707', '0.707',  # Rotation (Quaternion: x, y, z, w)
+                'map', 'odom'  # Parent and child frame IDs
+            ],
+        output='screen'
+    )
+
     return LaunchDescription([
         DeclareLaunchArgument(name='use_sim_time', default_value='True',
                                             description='Flag to enable use_sim_time'),
         ekf,
-        slam
+        trans
     ])
