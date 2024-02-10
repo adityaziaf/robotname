@@ -49,6 +49,5 @@ def generate_launch_description():
         DeclareLaunchArgument(name='use_sim_time', default_value='True',
                                             description='Flag to enable use_sim_time'),
         gazebo,
-        localization,
-        perception
+        localization
     ])

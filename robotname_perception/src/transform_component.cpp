@@ -40,6 +40,7 @@ class transformComponent : public rclcpp::Node {
 
     tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+   
   }
 
   ~transformComponent() {}
@@ -49,14 +50,12 @@ class transformComponent : public rclcpp::Node {
     if (!msg->detections.empty()) {
       std::string s_frame = msg->detections.begin()->pose.header.frame_id;
       try {
-        if (tf_buffer_->canTransform(t_frame, s_frame, tf2::TimePointZero)) {
-          for (auto object = msg->detections.begin();
+        for (auto object = msg->detections.begin();
                object != msg->detections.end(); object++) {
             geometry_msgs::msg::PoseStamped transformed =
-                tf_buffer_->transform(object->pose, t_frame);
+                tf_buffer_->transform(object->pose, t_frame,tf2::durationFromSec(1));
             object->set__pose(transformed);
           }
-        }
       } catch (const tf2::TransformException &ex) {
         RCLCPP_INFO(this->get_logger(), "Could not transform %s to %s: %s",
                     s_frame.c_str(), t_frame.c_str(), ex.what());

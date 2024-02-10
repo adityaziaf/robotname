@@ -88,20 +88,20 @@ def generate_launch_description():
         output='screen'
     )
     
-    trans = Node(
+    camera_to_baselink = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_transform_node',
         arguments=[
-                '0', '0', '0',  # Translation (x, y, z)
+                '0.08', '0', '0.38',  # Translation (x, y, z)
                 '0', '0', '0', '1',  # Rotation (Quaternion: x, y, z, w)
-                'map', 'camera_link'  # Parent and child frame IDs
+                'base_link', 'camera_link'  # Parent and child frame IDs
             ],
         output='screen'
     )
 
     return LaunchDescription(declare_configurable_parameters(realsense_node_params) + [
             container,
-            trans,
+            camera_to_baselink,
             tracker
     ])

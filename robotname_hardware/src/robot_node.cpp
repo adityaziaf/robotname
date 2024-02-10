@@ -85,17 +85,6 @@ struct send_to_robot{
     uint32_t timestamp;
 
     struct {
-        float r;
-        float theta;
-    } swerve_speed[NUM_SWERVE];
-
-    float pick_speed;
-    float conveyor_speed;
-
-    float gripper_pos;
-    float gripper_lift_pos;
-
-    struct {
         float x;
         float y;
         float theta;
@@ -104,7 +93,7 @@ struct send_to_robot{
     union {
 		struct {
 			uint8_t reset_odom  : 1;
-            uint8_t gripper_claw : 1;
+            // uint8_t gripper_claw : 1;
 		};
 		uint32_t flag;
 	};
@@ -114,8 +103,8 @@ struct recv_from_robot{
 	uint32_t timestamp;
 
     struct {
-        int32_t x;
-        int32_t y;
+        float x;
+        float y;
         float theta;
     } g_position;
 
@@ -125,16 +114,11 @@ struct recv_from_robot{
         float theta;
     } body_speed;
 
-	//Swerve
-    struct {
-        float r;
-        float theta;
-    } swerve[NUM_SWERVE];
-    float swerve_drive_torque[NUM_SWERVE];
-
+    float linear_speed[3];
+    float angular_speed[3];
     union {
     	struct {
-    		uint8_t seedling_sensor	: 1;
+    		uint8_t odom_sensor	: 1;
     	};
     	uint16_t sensor_status;
     };
@@ -161,27 +145,22 @@ robotNode::robotNode() : Node("robot_node") {
     //                           "body_speed", 10);
     auto qos = rclcpp::QoS(rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history, rmw_qos_profile_sensor_data.history), rmw_qos_profile_sensor_data);
     odometry_pub            = this->create_publisher<nav_msgs::msg::Odometry>(
-                              "odometry", qos);
-    act_swerve_pub          = this->create_publisher<robot_itsrobocon_msgs::msg::Swerve>(
-                              "swerve", 5);
-    // act_swerve_current_pub  = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-    //                           "swerve/current", 5);
-
-    /*Start Subscriber*/
-    cmd_swerve_vector_sub   = this->create_subscription<robot_itsrobocon_msgs::msg::PolarVectorArray> (
-                              "cmd_swerve_vel", 10, std::bind(&robotNode::swerveSub, this, std::placeholders::_1));
-    cmd_flag_sub            = this->create_subscription<std_msgs::msg::UInt32> (
-                              "cmd_flag", 50, std::bind(&robotNode::flagSub, this, std::placeholders::_1));
+                              "odom", qos);
+    imu_pub            = this->create_publisher<sensor_msgs::msg::Imu>(
+                              "imu", qos);
     cmd_base_vel            = this->create_subscription<geometry_msgs::msg::Twist> (
-                              "base_vel", 10, std::bind(&robotNode::speedSub, this, std::placeholders::_1));
-    run_status_sub          = this->create_subscription<std_msgs::msg::Bool> (
-                              "run_status", 10, std::bind(&robotNode::robot_status_callback, this, std::placeholders::_1));
-    seedling_sub            = this->create_subscription<std_msgs::msg::Float32MultiArray> (
-                              "seedling", 10, std::bind(&robotNode::gripper_callback, this, std::placeholders::_1));
+                              "cmd_vel", 10, std::bind(&robotNode::speedSub, this, std::placeholders::_1));
+    // run_status_sub          = this->create_subscription<std_msgs::msg::Bool> (
+    //                           "run_status", 10, std::bind(&robotNode::robot_status_callback, this, std::placeholders::_1));
+    // seedling_sub            = this->create_subscription<std_msgs::msg::Float32MultiArray> (
+    //                           "seedling", 10, std::bind(&robotNode::gripper_callback, this, std::placeholders::_1));
     // odom_reset_sub          = this->create_subscription<std_msgs::msg::Bool> (
     //                           "odometry/reset", 10, std::bind(&robotNode::odomResetSub, this, std::placeholders::_1));
     odom_reset_service      = this->create_service<std_srvs::srv::Empty>(
-                              "odometry/reset", std::bind(&robotNode::odomResetSub, this, std::placeholders::_1, std::placeholders::_2));
+                              "odom/reset", std::bind(&robotNode::odomResetSub, this, std::placeholders::_1, std::placeholders::_2));
+
+    tf_broadcaster_ =
+      std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 }
 
 /**
@@ -200,116 +179,51 @@ int robotNode::udpLoop() {
         //Kirim balasan ke udp
         n_udp.send((uint8_t*)&send_data, sizeof(send_to_robot));
 
-        //Tampilkan data yang diterima
-        std::cout << "Timestamp: "
-                  << recv_data.timestamp << std::endl
-
-                  << "Position: "
-                  << recv_data.g_position.x << ','
-                  << recv_data.g_position.y << ','
-                  << recv_data.g_position.theta << std::endl
-
-                  << "Body speed: "
-                  << recv_data.body_speed.x << ','
-                  << recv_data.body_speed.y << ','
-                  << recv_data.body_speed.theta << std::endl
-
-                  << "Swerve 0: "
-                  << recv_data.swerve[0].r << ','
-                  << recv_data.swerve[0].theta << std::endl
-
-                  << "Swerve 1: "
-                  << recv_data.swerve[1].r << ','
-                  << recv_data.swerve[1].theta << std::endl
-
-                  << "Swerve 2: "
-                  << recv_data.swerve[2].r << ','
-                  << recv_data.swerve[2].theta << std::endl
-
-                  << "Swerve Torque: "
-                  << recv_data.swerve_drive_torque[0] << ','
-                  << recv_data.swerve_drive_torque[1] << ','
-                  << recv_data.swerve_drive_torque[2] << std::endl
-
-                  << "V Battery: "
-                  << recv_data.v_bat << std::endl
-
-                  << "Flag: "
-                  << std::bitset<32>(recv_data.global_flag) << std::endl << std::endl;
-
-        // //Publish body global position odometry tp topic global_position
-        // auto gpos = geometry_msgs::msg::Pose2D();
-        // gpos.x = recv_data.g_position.x;
-        // gpos.y = recv_data.g_position.y;
-        // gpos.theta = recv_data.g_position.theta;
-        // g_position_pub->publish(gpos);
-
-        // //Publish body speed odometry tp topic body_speed
-        // auto body_speed = geometry_msgs::msg::Twist();
-        // body_speed.linear.x = recv_data.body_speed.x;
-        // body_speed.linear.y = recv_data.body_speed.y;
-        // body_speed.angular.z = recv_data.body_speed.theta;
-        // body_speed_pub->publish(body_speed);
-
-        //Publish odometry data
-        // auto odom = robot_itsrobocon::msg::Odometry();
-        // odom.pose.x = recv_data.g_position.x;
-        // odom.pose.y = recv_data.g_position.y;
-        // odom.pose.theta = recv_data.g_position.theta;
-        // odom.twist.linear.x = recv_data.body_speed.x;
-        // odom.twist.linear.y = recv_data.body_speed.y;
-        // odom.twist.angular.z = recv_data.body_speed.theta;
-        // odometry_pub->publish(odom);
-
         auto odom = nav_msgs::msg::Odometry();
 
-        odom.child_frame_id = "odom";
-        odom.header.frame_id = "base";
+        odom.header.frame_id = "odom";
+        odom.child_frame_id = "base_link";
+        odom.header.stamp = this->get_clock()->now();
 
         auto q = tf2::Quaternion();
         q.setRPY(0,0,recv_data.g_position.theta);
-
         auto pose = geometry_msgs::msg::Pose();
         pose.orientation = tf2::toMsg(q);
-        pose.position.x = recv_data.g_position.x;
-        pose.position.y = recv_data.g_position.y;
+        pose.position.x = recv_data.g_position.y;
+        pose.position.y = recv_data.g_position.x;
         pose.position.z = 0;
 
         odom.pose.pose = pose;
-        odom.twist.twist.linear.x = recv_data.body_speed.x;
-        odom.twist.twist.linear.y = recv_data.body_speed.y;
+        odom.twist.twist.linear.x = recv_data.body_speed.y;
+        odom.twist.twist.linear.y = recv_data.body_speed.x;
         odom.twist.twist.linear.z = 0;
         odom.twist.twist.angular.x = 0;
         odom.twist.twist.angular.y = 0;
-        odom.twist.twist.angular.z = recv_data.body_speed.theta;
+        odom.twist.twist.angular.z = recv_data.angular_speed[2];
 
+        auto imu = sensor_msgs::msg::Imu();
+        imu.header.frame_id = "imu";
+        imu.header.stamp = this->get_clock()->now();
+        imu.linear_acceleration.x = recv_data.linear_speed[0];
+        imu.linear_acceleration.y = recv_data.linear_speed[1];
+        imu.linear_acceleration.z = recv_data.linear_speed[2];
+        imu.angular_velocity.x = recv_data.angular_speed[0];
+        imu.angular_velocity.y = recv_data.angular_speed[1];
+        imu.angular_velocity.z = recv_data.angular_speed[2];
+        imu.orientation = tf2::toMsg(q);
+
+        geometry_msgs::msg::TransformStamped t;
+        t.set__header(odom.header);
+        t.set__child_frame_id(odom.child_frame_id);
+        t.transform.translation.x = recv_data.g_position.y;
+        t.transform.translation.y = recv_data.g_position.x;
+        t.transform.translation.z = 0;
+        t.transform.set__rotation(tf2::toMsg(q));
+
+        tf_broadcaster_->sendTransform(t);
+        imu_pub->publish(imu);
         odometry_pub->publish(odom);
         
-
-        auto swerve = robot_itsrobocon_msgs::msg::Swerve();
-
-        //Publish data actual swerve speed to topic act_swerve_vector
-        auto act_swerve = robot_itsrobocon_msgs::msg::PolarVectorArray();
-        act_swerve.r = {recv_data.swerve[0].r, 
-                        recv_data.swerve[1].r, 
-                        recv_data.swerve[2].r};;
-        act_swerve.theta = {recv_data.swerve[0].theta, 
-                            recv_data.swerve[1].theta, 
-                            recv_data.swerve[2].theta};
-        act_swerve.num = 3;
-        swerve.vel = act_swerve;
-        // act_swerve_pub->publish(act_swerve);
-
-        //Publish measured swerve current to act_swerve_current
-        auto swerve_current = std::vector<float>();
-        swerve_current.push_back(recv_data.swerve_drive_torque[0]);
-        swerve_current.push_back(recv_data.swerve_drive_torque[1]);
-        swerve_current.push_back(recv_data.swerve_drive_torque[2]);
-
-        swerve.current = swerve_current;
-
-        act_swerve_pub->publish(swerve);
-        // act_swerve_current_pub->publish(swerve_current);
     }
     return 0;
 }
@@ -317,18 +231,18 @@ int robotNode::udpLoop() {
 /**
  * Fungsi ini akan terpanggil jika ada data yang dipublish pada topik swerve vector
 */
-int robotNode::swerveSub(const robot_itsrobocon_msgs::msg::PolarVectorArray &msg) {
-    // msg.r.size();
-    if(msg.num == 3) {
-        send_data.swerve_speed[0].r = msg.r.at(0);
-        send_data.swerve_speed[1].r = msg.r.at(1);
-        send_data.swerve_speed[2].r = msg.r.at(2);
-        send_data.swerve_speed[0].theta = msg.theta.at(0);
-        send_data.swerve_speed[1].theta = msg.theta.at(1);
-        send_data.swerve_speed[2].theta = msg.theta.at(2);
-    }
-    return 0;
-}
+// int robotNode::swerveSub(const robot_itsrobocon_msgs::msg::PolarVectorArray &msg) {
+//     // msg.r.size();
+//     if(msg.num == 3) {
+//         send_data.swerve_speed[0].r = msg.r.at(0);
+//         send_data.swerve_speed[1].r = msg.r.at(1);
+//         send_data.swerve_speed[2].r = msg.r.at(2);
+//         send_data.swerve_speed[0].theta = msg.theta.at(0);
+//         send_data.swerve_speed[1].theta = msg.theta.at(1);
+//         send_data.swerve_speed[2].theta = msg.theta.at(2);
+//     }
+//     return 0;
+// }
 
 /**
  * Fungsi ini akan terpanggil jika ada data yang dipublish pada topik flag
@@ -356,13 +270,13 @@ void robotNode::robot_status_callback(const std_msgs::msg::Bool &msg) {
 /**
  * Fungsi ini akan terpanggil jika ada data yang dipublish pada topic run_status
 */
-void robotNode::gripper_callback(const std_msgs::msg::Float32MultiArray &msg) {
-    send_data.pick_speed = msg.data.at(0);
-    send_data.conveyor_speed = msg.data.at(1);
-    send_data.gripper_pos = msg.data.at(2);
-    send_data.gripper_lift_pos = msg.data.at(3);
-    send_data.gripper_claw = (msg.data.at(4) != 0);
-}
+// void robotNode::gripper_callback(const std_msgs::msg::Float32MultiArray &msg) {
+//     send_data.pick_speed = msg.data.at(0);
+//     send_data.conveyor_speed = msg.data.at(1);
+//     send_data.gripper_pos = msg.data.at(2);
+//     send_data.gripper_lift_pos = msg.data.at(3);
+//     send_data.gripper_claw = (msg.data.at(4) != 0);
+// }
 
 /**
  * 

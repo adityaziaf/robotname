@@ -17,26 +17,29 @@ def generate_launch_description():
     
     default_rviz_config_path = os.path.join(pkg_share, 'rviz/navigation.rviz')
 
+    hardware = Node(
+        package='robotname_hardware',
+        executable='robot_node',
+        name='hardware',
+        output='screen'
+    )
     
-    nav_localization = IncludeLaunchDescription(
+    localization = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('robotname_navigation'),'launch'),'/localization.launch.py']
+            get_package_share_directory('robotname_localization'),'launch'),'/ekf.launch.py']
         ),
         launch_arguments={
-            'use_sim_time' : LaunchConfiguration('use_sim_time'),
-            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapkuh.yaml')]
+            'use_sim_time' : LaunchConfiguration('use_sim_time'
+            )
         }.items()
     )
-
-    nav_navigation = IncludeLaunchDescription(
+    
+    perception = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('robotname_navigation'),'launch'),'/navigation.launch.py']
-        ),
-        launch_arguments={
-            'use_sim_time' : LaunchConfiguration('use_sim_time')
-        }.items()
+            get_package_share_directory('robotname_perception'),'launch'),'/composition.launch.py']
+        )
     )
-
+    
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
@@ -45,7 +48,7 @@ def generate_launch_description():
         arguments=['-d', LaunchConfiguration('rvizconfig')],
     )
  
-    trans = Node(
+    odom_to_map = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_transform_node',
@@ -56,13 +59,36 @@ def generate_launch_description():
             ],
         output='screen'
     )
-
+    
+    nav_localization = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('robotname_navigation'),'launch'),'/localization.launch.py']
+        ),
+        launch_arguments={
+            'use_sim_time' : LaunchConfiguration('use_sim_time'),
+            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapkuh.yaml')]
+        }.items()
+    )
+    
+    nav_navigation = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('robotname_navigation'),'launch'),'/navigation.launch.py']
+        ),
+        launch_arguments={
+            'use_sim_time' : LaunchConfiguration('use_sim_time'),
+            'params_file' : [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params.yaml')]
+        }.items()
+    )
+    
     return LaunchDescription([
         DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path,
                                             description='Absolute path to rviz config file'),
-        DeclareLaunchArgument(name='use_sim_time', default_value='True',
+        DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
-        trans,
+        hardware,
+        # perception,
+        rviz_node,
+        odom_to_map,
         nav_localization,
-        rviz_node
+        nav_navigation
     ])

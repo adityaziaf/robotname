@@ -126,8 +126,8 @@ namespace robotname_perception
                         - Extract x,y centroid point
                         - Extract z centroid point
                 */
-                //float depth_at = 0.001 * (depth_ptr->image.at<u_int16_t>(pixel.y, pixel.x));
-                float depth_at = (depth_ptr->image.at<float>(pixel.y, pixel.x));
+                float depth_at = 0.001 * (depth_ptr->image.at<u_int16_t>(pixel.y, pixel.x));
+                //float depth_at = (depth_ptr->image.at<float>(pixel.y, pixel.x));
                 /*
                  * 2. Bounding Box z value
                         - Extract roi from object bbox
@@ -144,9 +144,12 @@ namespace robotname_perception
                 object.pose.header.stamp = rgb_ptr->header.stamp;
                 object.classname = yolo::coconame[element.class_id];
                 object.score = element.confidence;
-                object.pose.pose.position.x = obj_coor.z * depth_at;
-                object.pose.pose.position.y = -obj_coor.x * depth_at;
-                object.pose.pose.position.z = -obj_coor.y * depth_at;
+                // object.pose.pose.position.x = obj_coor.z * depth_at;
+                // object.pose.pose.position.y = -obj_coor.x * depth_at;
+                // object.pose.pose.position.z = -obj_coor.y * depth_at;
+                object.pose.pose.position.x = obj_coor.x * depth_at;
+                object.pose.pose.position.y = obj_coor.y * depth_at;
+                object.pose.pose.position.z = obj_coor.z * depth_at;
                 object.pose.pose.orientation.x = 0;
                 object.pose.pose.orientation.y = 0;
                 object.pose.pose.orientation.z = 0;
