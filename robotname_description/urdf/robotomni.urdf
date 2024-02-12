@@ -1,0 +1,142 @@
+<robot name="robotomni">
+
+    <!-- * * * Link Definitions * * * -->
+
+    <link name="base_link">
+        <visual>
+            <origin xyz="0 0 0.1" rpy="0 0 0" />
+            <geometry>
+                <box size="0.7 0.7 0.2" />
+            </geometry>
+            <material name="Cyan1">
+                <color rgba="0 0.9 0.9 1.0" />
+            </material>
+        </visual>
+
+        <inertial>
+            <mass value="25" />
+            <origin xyz="0 0 0.1" />
+            <inertia ixx="25.0" ixy="0.0" ixz="0.0"
+                iyy="25.0" iyz="0.0"
+                izz="25.0" />
+        </inertial>
+
+        <collision>
+            <origin xyz="0 0 0.1" />
+            <geometry>
+                <box size="0.7 0.7 0.2" />
+            </geometry>
+        </collision>
+
+    </link>
+
+    <!-- Robot Footprint -->
+    <link name="base_footprint"></link>
+
+    <joint name="base_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="base_footprint" />
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+    </joint>
+
+    <gazebo>
+        <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+          <commandTopic>cmd_vel</commandTopic>
+          <odometryTopic>odom</odometryTopic>
+          <odometryFrame>odom</odometryFrame>
+          <odometryRate>20.0</odometryRate>
+          <robotBaseFrame>base_footprint</robotBaseFrame>
+        </plugin>
+      </gazebo>
+    
+      <link
+    name="imu_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1" />
+      </geometry>
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="0.1 0.1 0.1" />
+      </geometry>
+    </collision>
+  </link>
+    
+  <joint name="imu_joint"
+    type="fixed">
+    <parent link="base_link" />
+    <child link="imu_link" />
+    <origin xyz="0 0 0.1" />
+  </joint>
+    
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <ros>
+          <remapping>~/out:=imu</remapping>
+        </ros>
+        <initial_orientation_as_reference>false</initial_orientation_as_reference>
+      </plugin>
+      <always_on>true</always_on>
+      <update_rate>20</update_rate>
+      <visualize>true</visualize>
+      <imu>
+        <angular_velocity>
+          <x>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+              <bias_mean>0.0000075</bias_mean>
+              <bias_stddev>0.0000008</bias_stddev>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+              <bias_mean>0.0000075</bias_mean>
+              <bias_stddev>0.0000008</bias_stddev>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>2e-4</stddev>
+              <bias_mean>0.0000075</bias_mean>
+              <bias_stddev>0.0000008</bias_stddev>
+            </noise>
+          </z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+              <bias_mean>0.1</bias_mean>
+              <bias_stddev>0.001</bias_stddev>
+            </noise>
+          </x>
+          <y>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+              <bias_mean>0.1</bias_mean>
+              <bias_stddev>0.001</bias_stddev>
+            </noise>
+          </y>
+          <z>
+            <noise type="gaussian">
+              <mean>0.0</mean>
+              <stddev>1.7e-2</stddev>
+              <bias_mean>0.1</bias_mean>
+              <bias_stddev>0.001</bias_stddev>
+            </noise>
+          </z>
+        </linear_acceleration>
+      </imu>
+    </sensor>
+  </gazebo>
+
+</robot>

@@ -14,17 +14,14 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('robotname_bringup')
-    
-    default_rviz_config_path = os.path.join(pkg_share, 'rviz/navigation.rviz')
 
-    
     nav_localization = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('robotname_navigation'),'launch'),'/localization.launch.py']
         ),
         launch_arguments={
             'use_sim_time' : LaunchConfiguration('use_sim_time'),
-            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapkuh.yaml')]
+            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapkuh_sim.yaml')]
         }.items()
     )
 
@@ -33,16 +30,9 @@ def generate_launch_description():
             get_package_share_directory('robotname_navigation'),'launch'),'/navigation.launch.py']
         ),
         launch_arguments={
-            'use_sim_time' : LaunchConfiguration('use_sim_time')
+            'use_sim_time' : LaunchConfiguration('use_sim_time'),
+            'params_file': [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params_sim.yaml')]
         }.items()
-    )
-
-    rviz_node = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        output='screen',
-        arguments=['-d', LaunchConfiguration('rvizconfig')],
     )
  
     trans = Node(
@@ -58,11 +48,9 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path,
-                                            description='Absolute path to rviz config file'),
         DeclareLaunchArgument(name='use_sim_time', default_value='True',
                                             description='Flag to enable use_sim_time'),
         trans,
         nav_localization,
-        rviz_node
+        nav_navigation
     ])

@@ -19,7 +19,7 @@ def generate_launch_description():
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('robotname_gazebo'),'launch'),'/gazebo.launch.py']
+            get_package_share_directory('robotname_bringup'),'launch'),'/gazebo.launch.py']
         ),
         launch_arguments={
             'use_sim_time' : LaunchConfiguration('use_sim_time'
@@ -37,11 +37,11 @@ def generate_launch_description():
         }.items()
     )
     
-    perception = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('robotname_perception'),'launch'),'/sim_composition.launch.py']
-        )
-    )
+    # perception = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource([os.path.join(
+    #         get_package_share_directory('robotname_perception'),'launch'),'/sim_composition.launch.py']
+    #     )
+    # )
     
     return LaunchDescription([
         DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path,
