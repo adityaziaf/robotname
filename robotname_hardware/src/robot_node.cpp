@@ -204,13 +204,13 @@ int robotNode::udpLoop() {
     q.setRPY(0, 0, recv_data.g_position.theta);
     auto pose = geometry_msgs::msg::Pose();
     pose.orientation = tf2::toMsg(q);
-    pose.position.x = recv_data.g_position.y;
-    pose.position.y = recv_data.g_position.x;
+    pose.position.x = recv_data.g_position.x;
+    pose.position.y = recv_data.g_position.y;
     pose.position.z = 0;
 
     odom.pose.pose = pose;
     odom.twist.twist.linear.x = recv_data.body_speed.y;
-    odom.twist.twist.linear.y = recv_data.body_speed.x;
+    odom.twist.twist.linear.y = -recv_data.body_speed.x;
     odom.twist.twist.linear.z = 0;
     odom.twist.twist.angular.x = 0;
     odom.twist.twist.angular.y = 0;
@@ -236,15 +236,15 @@ int robotNode::udpLoop() {
     imu.angular_velocity.z = recv_data.angular_speed[2];
     imu.orientation = tf2::toMsg(q);
     
-    geometry_msgs::msg::TransformStamped t;
-    t.set__header(odom.header);
-    t.set__child_frame_id(odom.child_frame_id);
-    t.transform.translation.x = recv_data.g_position.y;
-    t.transform.translation.y = recv_data.g_position.x;
-    t.transform.translation.z = 0;
-    t.transform.set__rotation(tf2::toMsg(q));
+    // geometry_msgs::msg::TransformStamped t;
+    // t.set__header(odom.header);
+    // t.set__child_frame_id(odom.child_frame_id);
+    // t.transform.translation.x = recv_data.g_position.y;
+    // t.transform.translation.y = recv_data.g_position.x;
+    // t.transform.translation.z = 0;
+    // t.transform.set__rotation(tf2::toMsg(q));
 
-    tf_broadcaster_->sendTransform(t);
+    // tf_broadcaster_->sendTransform(t);
     imu_pub->publish(imu);
     odometry_pub->publish(odom);
   }

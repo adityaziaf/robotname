@@ -88,6 +88,7 @@ def generate_launch_description():
         hardware,
         # perception,
         rviz_node,
+        localization,
         odom_to_map,
         nav_localization,
         nav_navigation
