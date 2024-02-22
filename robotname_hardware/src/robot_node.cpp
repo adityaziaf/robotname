@@ -215,14 +215,22 @@ int robotNode::udpLoop() {
     odom.twist.twist.angular.x = 0;
     odom.twist.twist.angular.y = 0;
     odom.twist.twist.angular.z = recv_data.angular_speed[2];
-    odom.pose.covariance = {{
-        1e-3, 0, 0, 0, 0, 0,
-        0, 1e-3, 0, 0, 0, 0,
-        0, 0, 1e6, 0, 0, 0,
-        0, 0, 0, 1e6, 0, 0,
-        0, 0, 0, 0, 1e6, 0,
-        0, 0, 0, 0, 0, 1e3
-    }};
+    // odom.pose.covariance = {{
+    //     1e-3, 0, 0, 0, 0, 0,
+    //     0, 1e-3, 0, 0, 0, 0,
+    //     0, 0, 1e6, 0, 0, 0,
+    //     0, 0, 0, 1e6, 0, 0,
+    //     0, 0, 0, 0, 1e6, 0,
+    //     0, 0, 0, 0, 0, 1e3
+    // }};
+    // set covariance
+    odom.pose.covariance[0] = 0.00001;
+    odom.pose.covariance[7] = 0.00001;
+    odom.pose.covariance[14] = 1000000000000.0;
+    odom.pose.covariance[21] = 1000000000000.0;
+    odom.pose.covariance[28] = 1000000000000.0;
+    odom.pose.covariance[35] = 0.001;
+    
 
 
     auto imu = sensor_msgs::msg::Imu();
@@ -236,11 +244,21 @@ int robotNode::udpLoop() {
     imu.angular_velocity.z = recv_data.angular_speed[2];
     imu.orientation = tf2::toMsg(q);
     
+    imu.orientation_covariance[0] = 0.00001;
+    imu.orientation_covariance[4] = 0.00001;
+    imu.orientation_covariance[8] = 0.00001;
+    imu.angular_velocity_covariance[0] = 0.00001;
+    imu.angular_velocity_covariance[4] = 0.00001;
+    imu.angular_velocity_covariance[8] = 0.00001;
+    imu.linear_acceleration_covariance[0] = 0.00001;
+    imu.linear_acceleration_covariance[4] = 0.00001;
+    imu.linear_acceleration_covariance[8] = 0.00001;
+
     // geometry_msgs::msg::TransformStamped t;
     // t.set__header(odom.header);
     // t.set__child_frame_id(odom.child_frame_id);
-    // t.transform.translation.x = recv_data.g_position.y;
-    // t.transform.translation.y = recv_data.g_position.x;
+    // t.transform.translation.x = recv_data.g_position.x;
+    // t.transform.translation.y = recv_data.g_position.y;
     // t.transform.translation.z = 0;
     // t.transform.set__rotation(tf2::toMsg(q));
 
