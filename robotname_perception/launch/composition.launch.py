@@ -62,7 +62,7 @@ def generate_launch_description():
                 ),
                 ComposableNode(
                     package='robotname_perception',
-                    plugin='robotname_perception::yoloDetectorComponent',
+                    plugin='robotname_perception::yoloOnnxComponent',
                     name='yolodetector',
                     extra_arguments=[{'use_intra_process_comms': True}]
                 ),
@@ -95,7 +95,7 @@ def generate_launch_description():
         arguments=[
                 '0.08', '0', '0.38',  # Translation (x, y, z)
                 '0', '0', '0', '1',  # Rotation (Quaternion: x, y, z, w)
-                'base_link', 'camera_link'  # Parent and child frame IDs
+                'map', 'camera_link'  # Parent and child frame IDs
             ],
         output='screen'
     )
