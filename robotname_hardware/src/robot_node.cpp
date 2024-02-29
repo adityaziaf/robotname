@@ -5,8 +5,8 @@
 
 #include "robotname_hardware/udp.hpp"
 
-#define IP_SERVER "192.168.1.111"
-#define IP_CLIENT "192.168.1.134"
+#define IP_SERVER "192.168.1.111" //pc
+#define IP_CLIENT "192.168.1.134" //stm
 #define PORT 12345
 
 UDP n_udp(IP_SERVER, PORT);
@@ -134,13 +134,13 @@ recv_from_robot recv_data;
 
 robotNode::robotNode() : Node("robot_node") {
   /*IP Config*/
+  std::cout<<"sebelum timer"<<std::endl;
   n_udp.init();
+  std::cout<<"sesudah timer"<<std::endl;
   n_udp.setClient(IP_CLIENT, PORT);
-
   /*Start Timer*/ //std::chrono::microseconds)100
   udp_timer = this->create_wall_timer((std::chrono::milliseconds)1,
                                       std::bind(&robotNode::udpLoop, this));
-
   /*Start Publisher*/
   // g_position_pub          =
   // this->create_publisher<geometry_msgs::msg::Pose2D>(
@@ -148,15 +148,25 @@ robotNode::robotNode() : Node("robot_node") {
   // body_speed_pub          =
   // this->create_publisher<geometry_msgs::msg::Twist>(
   //                           "body_speed", 10);
+
+// joy_sub = this->create_subscription<sensor_msgs::msg::Joy>("joy",10,std::bind());
+
   auto qos = rclcpp::QoS(
       rclcpp::QoSInitialization(rmw_qos_profile_sensor_data.history,
                                 rmw_qos_profile_sensor_data.history),
       rmw_qos_profile_sensor_data);
+
+  /* Publisher */
   odometry_pub = this->create_publisher<nav_msgs::msg::Odometry>("odom", qos);
+
   imu_pub = this->create_publisher<sensor_msgs::msg::Imu>("imu", qos);
+
   cmd_base_vel = this->create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10,
       std::bind(&robotNode::speedSub, this, std::placeholders::_1));
+
+  /* Subscriber */
+
   // run_status_sub          = this->create_subscription<std_msgs::msg::Bool> (
   //                           "run_status", 10,
   //                           std::bind(&robotNode::robot_status_callback,
@@ -183,15 +193,20 @@ robotNode::robotNode() : Node("robot_node") {
  */
 int robotNode::udpLoop() {
   int ret = n_udp.receive();
+    // std::cout << ret << " OK!" << std::endl;
   if (ret > 0) {  // jika tidak ada atau error, ret == -1
     // RCLCPP_INFO(this->get_logger(), "OK");
-    // std::cout << ret << " OK!" << std::endl;
 
     // Salin data dari array data yang diterima lewat udp ke data yang
     // terstruktur
     memcpy((uint8_t *)&recv_data, n_udp.rx_buff, sizeof(recv_from_robot));
 
     // Kirim balasan ke udp
+    send_data.body_speed.x = 1;
+    send_data.body_speed.y = 2;
+    std::cout<<send_data.body_speed.x<<std::endl;
+    std::cout<<send_data.body_speed.y<<std::endl;
+
     n_udp.send((uint8_t *)&send_data, sizeof(send_to_robot));
 
     auto odom = nav_msgs::msg::Odometry();
@@ -230,8 +245,6 @@ int robotNode::udpLoop() {
     odom.pose.covariance[21] = 1000000000000.0;
     odom.pose.covariance[28] = 1000000000000.0;
     odom.pose.covariance[35] = 0.001;
-    
-
 
     auto imu = sensor_msgs::msg::Imu();
     imu.header.frame_id = "imu";
@@ -302,6 +315,9 @@ int robotNode::speedSub(const geometry_msgs::msg::Twist &msg) {
   send_data.body_speed.x = msg.linear.x;
   send_data.body_speed.y = msg.linear.y;
   send_data.body_speed.theta = msg.angular.z;
+  std::cout<<msg.linear.x<<std::endl;
+  std::cout<<msg.linear.y<<std::endl;
+  std::cout<<msg.angular.z<<std::endl;
 }
 
 /**
