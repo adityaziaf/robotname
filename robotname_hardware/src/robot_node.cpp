@@ -153,7 +153,7 @@ robotNode::robotNode() : Node("robot_node") {
                                 rmw_qos_profile_sensor_data.history),
       rmw_qos_profile_sensor_data);
   odometry_pub = this->create_publisher<nav_msgs::msg::Odometry>("odom", qos);
-  imu_pub = this->create_publisher<sensor_msgs::msg::Imu>("imu", qos);
+  imu_pub = this->create_publisher<sensor_msgs::msg::Imu>("odom/imu", qos);
   cmd_base_vel = this->create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10,
       std::bind(&robotNode::speedSub, this, std::placeholders::_1));
@@ -244,15 +244,15 @@ int robotNode::udpLoop() {
     imu.angular_velocity.z = recv_data.angular_speed[2];
     imu.orientation = tf2::toMsg(q);
     
-    imu.orientation_covariance[0] = 0.00001;
-    imu.orientation_covariance[4] = 0.00001;
-    imu.orientation_covariance[8] = 0.00001;
-    imu.angular_velocity_covariance[0] = 0.00001;
-    imu.angular_velocity_covariance[4] = 0.00001;
-    imu.angular_velocity_covariance[8] = 0.00001;
-    imu.linear_acceleration_covariance[0] = 0.00001;
-    imu.linear_acceleration_covariance[4] = 0.00001;
-    imu.linear_acceleration_covariance[8] = 0.00001;
+    imu.orientation_covariance[0] = 0.01;
+    imu.orientation_covariance[4] = 0.01;
+    imu.orientation_covariance[8] = 0.01;
+    imu.angular_velocity_covariance[0] = 0.01;
+    imu.angular_velocity_covariance[4] = 0.01;
+    imu.angular_velocity_covariance[8] = 0.01;
+    imu.linear_acceleration_covariance[0] = 0.01;
+    imu.linear_acceleration_covariance[4] = 0.01;
+    imu.linear_acceleration_covariance[8] = 0.01;
 
     // geometry_msgs::msg::TransformStamped t;
     // t.set__header(odom.header);

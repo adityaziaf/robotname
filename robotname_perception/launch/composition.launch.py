@@ -27,8 +27,8 @@ realsense_node_params = [{'name': 'serial_no',              'default': "''", 'de
                          {'name': 'enable_infra',           'default': 'false', 'description': 'enable infra stream'},
                          {'name': 'enable_infra1',          'default': 'false', 'description': 'enable infra1 stream'},
                          {'name': 'enable_infra2',          'default': 'false', 'description': 'enable infra2 stream'},
-                         {'name': 'enable_gyro',            'default': 'false', 'description': "enable gyro stream"},
-                         {'name': 'enable_accel',           'default': 'false', 'description': "enable accel stream"},
+                         {'name': 'enable_gyro',            'default': 'true', 'description': "enable gyro stream"},
+                         {'name': 'enable_accel',           'default': 'true', 'description': "enable accel stream"},
                          {'name': 'unite_imu_method',       'default': "1", 'description': '[0-None, 1-copy, 2-linear_interpolation]'},
                          {'name': 'intra_process_comms',    'default': 'true', 'description': "enable intra-process communication"},
                          {'name': 'enable_sync',            'default': 'true', 'description': "'enable sync mode'"},
@@ -62,7 +62,7 @@ def generate_launch_description():
                 ),
                 ComposableNode(
                     package='robotname_perception',
-                    plugin='robotname_perception::yoloDetectorComponent',
+                    plugin='robotname_perception::yoloOnnxComponent',
                     name='yolodetector',
                     extra_arguments=[{'use_intra_process_comms': True}]
                 ),
@@ -102,6 +102,6 @@ def generate_launch_description():
 
     return LaunchDescription(declare_configurable_parameters(realsense_node_params) + [
             container,
-            camera_to_baselink,
-            tracker
+            camera_to_baselink
+            #tracker
     ])

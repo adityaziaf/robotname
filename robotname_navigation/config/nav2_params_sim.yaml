@@ -259,9 +259,69 @@ map_saver:
 #         twirling_cost_power: 1
 #         twirling_cost_weight: 1.0
 
+# controller_server:
+#   ros__parameters:
+#     # controller server parameters (see Controller Server for more info)
+#     use_sim_time: True
+#     controller_frequency: 50.0
+#     min_x_velocity_threshold: 0.001
+#     min_y_velocity_threshold: 0.5
+#     min_theta_velocity_threshold: 0.001
+#     progress_checker_plugins: ["progress_checker"] # progress_checker_plugin: "progress_checker" For Humble and older
+#     goal_checker_plugins: ["goal_checker"]
+#     controller_plugins: ["FollowPath"]
+#     progress_checker:
+#       plugin: "nav2_controller::SimpleProgressChecker"
+#       required_movement_radius: 0.5
+#       movement_time_allowance: 10.0
+#     goal_checker:
+#       plugin: "nav2_controller::SimpleGoalChecker"
+#       xy_goal_tolerance: 0.05
+#       yaw_goal_tolerance: 0.05
+#       stateful: True
+#     # DWB controller parameters
+#     FollowPath:
+#       plugin: "dwb_core::DWBLocalPlanner"
+#       debug_trajectory_details: True
+#       min_vel_x: 0.0
+#       min_vel_y: 0.0
+#       max_vel_x: 1.0
+#       max_vel_y: 0.0
+#       max_vel_theta: 1.0
+#       min_speed_xy: 0.0
+#       max_speed_xy: 1.0
+#       min_speed_theta: 0.0
+#       acc_lim_x: 2.5
+#       acc_lim_y: 0.0
+#       acc_lim_theta: 3.2
+#       decel_lim_x: -2.5
+#       decel_lim_y: 0.0
+#       decel_lim_theta: -3.2
+#       vx_samples: 20
+#       vy_samples: 5
+#       vtheta_samples: 20
+#       sim_time: 1.7
+#       linear_granularity: 0.05
+#       angular_granularity: 0.05
+#       transform_tolerance: 0.1
+#       xy_goal_tolerance: 0.05
+#       trans_stopped_velocity: 0.25
+#       short_circuit_trajectory_evaluation: False
+#       stateful: True
+#       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+#       BaseObstacle.scale: 0.02
+#       PathAlign.scale: 32.0
+#       GoalAlign.scale: 24.0
+#       PathAlign.forward_point_distance: 0.1
+#       GoalAlign.forward_point_distance: 0.1
+#       PathDist.scale: 32.0
+#       GoalDist.scale: 24.0
+#       RotateToGoal.scale: 32.0
+#       RotateToGoal.slowing_factor: 5.0
+#       RotateToGoal.lookahead_time: -1.0
+
 controller_server:
   ros__parameters:
-    # controller server parameters (see Controller Server for more info)
     use_sim_time: True
     controller_frequency: 50.0
     min_x_velocity_threshold: 0.001
@@ -270,6 +330,7 @@ controller_server:
     progress_checker_plugins: ["progress_checker"] # progress_checker_plugin: "progress_checker" For Humble and older
     goal_checker_plugins: ["goal_checker"]
     controller_plugins: ["FollowPath"]
+
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
       required_movement_radius: 0.5
@@ -279,46 +340,33 @@ controller_server:
       xy_goal_tolerance: 0.05
       yaw_goal_tolerance: 0.05
       stateful: True
-    # DWB controller parameters
     FollowPath:
-      plugin: "dwb_core::DWBLocalPlanner"
-      debug_trajectory_details: True
-      min_vel_x: 0.0
-      min_vel_y: 0.0
-      max_vel_x: 1.0
-      max_vel_y: 0.0
-      max_vel_theta: 1.0
-      min_speed_xy: 0.0
-      max_speed_xy: 1.0
-      min_speed_theta: 0.0
-      acc_lim_x: 2.5
-      acc_lim_y: 0.0
-      acc_lim_theta: 3.2
-      decel_lim_x: -2.5
-      decel_lim_y: 0.0
-      decel_lim_theta: -3.2
-      vx_samples: 20
-      vy_samples: 5
-      vtheta_samples: 20
-      sim_time: 1.7
-      linear_granularity: 0.05
-      angular_granularity: 0.05
+      plugin: "nav2_rotation_shim_controller::RotationShimController"
+      primary_controller: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+
+      desired_linear_vel: 1.0
+      lookahead_dist: 0.6
+      min_lookahead_dist: 0.6
+      max_lookahead_dist: 1.5
+      lookahead_time: 2.0
+      rotate_to_heading_angular_vel: 1.5
       transform_tolerance: 0.1
-      xy_goal_tolerance: 0.05
-      trans_stopped_velocity: 0.25
-      short_circuit_trajectory_evaluation: False
-      stateful: True
-      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
-      BaseObstacle.scale: 0.02
-      PathAlign.scale: 32.0
-      GoalAlign.scale: 24.0
-      PathAlign.forward_point_distance: 0.1
-      GoalAlign.forward_point_distance: 0.1
-      PathDist.scale: 32.0
-      GoalDist.scale: 24.0
-      RotateToGoal.scale: 32.0
-      RotateToGoal.slowing_factor: 5.0
-      RotateToGoal.lookahead_time: -1.0
+      use_velocity_scaled_lookahead_dist: true
+      min_approach_linear_velocity: 0.05
+      approach_velocity_scaling_dist: 0.6
+      use_collision_detection: true
+      max_allowed_time_to_collision_up_to_carrot: 1.0
+      use_regulated_linear_velocity_scaling: true
+      use_fixed_curvature_lookahead: false
+      curvature_lookahead_dist: 0.25
+      use_cost_regulated_linear_velocity_scaling: false
+      regulated_linear_scaling_min_radius: 0.9
+      regulated_linear_scaling_min_speed: 0.25
+      use_rotate_to_heading: true
+      allow_reversing: false
+      rotate_to_heading_min_angle: 0.785
+      max_angular_accel: 2.0
+      max_robot_pose_search_dist: 10.0
 
 # controller_server:
 #   ros__parameters:
@@ -558,109 +606,58 @@ planner_server:
 
 # controller_server:
 #   ros__parameters:
-#     use_sim_time: True
-#     controller_frequency: 20.0
-#     min_x_velocity_threshold: 0.001
-#     min_y_velocity_threshold: 0.001
-#     min_theta_velocity_threshold: 0.001
-#     failure_tolerance: 0.3
-#     progress_checker_plugin: "progress_checker"
-#     goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"
+#     # controller server parameters (see Controller Server for more info)
 #     controller_plugins: ["FollowPath"]
-
-#     # Progress checker parameters
+#     controller_frequency: 100.0
+#     controller_plugin_types: ["neo_local_planner::NeoLocalPlanner"]
+#     goal_checker_plugins: ["general_goal_checker"]
+#     progress_checker_plugin: "progress_checker"
+#     use_sim_time: True
 #     progress_checker:
 #       plugin: "nav2_controller::SimpleProgressChecker"
 #       required_movement_radius: 0.5
 #       movement_time_allowance: 10.0
-#     # Goal checker parameters
-#     #precise_goal_checker:
-#     #  plugin: "nav2_controller::SimpleGoalChecker"
-#     #  xy_goal_tolerance: 0.25
-#     #  yaw_goal_tolerance: 0.25
-#     #  stateful: True
 #     general_goal_checker:
-#       stateful: True
 #       plugin: "nav2_controller::SimpleGoalChecker"
-#       xy_goal_tolerance: 0.25
-#       yaw_goal_tolerance: 0.25
-#     # DWB parameters
-#     FollowPath:
-#       plugin: "dwb_core::DWBLocalPlanner"
-#       debug_trajectory_details: True
-#       min_vel_x: -2.0
-#       min_vel_y: -2.0
-#       max_vel_x: 2.0
-#       max_vel_y: 2.0
-#       max_vel_theta: 2.0
-#       min_speed_xy: -2.0
-#       max_speed_xy: 2.0
-#       min_speed_theta: -2.0
-#       # Add high threshold velocity for turtlebot 3 issue.
-#       # https://github.com/ROBOTIS-GIT/turtlebot3_simulations/issues/75
-#       acc_lim_x: 2.5
-#       acc_lim_y: 2.5
-#       acc_lim_theta: 2.5
-#       decel_lim_x: -2.5
-#       decel_lim_y: -2.5
-#       decel_lim_theta: -2.5
-#       vx_samples: 20
-#       vy_samples: 20
-#       vtheta_samples: 20
-#       sim_time: 1.7
-      
-#       linear_granularity: 0.05
-#       angular_granularity: 0.025
-#       transform_tolerance: 0.2
-#       xy_goal_tolerance: 0.25
-#       trans_stopped_velocity: 0.25
-#       short_circuit_trajectory_evaluation: False
+#       xy_goal_tolerance: 0.05
+#       yaw_goal_tolerance: 0.05
 #       stateful: True
-#       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist","Twirling"]
-#       # critics: ["GoalAlign", "PathAlign", "PathDist", "GoalDist","Twirling"]
-#       BaseObstacle.scale: 0.02
-#       PathAlign.scale: 32.0
-#       PathAlign.forward_point_distance: 0.1
-#       GoalAlign.scale: 32.0
-#       GoalAlign.forward_point_distance: 0.1
-#       PathDist.scale: 24.0
-#       GoalDist.scale: 24.0
-#       RotateToGoal.scale: 32.0
-#       RotateToGoal.slowing_factor: 1.0
-#       RotateToGoal.lookahead_time: -1.0
-#       #Twirling.scale: 0.5
+#     FollowPath:
+#       plugin: "neo_local_planner::NeoLocalPlanner"
+#       acc_lim_x : 0.25
+#       acc_lim_y : 0.25
+#       acc_lim_theta : 0.8
+#       max_vel_x : 0.8
+#       min_vel_x : -0.2
+#       max_vel_y : 0.5
+#       min_vel_y : -0.5
+#       max_rot_vel : 0.8
+#       min_rot_vel : -0.8
+#       max_trans_vel : 0.8
+#       min_trans_vel : 0.1
+#       yaw_goal_tolerance : 0.005
+#       xy_goal_tolerance : 0.01
+#       goal_tune_time : 0.5
+#       lookahead_time : 0.4
+#       lookahead_dist : 1.0
+#       start_yaw_error : 0.5
+#       pos_x_gain : 1.0
+#       pos_y_gain : 1.0
+#       static_yaw_gain : 3.0
+#       cost_x_gain : 0.1
+#       cost_y_gain : 0.1
+#       cost_y_lookahead_dist : 0.0
+#       cost_y_lookahead_time : 0.3
+#       cost_yaw_gain : 2.0
+#       low_pass_gain : 0.2
+#       max_cost : 0.95
+#       max_curve_vel : 0.4
+#       max_goal_dist : 0.5
+#       max_backup_dist : 0.0
+#       min_stop_dist : 0.2
+#       differential_drive : false
+#       allow_reversing: false
 
-# planner_server:
-#   ros__parameters:
-#     expected_planner_frequency: 20.0
-#     use_sim_time: True
-#     planner_plugins: ["GridBased"]
-#     GridBased:
-#       plugin: "nav2_smac_planner/SmacPlannerLattice"
-#       allow_unknown: true                 # Allow traveling in unknown space
-#       tolerance: 0.25                     # dist-to-goal heuristic cost (distance) for valid tolerance endpoints if exact goal cannot be found.
-#       max_iterations: 1000000             # Maximum total iterations to search for before failing (in case unreachable), set to -1 to disable
-#       max_on_approach_iterations: 1000    # Maximum number of iterations after within tolerances to continue to try to find exact solution
-#       max_planning_time: 5.0              # Max time in s for planner to plan, smooth
-#       analytic_expansion_ratio: 3.5       # The ratio to attempt analytic expansions during search for final approach.
-#       analytic_expansion_max_length: 3.0  # For Hybrid/Lattice nodes: The maximum length of the analytic expansion to be considered valid to prevent unsafe shortcutting
-#       reverse_penalty: 2.0                # Penalty to apply if motion is reversing, must be => 1
-#       change_penalty: 0.05                # Penalty to apply if motion is changing directions (L to R), must be >= 0
-#       non_straight_penalty: 1.05          # Penalty to apply if motion is non-straight, must be => 1
-#       cost_penalty: 2.0                   # Penalty to apply to higher cost areas when adding into the obstacle map dynamic programming distance expansion heuristic. This drives the robot more towards the center of passages. A value between 1.3 - 3.5 is reasonable.
-#       rotation_penalty: 5.0               # Penalty to apply to in-place rotations, if minimum control set contains them
-#       retrospective_penalty: 0.015
-#       lookup_table_size: 20.0             # Size of the dubin/reeds-sheep distance window to cache, in meters.
-#       cache_obstacle_heuristic: true     # Cache the obstacle map dynamic programming distance expansion heuristic between subsiquent replannings of the same goal location. Dramatically speeds up replanning performance (40x) if costmap is largely static.
-#       allow_reverse_expansion: true      # If true, allows the robot to use the primitives to expand in the mirrored opposite direction of the current robot's orientation (to reverse).
-#       smooth_path: True                   # If true, does a simple and quick smoothing post-processing to the path
-#       smoother:
-#         max_iterations: 1000
-#         w_smooth: 0.3
-#         w_data: 0.2
-#         tolerance: 1.0e-10
-#         do_refinement: true
-#         refinement_num: 2
 
 smoother_server:
   ros__parameters:

@@ -50,11 +50,14 @@ class transformComponent : public rclcpp::Node {
     if (!msg->detections.empty()) {
       std::string s_frame = msg->detections.begin()->pose.header.frame_id;
       try {
+        geometry_msgs::msg::TransformStamped transform =
+   tf_buffer_->lookupTransform(t_frame,
+                              s_frame,
+                              tf2::TimePointZero);
         for (auto object = msg->detections.begin();
                object != msg->detections.end(); object++) {
-            geometry_msgs::msg::PoseStamped transformed =
-                tf_buffer_->transform(object->pose, t_frame,tf2::durationFromSec(1));
-            object->set__pose(transformed);
+            tf2::doTransform<geometry_msgs::msg::PoseStamped>(object->pose, object->pose, transform);
+      
           }
       } catch (const tf2::TransformException &ex) {
         RCLCPP_INFO(this->get_logger(), "Could not transform %s to %s: %s",
