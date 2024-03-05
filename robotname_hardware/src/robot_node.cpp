@@ -134,9 +134,7 @@ recv_from_robot recv_data;
 
 robotNode::robotNode() : Node("robot_node") {
   /*IP Config*/
-  std::cout<<"sebelum timer"<<std::endl;
   n_udp.init();
-  std::cout<<"sesudah timer"<<std::endl;
   n_udp.setClient(IP_CLIENT, PORT);
   /*Start Timer*/ //std::chrono::microseconds)100
   udp_timer = this->create_wall_timer((std::chrono::milliseconds)1,
@@ -192,21 +190,22 @@ robotNode::robotNode() : Node("robot_node") {
  * timer di constructor class ini
  */
 int robotNode::udpLoop() {
+  //terima
   int ret = n_udp.receive();
-    // std::cout << ret << " OK!" << std::endl;
+  // std::cout<<ret<<std::endl;
   if (ret > 0) {  // jika tidak ada atau error, ret == -1
-    // RCLCPP_INFO(this->get_logger(), "OK");
+  
+    std::cout<<"loop udp"<<std::endl;
 
-    // Salin data dari array data yang diterima lewat udp ke data yang
-    // terstruktur
     memcpy((uint8_t *)&recv_data, n_udp.rx_buff, sizeof(recv_from_robot));
 
-    // Kirim balasan ke udp
     send_data.body_speed.x = 1;
     send_data.body_speed.y = 2;
+    send_data.body_speed.theta = 10;
     std::cout<<send_data.body_speed.x<<std::endl;
     std::cout<<send_data.body_speed.y<<std::endl;
 
+    //kirim
     n_udp.send((uint8_t *)&send_data, sizeof(send_to_robot));
 
     auto odom = nav_msgs::msg::Odometry();
@@ -346,8 +345,8 @@ void robotNode::robot_status_callback(const std_msgs::msg::Bool &msg) {
 //     send_data.reset_odom = (msg.data)?1:0;
 // }
 void robotNode::odomResetSub(
-    const std::shared_ptr<std_srvs::srv::Empty::Request> req,
-    std::shared_ptr<std_srvs::srv::Empty::Response> res) {
+  const std::shared_ptr<std_srvs::srv::Empty::Request> req,
+  std::shared_ptr<std_srvs::srv::Empty::Response> res) {
   req.get();
   res.get();
   send_data.reset_odom = 1;
