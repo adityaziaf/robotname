@@ -47,21 +47,11 @@ def generate_launch_description():
         output='screen'
     )
 
-    mpc = Node(
-        package='neo_mpc_planner2',
-        executable='mpc_optimization_server.py',
-        name='mpc_optimization_server',
-        parameters = [os.path.join(
-            get_package_share_directory('robotname_navigation'),'config'),'/mpc.yaml'],
-        output='screen'
-    )
-
     return LaunchDescription([
         DeclareLaunchArgument(name='use_sim_time', default_value='True',
                                             description='Flag to enable use_sim_time'),
         trans,
         nav_localization,
-        #mpc,
         nav_navigation
         
     ])

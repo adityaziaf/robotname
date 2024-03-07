@@ -40,21 +40,18 @@ class blobDetectorComponent : public rclcpp::Node {
     this->declare_parameter("minarea", 150.0);
     this->declare_parameter("mincircularity",0.8);
 
-    rclcpp::QoS qos(rclcpp::KeepLast(1), rmw_qos_profile_default);
+    //rclcpp::QoS qos(rclcpp::KeepLast(1), rmw_qos_profile_default);
 
-    rgb_subs.subscribe(this, "/color/image_raw", qos.get_rmw_qos_profile());
-    depth_subs.subscribe(this, "/aligned_depth_to_color/image_raw",
-                         qos.get_rmw_qos_profile());
-    rgb_cam_info_subs.subscribe(this, "/color/camera_info",
-                                qos.get_rmw_qos_profile());
+    rgb_subs.subscribe(this, "/camera/color/image_raw"/*,qos.get_rmw_qos_profile()*/);
+    depth_subs.subscribe(this, "/camera/aligned_depth_to_color/image_raw"/*,
+                         qos.get_rmw_qos_profile()*/);
+    rgb_cam_info_subs.subscribe(this, "/camera/color/camera_info"/*,
+                                qos.get_rmw_qos_profile()*/);
 
-    sync_policies = std::make_shared<message_filters::TimeSynchronizer<
-        sensor_msgs::msg::Image, sensor_msgs::msg::Image,
-        sensor_msgs::msg::CameraInfo>>(rgb_subs, depth_subs, rgb_cam_info_subs,
-                                       1);
-    sync_policies->registerCallback(&blobDetectorComponent::rgbd_callback,
-                                    this);
-
+    my_sync_ = std::make_shared<approximate_synchronizer>(approximate_policy(1),rgb_subs , depth_subs, rgb_cam_info_subs);
+    my_sync_->getPolicy()->setMaxIntervalDuration(rclcpp::Duration(1,0));
+    my_sync_->registerCallback(&blobDetectorComponent::rgbd_callback, this);
+    
     annotated_img_pub =
     this->create_publisher<sensor_msgs::msg::Image>("/annotated_img", 1);
     detection_pub = this->create_publisher<robotname_msgs::msg::DetectionArray>(
@@ -87,7 +84,6 @@ class blobDetectorComponent : public rclcpp::Node {
     /* try conversion type from ROS Image type to OpenCV Image type*/
     try {
         rgb_ptr = cv_bridge::toCvCopy(rgb_image, rgb_image->encoding);
-      //rgb_ptr = cv_bridge::toCvCopy(rgb_image, rgb_image->encoding);
       depth_ptr = cv_bridge::toCvCopy(depth_image, depth_image->encoding);
     } catch (cv_bridge::Exception &e) {
       RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
@@ -112,7 +108,7 @@ class blobDetectorComponent : public rclcpp::Node {
     cv::GaussianBlur(rgb_ptr->image, image_blurred_with_3x3_kernel, cv::Size(5, 5), 0);
 
     cv::Mat hsv;
-    cv::cvtColor(image_blurred_with_3x3_kernel, hsv, cv::COLOR_BGR2HSV);
+    cv::cvtColor(image_blurred_with_3x3_kernel, hsv, cv::COLOR_RGB2HSV);
 
     // Define the lower and upper bounds for the red color (you may need to
     // adjust these)
@@ -193,79 +189,6 @@ class blobDetectorComponent : public rclcpp::Node {
       //cv::circle(rgb_ptr->image,cv::Point(cx,cy),0.1,(0,255,0),1);
     } 
  
-    // Setup SimpleBlobDetector parameters
-    // cv::SimpleBlobDetector::Params params;
-
-    // // Change thresholds
-    // params.minThreshold = _minthreshold;
-    // params.maxThreshold = _maxthreshold;
-
-    // // Filter by Area.
-    // params.filterByArea = true;
-    // params.minArea = _minarea;  // Adjust this value based on the size of your red balls
-
-    // // Filter by Circularity
-    // params.filterByCircularity = true;
-    // params.minCircularity = _mincircularity;
-
-    // // Create a detector with the parameters
-    // cv::Ptr<cv::SimpleBlobDetector> detector =
-    //     cv::SimpleBlobDetector::create(params);
-
-    // Detect blobs
-    // std::vector<cv::KeyPoint> keypoints;
-    // detector->detect(mask, keypoints);
-
-    // for (const auto &keypoint : keypoints) {
-
-    //   cv::Point2d pixel;
-    //   cv::Point3d obj_coor;
-
-    //   robotname_msgs::msg::Detection object;
-
-    //   /* Get the center point of the bounding box*/
-    //   pixel.x = keypoint.pt.x;
-    //   pixel.y = keypoint.pt.y;
-
-    //   /* Two different Method can be used to obtain depth value from object
-    //    * 1. centroid z value
-    //           - Extract x,y centroid point
-    //           - Extract z centroid point
-    //   */
-    //   float depth_at =
-    //       0.001 * (depth_ptr->image.at<u_int16_t>(pixel.y, pixel.x));
-    //   // float depth_at = (depth_ptr->image.at<float>(pixel.y, pixel.x));
-    //   /*
-    //    * 2. Bounding Box z value
-    //           - Extract roi from object bbox
-    //           - Extract single median value from bbox
-    //   */
-    //   // cv::Mat roi = depth_ptr->image(element.box);
-    //   // float depth_at = 0.001 * calculateMedian(roi);
-
-    //   /* Use deproject from pixel to 3D coordinate*/
-    //   obj_coor = realsense_cam_model.projectPixelTo3dRay(pixel);
-
-    //   /* Pack information into vision msgs detections*/
-    //   object.pose.header.frame_id = rgb_ptr->header.frame_id;
-    //   object.pose.header.stamp = rgb_ptr->header.stamp;
-    //   object.classname = "redball";
-    //   object.score = 90; //#element.confidence;
-    //   // object.pose.pose.position.x = obj_coor.z * depth_at;
-    //   // object.pose.pose.position.y = -obj_coor.x * depth_at;
-    //   // object.pose.pose.position.z = -obj_coor.y * depth_at;
-    //   object.pose.pose.position.x = obj_coor.x * depth_at;
-    //   object.pose.pose.position.y = obj_coor.y * depth_at;
-    //   object.pose.pose.position.z = obj_coor.z * depth_at;
-    //   object.pose.pose.orientation.x = 0;
-    //   object.pose.pose.orientation.y = 0;
-    //   object.pose.pose.orientation.z = 0;
-    //   object.pose.pose.orientation.w = 1;
-
-    //   objects->detections.push_back(object);
-    // }
-    
-    // rgb_ptr->image = yolomodel->annotated_img(rgb_ptr->image, result);
     annotated_img_pub->publish(*rgb_ptr->toImageMsg());
     detection_pub->publish(std::move(objects));
   }
@@ -275,11 +198,14 @@ class blobDetectorComponent : public rclcpp::Node {
   message_filters::Subscriber<sensor_msgs::msg::CameraInfo> rgb_cam_info_subs;
 
   image_geometry::PinholeCameraModel realsense_cam_model;
-  std::shared_ptr<message_filters::TimeSynchronizer<
-      sensor_msgs::msg::Image, sensor_msgs::msg::Image,
-      sensor_msgs::msg::CameraInfo>>
-      sync_policies;
-  //std::shared_ptr<yolo::yolo> yolomodel;
+  // std::shared_ptr<message_filters::TimeSynchronizer<
+  //     sensor_msgs::msg::Image, sensor_msgs::msg::Image,
+  //     sensor_msgs::msg::CameraInfo>>
+  //     sync_policies;
+  //typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo> approximate_policy;
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo> approximate_policy;
+  typedef message_filters::Synchronizer<approximate_policy> approximate_synchronizer;
+  std::shared_ptr<approximate_synchronizer> my_sync_;
 
   rclcpp::Publisher<robotname_msgs::msg::DetectionArray>::SharedPtr
       detection_pub;

@@ -26,7 +26,7 @@ def generate_launch_description():
     
     localization = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('robotname_localization'),'launch'),'/ekf.launch.py']
+            get_package_share_directory('robotname_localization'),'launch'),'/rtabodom.launch.py']
         ),
         launch_arguments={
             'use_sim_time' : LaunchConfiguration('use_sim_time'
@@ -85,11 +85,11 @@ def generate_launch_description():
                                             description='Absolute path to rviz config file'),
         DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
-        hardware,
+        #hardware,
         perception,
         rviz_node,
-        localization,
+        #localization,
         odom_to_map,
-        nav_localization,
-        nav_navigation
+        #nav_localization,
+        #nav_navigation
     ])

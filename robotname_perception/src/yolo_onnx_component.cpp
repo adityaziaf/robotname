@@ -61,17 +61,27 @@ class yoloOnnxComponent : public rclcpp::Node {
 
     rclcpp::QoS qos(rclcpp::KeepLast(1), rmw_qos_profile_default);
 
-    rgb_subs.subscribe(this, "/color/image_raw", qos.get_rmw_qos_profile());
-    depth_subs.subscribe(this, "/aligned_depth_to_color/image_raw",
-                         qos.get_rmw_qos_profile());
-    rgb_cam_info_subs.subscribe(this, "/color/camera_info",
-                                qos.get_rmw_qos_profile());
+    // rgb_subs.subscribe(this, "/camera/color/image_raw", qos.get_rmw_qos_profile());
+    // depth_subs.subscribe(this, "/camera/aligned_depth_to_color/image_raw",
+    //                      qos.get_rmw_qos_profile());
+    // rgb_cam_info_subs.subscribe(this, "/camera/color/camera_info",
+    //                             qos.get_rmw_qos_profile());
 
-    sync_policies = std::make_shared<message_filters::TimeSynchronizer<
-        sensor_msgs::msg::Image, sensor_msgs::msg::Image,
-        sensor_msgs::msg::CameraInfo>>(rgb_subs, depth_subs, rgb_cam_info_subs,
-                                       1);
-    sync_policies->registerCallback(&yoloOnnxComponent::rgbd_callback, this);
+    // sync_policies = std::make_shared<message_filters::TimeSynchronizer<
+    //     sensor_msgs::msg::Image, sensor_msgs::msg::Image,
+    //     sensor_msgs::msg::CameraInfo>>(rgb_subs, depth_subs, rgb_cam_info_subs,
+    //                                    1);
+    // sync_policies->registerCallback(&yoloOnnxComponent::rgbd_callback, this);
+
+    rgb_subs.subscribe(this, "/camera/color/image_raw"/*,qos.get_rmw_qos_profile()*/);
+    depth_subs.subscribe(this, "/camera/aligned_depth_to_color/image_raw"/*,
+                         qos.get_rmw_qos_profile()*/);
+    rgb_cam_info_subs.subscribe(this, "/camera/color/camera_info"/*,
+                                qos.get_rmw_qos_profile()*/);
+
+    my_sync_ = std::make_shared<approximate_synchronizer>(approximate_policy(1),rgb_subs , depth_subs, rgb_cam_info_subs);
+    my_sync_->getPolicy()->setMaxIntervalDuration(rclcpp::Duration(1,0));
+    my_sync_->registerCallback(&yoloOnnxComponent::rgbd_callback, this);
 
     annotated_img_pub =
     this->create_publisher<sensor_msgs::msg::Image>("/annotated_img", 1);
@@ -186,10 +196,14 @@ class yoloOnnxComponent : public rclcpp::Node {
 
   std::unique_ptr<YOLODetector> net;
   image_geometry::PinholeCameraModel realsense_cam_model;
-  std::shared_ptr<message_filters::TimeSynchronizer<
-      sensor_msgs::msg::Image, sensor_msgs::msg::Image,
-      sensor_msgs::msg::CameraInfo>>
-      sync_policies;
+  // std::shared_ptr<message_filters::TimeSynchronizer<
+  //     sensor_msgs::msg::Image, sensor_msgs::msg::Image,
+  //     sensor_msgs::msg::CameraInfo>>
+  //     sync_policies;
+
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo> approximate_policy;
+  typedef message_filters::Synchronizer<approximate_policy> approximate_synchronizer;
+  std::shared_ptr<approximate_synchronizer> my_sync_;
 
   rclcpp::Publisher<robotname_msgs::msg::DetectionArray>::SharedPtr
       detection_pub;

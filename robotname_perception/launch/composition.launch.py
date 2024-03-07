@@ -20,13 +20,13 @@ realsense_node_params = [{'name': 'serial_no',              'default': "''", 'de
                          {'name': 'usb_port_id',            'default': "''", 'description': 'choose device by usb port id'},
                          {'name': 'device_type',            'default': "''", 'description': 'choose device by type'},
                          {'name': 'log_level',              'default': 'info', 'description': 'debug log level [DEBUG|INFO|WARN|ERROR|FATAL]'},
-                         {'name': 'rgb_camera.profile',     'default': '640,480,30', 'description': 'color image width'},
-                         {'name': 'depth_module.profile',   'default': '640,480,30', 'description': 'depth image width'},
+                         {'name': 'rgb_camera.profile',     'default': '640,480,60', 'description': 'color image width'},
+                         {'name': 'depth_module.profile',   'default': '640,480,60', 'description': 'depth image width'},
                          {'name': 'enable_color',           'default': 'true', 'description': 'enable color stream'},
                          {'name': 'enable_depth',           'default': 'true', 'description': 'enable depth stream'},
                          {'name': 'enable_infra',           'default': 'false', 'description': 'enable infra stream'},
-                         {'name': 'enable_infra1',          'default': 'false', 'description': 'enable infra1 stream'},
-                         {'name': 'enable_infra2',          'default': 'false', 'description': 'enable infra2 stream'},
+                         {'name': 'enable_infra1',          'default': 'true', 'description': 'enable infra1 stream'},
+                         {'name': 'enable_infra2',          'default': 'true', 'description': 'enable infra2 stream'},
                          {'name': 'enable_gyro',            'default': 'true', 'description': "enable gyro stream"},
                          {'name': 'enable_accel',           'default': 'true', 'description': "enable accel stream"},
                          {'name': 'unite_imu_method',       'default': "1", 'description': '[0-None, 1-copy, 2-linear_interpolation]'},
@@ -53,16 +53,17 @@ def generate_launch_description():
             package='rclcpp_components',
             executable='component_container',
             composable_node_descriptions=[
-                ComposableNode(
-                    package='realsense2_camera',
-                    plugin='realsense2_camera::RealSenseNodeFactory',
-                    name='camera',
-                    parameters=[set_configurable_parameters(realsense_node_params)],
-                    extra_arguments=[{'use_intra_process_comms': True}]
-                ),
+                # ComposableNode(
+                #     package='realsense2_camera',
+                #     plugin='realsense2_camera::RealSenseNodeFactory',
+                #     namespace='camera',
+                #     name='camera',
+                #     parameters=[set_configurable_parameters(realsense_node_params)],
+                #     extra_arguments=[{'use_intra_process_comms': False}]
+                # ),
                 ComposableNode(
                     package='robotname_perception',
-                    plugin='robotname_perception::yoloOnnxComponent',
+                    plugin='robotname_perception::blobDetectorComponent',
                     name='yolodetector',
                     extra_arguments=[{'use_intra_process_comms': True}]
                 ),

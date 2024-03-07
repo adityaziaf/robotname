@@ -403,6 +403,7 @@
     </inertial>
   </link>
   
+  <link name="camera_optical_link"></link>
   <joint
     name="camera_joint" type="fixed">
     <parent link="base_link" />
@@ -410,10 +411,18 @@
     <origin xyz="0.215 0 0.05" rpy="0 0 0" />
   </joint>
 
+  <joint
+    name="camera_joint_optic" type="fixed">
+    <parent link="camera_link" />
+    <child link="camera_optical_link" />
+    <origin xyz="0.215 0 0.05" rpy="${-pi/2} 0 ${-pi/2}" />
+  </joint>
+
   <gazebo reference="camera_link">
     <sensor name="depth_camera" type="depth">
+      <pose>0 0 0 0.0 0 0</pose>
       <visualize>false</visualize>
-      <update_rate>15.0</update_rate>
+      <update_rate>30.0</update_rate>
       <camera name="camera">
         <horizontal_fov>1.047198</horizontal_fov>
         <image>
@@ -423,23 +432,20 @@
         </image>
         <clip>
           <near>0.1</near>
-          <far>100</far>
+          <far>5.0</far>
         </clip>
         <depth_camera>
           <clip>
             <near>0.1</near>
-            <far>10</far>
+            <far>5.0</far>
           </clip>
         </depth_camera>
 
       </camera>
       <plugin name="depth_camera_controller" filename="libgazebo_ros_camera.so">
-        <baseline>0.0</baseline>
-        <alwaysOn>true</alwaysOn>
-        <updateRate>0.0</updateRate>
-        <frame_name>camera_link</frame_name>
         <pointCloudCutoff>0.1</pointCloudCutoff>
-        <pointCloudCutoffMax>10.0</pointCloudCutoffMax>
+        <pointCloudCutoffMax>5.0</pointCloudCutoffMax>
+        <frame_name>camera_optical_link</frame_name>
       </plugin>
     </sensor>
   </gazebo>
