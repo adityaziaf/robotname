@@ -29,6 +29,8 @@ struct BoxInfo {
   float y2;
   float score;
   int label;
+  float cx;
+  float cy;
 };
 
 class YOLODetector {
@@ -119,7 +121,7 @@ class YOLODetector {
           float ymax = cy + 0.5 * h;
 
           generatedBoxes.push_back(
-              BoxInfo{xmin, ymin, xmax, ymax, maxClassScore, maxInd}
+              BoxInfo{xmin, ymin, xmax, ymax, maxClassScore, maxInd, cx, cy}
           );
         }
       }

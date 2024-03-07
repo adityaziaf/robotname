@@ -33,7 +33,8 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time' : LaunchConfiguration('use_sim_time'
-            )
+            ),
+            'ekf_params_file' : 'ekf_sim.yaml'
         }.items()
     )
     

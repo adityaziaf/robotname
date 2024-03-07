@@ -52,6 +52,18 @@ install(TARGETS
 )
 ament_target_dependencies(autonomy_node_cpp ${TARGET_DEPENDS})
 target_link_libraries(autonomy_node_cpp ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
+
+add_executable(follow_node src/follow_node.cpp)
+install(TARGETS
+    follow_node
+    DESTINATION lib/${PROJECT_NAME}
+)
+ament_target_dependencies(follow_node
+  rclcpp
+  robotname_msgs
+  geometry_msgs
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

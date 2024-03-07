@@ -7,14 +7,14 @@ mpc_optimization_server:
     min_vel_y: -0.7
     min_vel_trans: -0.7
     min_vel_theta: -0.7
-    max_vel_x: 1.0
-    max_vel_y: 1.0
-    max_vel_trans: 1.0
+    max_vel_x: 0.7
+    max_vel_y: 0.7
+    max_vel_trans: 0.7
     max_vel_theta: 0.7
     # Translation error weight 
     w_trans: 0.82
     # Orientation error weight 
-    w_orient: 0.50 #0.50
+    w_orient: 0.50
     # Control error weight 
     w_control: 0.05
     # Terminal weight 

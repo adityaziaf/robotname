@@ -46,7 +46,8 @@ def generate_launch_description():
                        'behavior_server',
                        'bt_navigator',
                        'waypoint_follower',
-                       'velocity_smoother']
+                       'velocity_smoother'
+                       ]
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
@@ -120,6 +121,7 @@ def generate_launch_description():
                 parameters=[configured_params],
                 arguments=['--ros-args', '--log-level', log_level],
                 remappings=remappings + [('cmd_vel', 'cmd_vel_nav')]),
+                #remappings=remappings),
             Node(
                 package='nav2_smoother',
                 executable='smoother_server',
@@ -203,6 +205,7 @@ def generate_launch_description():
                 name='controller_server',
                 parameters=[configured_params],
                 remappings=remappings + [('cmd_vel', 'cmd_vel_nav')]),
+                #remappings=remappings),
             ComposableNode(
                 package='nav2_smoother',
                 plugin='nav2_smoother::SmootherServer',
