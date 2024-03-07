@@ -1,5 +1,0 @@
-float32 target_distance
----
-int32 error_code
----
-float32 remaining_distance

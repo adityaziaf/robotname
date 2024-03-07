@@ -18,58 +18,6 @@ find_package(geometry_msgs)
 find_package(rclcpp_action)
 find_package(rclcpp_components)
 
-
-
-add_library(straightlineplanner SHARED
-  src/straightLinePlanner.cpp)
-target_include_directories(straightlineplanner PRIVATE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-target_compile_definitions(straightlineplanner
-  PRIVATE "ROBOTNAME_NAVIGATION_CPP_BUILDING_DLL")
-ament_target_dependencies(straightlineplanner
-  "robotname_msgs"
-  "rclcpp"
-  "rclcpp_action"
-  "rclcpp_components"
-  "geometry_msgs"
-  "nav_msgs"
-  )
-rclcpp_components_register_node(straightlineplanner PLUGIN "robotname_navigation::NavigateActionServer" EXECUTABLE navigate_action_server)
-install(TARGETS
-  straightlineplanner
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin)
-
-add_library(navigate_action_client SHARED
-  src/straightlineclient.cpp)
-target_include_directories(navigate_action_client PRIVATE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-target_compile_definitions(navigate_action_client
-  PRIVATE "ROBOTNAME_NAVIGATION_CPP_BUILDING_DLL")
-ament_target_dependencies(navigate_action_client
-  "robotname_msgs"
-  "rclcpp"
-  "rclcpp_action"
-  "rclcpp_components")
-rclcpp_components_register_node(navigate_action_client PLUGIN "robotname_navigation::NavigateActionClient" EXECUTABLE action_client)
-install(TARGETS
-  navigate_action_client
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin)
-
-include_directories(include)
-
-add_executable(planner src/simpleplanner.cpp src/pid.cpp)
-ament_target_dependencies(planner rclcpp std_msgs geometry_msgs nav_msgs)
-
-install(TARGETS
-  planner
-  DESTINATION lib/${PROJECT_NAME})
-
 install(
   DIRECTORY maps launch config
   DESTINATION share/${PROJECT_NAME}
