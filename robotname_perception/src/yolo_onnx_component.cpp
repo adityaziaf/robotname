@@ -20,6 +20,17 @@
 #include "sensor_msgs/msg/image.hpp"
 #include "std_msgs/msg/string.hpp"
 
+#include "ament_index_cpp/get_package_share_directory.hpp"
+
+#include "tf2/LinearMath/Quaternion.h"
+#include "tf2/exceptions.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_broadcaster.h"
+#include "tf2_ros/transform_listener.h"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
+
 namespace robotname_perception {
 
 class yoloOnnxComponent : public rclcpp::Node {
@@ -38,15 +49,16 @@ class yoloOnnxComponent : public rclcpp::Node {
         "/home/ahmadjabar/yolov5/models/ilmiv2.onnx");
 
     double conftreshold, nmstreshold, scoretreshold;
-    std::string modelpath;
+  
     this->get_parameter("confidencetreshold", conftreshold);
     this->get_parameter("nmstreshold", nmstreshold);
     this->get_parameter("scoretreshold", scoretreshold);
-    this->get_parameter("modelpath", modelpath);
 
-    std::string classnames =
-        "/home/ahmadjabar/serius_ws/src/robotname/robotname_perception/config/"
-        "ball.names";
+    const std::string modelpath = 
+    ament_index_cpp::get_package_share_directory("robotname_perception") + "/config/ilmiv2.onnx";
+    const std::string classnames = 
+    ament_index_cpp::get_package_share_directory("robotname_perception") + "/config/ball.names";
+
     rclcpp::QoS qos(rclcpp::KeepLast(1), rmw_qos_profile_default);
 
     rgb_subs.subscribe(this, "/color/image_raw", qos.get_rmw_qos_profile());
@@ -61,12 +73,12 @@ class yoloOnnxComponent : public rclcpp::Node {
                                        1);
     sync_policies->registerCallback(&yoloOnnxComponent::rgbd_callback, this);
 
-    // annotated_img_pub =
-    // this->create_publisher<sensor_msgs::msg::Image>("/annotated_img", 1);
+    annotated_img_pub =
+    this->create_publisher<sensor_msgs::msg::Image>("/annotated_img", 1);
     detection_pub = this->create_publisher<robotname_msgs::msg::DetectionArray>(
         "/objects/raw", 1);
 
-    NetConfig DetectorConfig = {0.7, 0.5, modelpath, classnames};
+    NetConfig DetectorConfig = {0.5, 0.5, modelpath, classnames};
     net = std::make_unique<YOLODetector>(DetectorConfig);
   }
 
@@ -95,7 +107,7 @@ class yoloOnnxComponent : public rclcpp::Node {
 
     /* try conversion type from ROS Image type to OpenCV Image type*/
     try {
-      rgb_ptr = cv_bridge::toCvCopy(rgb_image, rgb_image->encoding);
+      rgb_ptr = cv_bridge::toCvCopy(rgb_image, sensor_msgs::image_encodings::BGR8);
       depth_ptr = cv_bridge::toCvCopy(depth_image, depth_image->encoding);
     } catch (cv_bridge::Exception &e) {
       RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
@@ -111,6 +123,9 @@ class yoloOnnxComponent : public rclcpp::Node {
 
     /* Run YOLO Inference */
     // std::vector<yolo::detection> result = yolomodel->detect(rgb_ptr->image);
+    // cv::Mat canvas(640, 640, CV_8UC3, cv::Scalar(255,255,255));
+    // // Overlay the smaller image onto the larger image
+    // rgb_ptr->image.copyTo(canvas(cv::Rect(0 , 0, rgb_ptr->image.cols, rgb_ptr->image.rows)));
     auto result = net->Detect(rgb_ptr->image);
 
     for (auto &element : result) {
@@ -120,8 +135,8 @@ class yoloOnnxComponent : public rclcpp::Node {
       robotname_msgs::msg::Detection object;
 
       /* Get the center point of the bounding box*/
-      pixel.x = element.x2 - element.x1 / 2;
-      pixel.y = element.y2 - element.y1 / 2;
+      pixel.x = element.cx;
+      pixel.y = element.cy;
 
       /* Two different Method can be used to obtain depth value from object
        * 1. centroid z value
@@ -157,39 +172,12 @@ class yoloOnnxComponent : public rclcpp::Node {
       object.pose.pose.orientation.y = 0;
       object.pose.pose.orientation.z = 0;
       object.pose.pose.orientation.w = 1;
-
       objects->detections.push_back(object);
     }
-
     // rgb_ptr->image = yolomodel->annotated_img(rgb_ptr->image, result);
-    // annotated_img_pub->publish(*rgb_ptr->toImageMsg());
+    net->DrawBoxes(rgb_ptr->image, result);
+    annotated_img_pub->publish(*rgb_ptr->toImageMsg());
     detection_pub->publish(std::move(objects));
-  }
-
-  float calculateMedian(cv::Mat &inputMat) {
-    // Convert the matrix to a 1D vector
-    std::vector<uint16_t> values;
-    if (inputMat.isContinuous()) {
-      values.assign(inputMat.datastart, inputMat.dataend);
-    } else {
-      for (int i = 0; i < inputMat.rows; ++i) {
-        values.insert(values.end(), inputMat.ptr<uint16_t>(i),
-                      inputMat.ptr<uint16_t>(i) + inputMat.cols);
-      }
-    }
-
-    // Sort the vector
-    std::sort(values.begin(), values.end());
-
-    // Calculate the median
-    size_t size = values.size();
-    if (size % 2 == 0) {
-      // If even number of elements, take the average of the two middle elements
-      return (values[size / 2 - 1] + values[size / 2]) / 2.0;
-    } else {
-      // If odd number of elements, return the middle element
-      return values[size / 2];
-    }
   }
 
   message_filters::Subscriber<sensor_msgs::msg::Image> rgb_subs;
@@ -205,7 +193,7 @@ class yoloOnnxComponent : public rclcpp::Node {
 
   rclcpp::Publisher<robotname_msgs::msg::DetectionArray>::SharedPtr
       detection_pub;
-  // rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr annotated_img_pub;
+  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr annotated_img_pub;
 };
 
 }  // namespace robotname_perception

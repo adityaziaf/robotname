@@ -123,6 +123,11 @@ ament_target_dependencies(yolo_onnx_component
   message_filters
   robotname_msgs
   image_geometry
+  ament_index_cpp
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+  geometry_msgs
 )
 
 target_link_libraries(yolo_onnx_component

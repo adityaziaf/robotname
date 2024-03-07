@@ -25,10 +25,19 @@ find_package(sensor_msgs REQUIRED)
 include_directories(include)
 
 add_executable(
+  joy_node
+  src/joy_node.cpp
+  include/robotname_hardware/remote-controller/ds4.h)
+
+ament_target_dependencies(joy_node rclcpp std_msgs sensor_msgs)
+
+add_executable(
   robot_node 
   src/robot_node.cpp 
   src/udp.cpp
+  
 )
+
 ament_target_dependencies(
   robot_node 
   rclcpp 
@@ -45,6 +54,7 @@ ament_target_dependencies(
 
 install(TARGETS
   robot_node
+  joy_node
   DESTINATION lib/${PROJECT_NAME})
 
 
