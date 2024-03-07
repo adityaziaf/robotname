@@ -21,7 +21,7 @@ int UDP::init() {
 
     ret = bind(socketID, (struct sockaddr*)&server_addr, sizeof(struct sockaddr_in));
 
-    if(ret < 0) {
+    if(ret < 0){
         std::cout << "UDP Bind failed. " << errno << " : " << strerror(errno) << std::endl;
         close(socketID);
         return 0;

@@ -1,4 +1,3 @@
-
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "sensor_msgs/msg/joy.hpp"
@@ -15,7 +14,7 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::Joy>::SharedPtr publisher;
     rclcpp::Subscription<sensor_msgs::msg::JoyFeedback>::SharedPtr subscriptor;
     rclcpp::TimerBase::SharedPtr timer;
-    Joystick joy = Joystick("/dev/input/js1");
+    Joystick joy = Joystick("/dev/input/js0");
     sensor_msgs::msg::Joy joy_msg = sensor_msgs::msg::Joy();
 
     void mainLoop_callback() {
@@ -42,7 +41,7 @@ private:
 
         this->publisher->publish(val);
     };
-
+ 
 public:
     JoyNode() : Node("joy_node") {
         // joy_msg.buttons.push_back(0);

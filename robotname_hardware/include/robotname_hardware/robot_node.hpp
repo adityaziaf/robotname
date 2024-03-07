@@ -25,6 +25,7 @@
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "sensor_msgs/msg/imu.hpp"
+// #include "sensor_msgs/msg/joy.hpp"
 
 class robotNode : public rclcpp::Node { 
 public:
@@ -52,6 +53,7 @@ private:
     //Subscription topic status robot, apakah robot dalam kondisi run atau idle
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr run_status_sub;
 
+    // rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
     // rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr seedling_sub;
 
     /* Publisher */
