@@ -28,8 +28,10 @@ def generate_launch_description():
           'Rtabmap/DetectionRate' : '5'
           }]
 
+    # remappings=[
+    #       ('scan_cloud', '/depth_camera/points')]
     remappings=[
-          ('scan_cloud', '/depth_camera/points')]
+          ('scan_cloud', '/camera/depth/color/points')]
 
     return LaunchDescription([
 

@@ -15,13 +15,20 @@ from launch_ros.actions import Node
 def generate_launch_description():
     pkg_share = get_package_share_directory('robotname_bringup')
 
+    slamtool = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('robotname_localization'),'launch'),'/online_async_slam.launch.py']
+        )
+    )
+
     nav_localization = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('robotname_navigation'),'launch'),'/localization.launch.py']
         ),
         launch_arguments={
             'use_sim_time' : LaunchConfiguration('use_sim_time'),
-            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapkuh_sim.yaml')]
+            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapku2.yaml')],
+            'params_file': [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params_sim.yaml')]
         }.items()
     )
 
@@ -47,11 +54,13 @@ def generate_launch_description():
         output='screen'
     )
 
+
     return LaunchDescription([
         DeclareLaunchArgument(name='use_sim_time', default_value='True',
                                             description='Flag to enable use_sim_time'),
         trans,
         nav_localization,
+        #slamtool,
         nav_navigation
         
     ])

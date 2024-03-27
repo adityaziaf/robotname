@@ -11,6 +11,29 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+find_package(rclcpp REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(message_filters REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+add_executable(
+  filterlidar
+  src/filterlidar.cpp)
+
+ament_target_dependencies(filterlidar 
+rclcpp 
+sensor_msgs 
+nav_msgs 
+message_filters
+tf2
+tf2_geometry_msgs
+)
+
+install(TARGETS
+  filterlidar
+  DESTINATION lib/${PROJECT_NAME})
+
 install(
   DIRECTORY launch config 
   DESTINATION share/${PROJECT_NAME}

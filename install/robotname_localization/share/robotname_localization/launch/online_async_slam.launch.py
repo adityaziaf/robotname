@@ -1,1 +1,0 @@
-/home/itsrobocon2/robot_ws/src/robotname/robotname_localization/launch/online_async_slam.launch.py

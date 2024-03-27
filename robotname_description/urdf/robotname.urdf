@@ -310,8 +310,9 @@
 
       <!-- output -->
       <publish_odom>true</publish_odom>
-      <publish_odom_tf>false</publish_odom_tf>
+      <publish_odom_tf>true</publish_odom_tf>
       <publish_wheel_tf>true</publish_wheel_tf>
+      <update_rate>40.0</update_rate>
 
       <odometry_frame>odom</odometry_frame>
       <robot_base_frame>base_link</robot_base_frame>
@@ -351,7 +352,7 @@
     <sensor name="lidar" type="ray">
       <always_on>true</always_on>
       <visualize>true</visualize>
-      <update_rate>10</update_rate>
+      <update_rate>40</update_rate>
       <ray>
         <scan>
           <horizontal>

@@ -49,7 +49,7 @@ def generate_launch_description():
     """Generate launch description with multiple components."""
     container = ComposableNodeContainer(
             name='my_container',
-            namespace='',
+            namespace='camera',
             package='rclcpp_components',
             executable='component_container',
             composable_node_descriptions=[
@@ -59,11 +59,11 @@ def generate_launch_description():
                 #     namespace='camera',
                 #     name='camera',
                 #     parameters=[set_configurable_parameters(realsense_node_params)],
-                #     extra_arguments=[{'use_intra_process_comms': False}]
+                #     extra_arguments=[{'use_intra_process_comms': True}]
                 # ),
                 ComposableNode(
                     package='robotname_perception',
-                    plugin='robotname_perception::blobDetectorComponent',
+                    plugin='robotname_perception::yoloOnnxComponent',
                     name='yolodetector',
                     extra_arguments=[{'use_intra_process_comms': True}]
                 ),
@@ -103,6 +103,6 @@ def generate_launch_description():
 
     return LaunchDescription(declare_configurable_parameters(realsense_node_params) + [
             container,
-            camera_to_baselink
+            #camera_to_baselink
             #tracker
     ])

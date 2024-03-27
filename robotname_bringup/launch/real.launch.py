@@ -60,6 +60,18 @@ def generate_launch_description():
         output='screen'
     )
     
+    odom_offset = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_transform_node',
+        arguments=[
+                '0.25', '0', '0',  # Translation (x, y, z)
+                '0', '0', '0', '1',  # Rotation (Quaternion: x, y, z, w)
+                'base_odom', 'base_link'  # Parent and child frame IDs
+            ],
+        output='screen'
+    )
+
     nav_localization = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('robotname_navigation'),'launch'),'/localization.launch.py']
@@ -85,11 +97,12 @@ def generate_launch_description():
                                             description='Absolute path to rviz config file'),
         DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
-        #hardware,
-        perception,
+        hardware,
+        #perception,
         rviz_node,
         #localization,
+        odom_offset,
         odom_to_map,
-        #nav_localization,
-        #nav_navigation
+        nav_localization,
+        nav_navigation
     ])

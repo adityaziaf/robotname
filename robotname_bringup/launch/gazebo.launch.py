@@ -16,7 +16,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     pkg_share = get_package_share_directory('robotname_bringup')
     
-    default_model_path = os.path.join(get_package_share_directory('robotname_description'), 'urdf/robotname.urdf')
+    default_model_path = os.path.join(get_package_share_directory('robotname_description'), 'urdf/robotomni.urdf')
     default_rviz_config_path = os.path.join(pkg_share, 'rviz/navigation.rviz')
     world_path=os.path.join(get_package_share_directory('robotname_gazebo'), 'worlds/my_world.sdf'),
 

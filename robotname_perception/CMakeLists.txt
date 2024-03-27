@@ -149,6 +149,8 @@ ament_python_install_package(${PROJECT_NAME})
 # Install Python executables
 install(PROGRAMS
   scripts/tracking_component.py
+  scripts/ball_detection.py
+  scripts/slowdown.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

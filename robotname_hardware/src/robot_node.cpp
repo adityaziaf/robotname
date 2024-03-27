@@ -14,6 +14,23 @@ UDP n_udp(IP_SERVER, PORT);
 // using namespace std::chrono_literals;
 
 #define NUM_SWERVE 3
+#define BTN_X 1
+#define BTN_O 2
+#define BTN_SQ 8
+#define BTN_TR 4
+#define BTN_R1 32
+#define BTN_R3 4096
+#define BTN_L1 16
+#define BTN_L3 2048
+#define BTN_RIGHT 65536
+#define BTN_UP 8192
+#define BTN_LEFT 32768
+#define BTN_DOWN 16384
+#define BTN_R2 128
+#define BTN_L2 64
+#define BTN_SHARE 256
+#define BTN_OPT 512
+#define BTN_PS 1024
 
 // struct send_to_robot{
 //     uint32_t timestamp;
@@ -98,6 +115,12 @@ struct send_to_robot {
       // uint8_t gripper_claw : 1;
     };
     uint32_t flag;
+    
+  struct{
+	  float speed_drib;
+	  float target_lift;
+  }ball_drib;
+  
   };
 };
 
@@ -163,6 +186,8 @@ robotNode::robotNode() : Node("robot_node") {
       "cmd_vel", 10,
       std::bind(&robotNode::speedSub, this, std::placeholders::_1));
 
+  joy_sub = this->create_subscription<sensor_msgs::msg::Joy>(
+    "joy",10,std::bind(&robotNode::joy_callback,this,std::placeholders::_1));
   /* Subscriber */
 
   // run_status_sub          = this->create_subscription<std_msgs::msg::Bool> (
@@ -185,6 +210,78 @@ robotNode::robotNode() : Node("robot_node") {
   tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 }
 
+void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
+    auto axes = msg.axes;
+    auto buttons = msg.buttons;
+    float analog[6];
+    int button_t;
+
+    std::cout << "Axes: ";
+    int8_t i = 0;
+    for (auto axis : axes) {
+        analog[i] = axis;
+        i++;
+        std::cout << axis << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Buttons: ";
+    for (auto button : buttons) {
+        std::cout << button << " ";
+        button_t = button;
+    }
+    std::cout << std::endl;
+
+    float analog_lx = analog[0];
+    float analog_ly = analog[1];
+    float analog_rx = analog[3];
+    float analog_ry = analog[4];
+    float l2 = analog[2];
+    float r2 = analog[5]; 
+    float target_x = analog_lx;
+    float target_y = -analog_ly;
+    float target_theta = analog_rx;
+
+    std::cout<<"analog_lx: "<< analog[0]<<std::endl;
+    std::cout<<"analog_ly: "<< analog[1]<<std::endl;
+    std::cout<<"analog_l2: "<< analog[2]<<std::endl;
+    std::cout<<"analog_rx: "<< analog[3]<<std::endl;
+    std::cout<<"analog_ry: "<< analog[4]<<std::endl;
+    std::cout<<"analog_r2: "<< analog[5]<<std::endl;
+
+    if(target_x < 0.3 && target_x > -0.3)target_x = 0;
+	  if(target_y < 0.3 && target_y > -0.3)target_y = 0;
+	  if(target_theta < 0.2 && target_theta > -0.2)target_theta = 0;
+
+    float factor = 2 + 2 * (r2 - l2);
+    target_x *= factor;
+    target_y *= factor;
+    target_theta *= factor;
+
+    send_data.body_speed.x = target_x;
+    send_data.body_speed.y = target_y;
+    send_data.body_speed.theta = target_theta;
+
+    std::cout<<target_x<<std::endl;
+    std::cout<<target_y<<std::endl;
+    std::cout<<target_theta<<std::endl;
+
+    if(button_t == BTN_X)send_data.ball_drib.speed_drib+=0.2;
+    else if(button_t == BTN_O)send_data.ball_drib.speed_drib-=0.2;
+    if(send_data.ball_drib.speed_drib > 3)send_data.ball_drib.speed_drib = 3;
+    else if(send_data.ball_drib.speed_drib < 0)send_data.ball_drib.speed_drib = 0;
+
+    if(button_t == BTN_UP)send_data.ball_drib.target_lift+=0.2;
+    else if(button_t == BTN_DOWN)send_data.ball_drib.target_lift-=0.2;
+    if(send_data.ball_drib.target_lift > 2.5)send_data.ball_drib.target_lift = 2.5;
+    else if(send_data.ball_drib.target_lift < 0)send_data.ball_drib.target_lift = 0;
+
+    std::cout<<"target drib: "<<send_data.ball_drib.speed_drib<<std::endl;
+    std::cout<<"target lift: "<<send_data.ball_drib.target_lift<<std::endl;
+
+  joy_status = 1;
+}
+
 /**
  * Fungsi ini akan terpanggil setiap 10us, sesuai dengan settingan variabel
  * timer di constructor class ini
@@ -195,15 +292,15 @@ int robotNode::udpLoop() {
   // std::cout<<ret<<std::endl;
   if (ret > 0) {  // jika tidak ada atau error, ret == -1
   
-    std::cout<<"loop udp"<<std::endl;
+    //std::cout<<"loop udp"<<std::endl;
 
     memcpy((uint8_t *)&recv_data, n_udp.rx_buff, sizeof(recv_from_robot));
 
-    send_data.body_speed.x = 1;
-    send_data.body_speed.y = 2;
-    send_data.body_speed.theta = 10;
-    std::cout<<send_data.body_speed.x<<std::endl;
-    std::cout<<send_data.body_speed.y<<std::endl;
+    // send_data.body_speed.x = 1;
+    // send_data.body_speed.y = 2;
+    // send_data.body_speed.theta = 10;
+    // std::cout<<send_data.body_speed.x<<std::endl;
+    // std::cout<<send_data.body_speed.y<<std::endl;
 
     //kirim
     n_udp.send((uint8_t *)&send_data, sizeof(send_to_robot));
@@ -211,7 +308,7 @@ int robotNode::udpLoop() {
     auto odom = nav_msgs::msg::Odometry();
 
     odom.header.frame_id = "odom";
-    odom.child_frame_id = "base_link";
+    odom.child_frame_id = "base_odom";
     odom.header.stamp = this->get_clock()->now();
 
     auto q = tf2::Quaternion();
@@ -266,19 +363,19 @@ int robotNode::udpLoop() {
     imu.linear_acceleration_covariance[4] = 0.01;
     imu.linear_acceleration_covariance[8] = 0.01;
 
-    // geometry_msgs::msg::TransformStamped t;
-    // t.set__header(odom.header);
-    // t.set__child_frame_id(odom.child_frame_id);
-    // t.transform.translation.x = recv_data.g_position.x;
-    // t.transform.translation.y = recv_data.g_position.y;
-    // t.transform.translation.z = 0;
-    // t.transform.set__rotation(tf2::toMsg(q));
+    geometry_msgs::msg::TransformStamped t;
+    t.set__header(odom.header);
+    t.set__child_frame_id(odom.child_frame_id);
+    t.transform.translation.x = recv_data.g_position.x;
+    t.transform.translation.y = recv_data.g_position.y;
+    t.transform.translation.z = 0;
+    t.transform.set__rotation(tf2::toMsg(q));
 
-    // tf_broadcaster_->sendTransform(t);
+    tf_broadcaster_->sendTransform(t);
     imu_pub->publish(imu);
     odometry_pub->publish(odom);
   }
-  return 0;
+  //return 0;
 }
 
 /**
@@ -311,9 +408,12 @@ int robotNode::flagSub(const std_msgs::msg::UInt32 &msg) {
  * vector
  */
 int robotNode::speedSub(const geometry_msgs::msg::Twist &msg) {
-  send_data.body_speed.x = msg.linear.x;
-  send_data.body_speed.y = msg.linear.y;
-  send_data.body_speed.theta = msg.angular.z;
+  // need adjustment
+  if (!joy_status){
+      send_data.body_speed.x = -msg.linear.y;
+      send_data.body_speed.y = msg.linear.x;
+       send_data.body_speed.theta = -msg.angular.z;
+  }
   std::cout<<msg.linear.x<<std::endl;
   std::cout<<msg.linear.y<<std::endl;
   std::cout<<msg.angular.z<<std::endl;

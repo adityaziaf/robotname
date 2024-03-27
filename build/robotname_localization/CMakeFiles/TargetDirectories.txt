@@ -1,9 +1,0 @@
-/home/itsrobocon2/robot_ws/src/robotname/build/robotname_localization/CMakeFiles/uninstall.dir
-/home/itsrobocon2/robot_ws/src/robotname/build/robotname_localization/CMakeFiles/robotname_localization_uninstall.dir
-/home/itsrobocon2/robot_ws/src/robotname/build/robotname_localization/CMakeFiles/test.dir
-/home/itsrobocon2/robot_ws/src/robotname/build/robotname_localization/CMakeFiles/edit_cache.dir
-/home/itsrobocon2/robot_ws/src/robotname/build/robotname_localization/CMakeFiles/rebuild_cache.dir
-/home/itsrobocon2/robot_ws/src/robotname/build/robotname_localization/CMakeFiles/list_install_components.dir
-/home/itsrobocon2/robot_ws/src/robotname/build/robotname_localization/CMakeFiles/install.dir
-/home/itsrobocon2/robot_ws/src/robotname/build/robotname_localization/CMakeFiles/install/local.dir
-/home/itsrobocon2/robot_ws/src/robotname/build/robotname_localization/CMakeFiles/install/strip.dir

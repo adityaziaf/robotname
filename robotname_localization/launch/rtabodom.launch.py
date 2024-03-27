@@ -16,45 +16,35 @@ import os
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
-    # parameters=[{
-    #       'frame_id':'base_link',
-    #       'subscribe_stereo':True,
-    #       'subscribe_odom_info':True,
-    #       'wait_imu_to_init':True}]
-
-    # remappings=[
-    #       ('imu', '/imu/data'),
-    #       ('left/image_rect', '/camera/infra1/image_rect_raw'),
-    #       ('left/camera_info', '/camera/infra1/camera_info'),
-    #       ('right/image_rect', '/camera/infra2/image_rect_raw'),
-    #       ('right/camera_info', '/camera/infra2/camera_info')]
-    
     parameters=[{
           'frame_id':'base_link',
-          'subscribe_depth':True,
-          'subscribe_odom_info':True,
-          'approx_sync':False,
+          'subscribe_stereo':True,
+          'subscribe_odom_info':False,
           'wait_imu_to_init':True,
-          
-        #   'Reg/Strategy':'1',
-        #   'Reg/Force3DoF':'true',
-        #   'RGBD/NeighborLinkRefining':'True',
-        #   'Grid/RangeMin':'0.2', # ignore laser scan points on the robot itself
-        #   'Optimizer/GravitySigma':'0' # Disable imu constraints (we are already in 2D)
-
-        'Icp/VoxelSize': '0.05',
-        'Icp/PointToPlaneRadius': '0.0',
-        'Icp/PointToPlaneK': '20.0',
-        'Icp/CorrespondenceRatio': '0.2',
-        'Icp/PMOutlierRatio': '0.65',
-        'Icp/Epsilon': '0.005', 
-        'Icp/PointToPlaneMinComplexity': '0', 
-        'Odom/ScanKeyFrameThr': '0.7', 
-        'OdomF2M/ScanMaxSize': '15000',
-        'Optimizer/GravitySigma': '0.3', 
-        'RGBD/ProximityPathMaxNeighbors': '1', 
-        'Reg/Strategy': '1'
+          'Odom/Strategy':'1',
+          'Vis/CorType':'1',
+          'Odom/ResetCountdown':'1',
+          'initial_pose' : "0.0 0.0 0.0 0.0 0. 0.0"
           }]
+
+    remappings=[
+          ('imu', '/imu/data'),
+          ('left/image_rect', '/camera/infra1/image_rect_raw'),
+          ('left/camera_info', '/camera/infra1/camera_info'),
+          ('right/image_rect', '/camera/infra2/image_rect_raw'),
+          ('right/camera_info', '/camera/infra2/camera_info')]
+    
+    # parameters=[{
+    #       'frame_id':'base_link',
+    #       'subscribe_depth':True,
+    #       'subscribe_odom_info':False,
+    #       'approx_sync':True,
+    #       'wait_imu_to_init':True,
+
+    #       'Odom/Strategy':'0',
+    #       'Vis/CorType':'1',
+    #       'Odom/ResetCountdown':'1'
+    #       }]
 
     # remappings=[
     #       ('imu', '/imu/data'),
@@ -62,9 +52,9 @@ def generate_launch_description():
     #       ('rgb/camera_info', '/camera/color/camera_info'),
     #       ('depth/image', '/camera/aligned_depth_to_color/image_raw')]
     
-    remappings=[
-                ("scan_cloud", "/camera/depth/color/points"),
-                ("imu", "/imu/data")]
+    # remappings=[
+    #             ("scan_cloud", "/camera/depth/color/points"),
+    #             ("imu", "/imu/data")]
     
     return LaunchDescription([
 
@@ -80,15 +70,17 @@ def generate_launch_description():
             'rgb_camera.profile' : '640,480,60',
             'depth_module.profile' : '640,480,60',
             'align_depth.enable' : 'true',
-            'enable_infra1' : 'false',
-            'enable_infra2':'false',
+            'enable_infra1' : 'true',
+            'enable_infra2':'true',
             'depth_module.emitter_enabled' : '1',
             'pointcloud.enable':'true',
             'gyro_fps' : '200',
-            'accel_fps': '250'
+            'accel_fps': '250',
+            'config_file': [os.path.join(get_package_share_directory('robotname_perception'),'config/realsense.json')]
         }.items(),
         
         ),
+            
         Node(
             package='imu_filter_madgwick', executable='imu_filter_madgwick_node', output='screen',
             parameters=[{'use_mag': False, 
@@ -99,44 +91,32 @@ def generate_launch_description():
 
         # Nodes to launch       
         Node(
-            package='rtabmap_odom', executable='icp_odometry', output='screen',
+            package='rtabmap_odom', executable='stereo_odometry', output='screen',
             parameters=parameters,
             remappings=remappings),
+        
+        Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_transform_node',
+        arguments=[
+                '0.12', '0', '0.42',  # Translation (x, y, z)
+                #'0', '0', '0', '1',  # Rotation (Quaternion: x, y, z, w)
+                '0','0.35','0',
+                'base_link', 'camera_link'  # Parent and child frame IDs
+            ],
+        output='screen'
+        ),
 
-        # Node(
-        #     package='rtabmap_slam', executable='rtabmap', output='screen',
-        #     parameters=parameters,
-        #     remappings=remappings,
-        #     arguments=['-d']),
-
-        # Node(
-        #     package='rtabmap_viz', executable='rtabmap_viz', output='screen',
-        #     parameters=parameters,
-        #     remappings=remappings),
-        
-        # Because of this issue: https://github.com/IntelRealSense/realsense-ros/issues/2564
-        # Generate point cloud from not aligned depth
-        # Node(
-        #     package='rtabmap_util', executable='point_cloud_xyz', output='screen',
-        #     parameters=[{'approx_sync':False}],
-        #     remappings=[('depth/image',       '/camera/depth/image_rect_raw'),
-        #                 ('depth/camera_info', '/camera/depth/camera_info'),
-        #                 ('cloud',             '/camera/cloud_from_depth')]),
-        
-        # # Generate aligned depth to color camera from the point cloud above       
-        # Node(
-        #     package='rtabmap_util', executable='pointcloud_to_depthimage', output='screen',
-        #     parameters=[{ 'decimation':2,
-        #                   'fixed_frame_id':'camera_link',
-        #                   'fill_holes_size':1}],
-        #     remappings=[('camera_info', '/camera/color/camera_info'),
-        #                 ('cloud',       '/camera/cloud_from_depth'),
-        #                 ('image_raw',   '/camera/realigned_depth_to_color/image_raw')]),
-        
-        # Compute quaternion of the IMU
-        
-        # The IMU frame is missing in TF tree, add it:
-        # Node(
-        #     package='tf2_ros', executable='static_transform_publisher', output='screen',
-        #     arguments=['0', '0', '0', '0', '0', '0', 'camera_gyro_optical_frame', 'camera_imu_optical_frame']),
+        Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_transform_node',
+        arguments=[
+                '0.0', '0', '0.0',  # Translation (x, y, z)
+                '0', '0', '0', '1',  # Rotation (Quaternion: x, y, z, w)
+                'map', 'odom'  # Parent and child frame IDs
+            ],
+        output='screen'
+        )
     ])
