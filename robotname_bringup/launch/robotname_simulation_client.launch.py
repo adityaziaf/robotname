@@ -27,7 +27,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time' : LaunchConfiguration('use_sim_time'),
-            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapku2.yaml')],
+            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapku3.yaml')],
             'params_file': [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params_sim.yaml')]
         }.items()
     )
@@ -56,11 +56,11 @@ def generate_launch_description():
 
 
     return LaunchDescription([
-        DeclareLaunchArgument(name='use_sim_time', default_value='True',
+        DeclareLaunchArgument(name='use_sim_time', default_value='true',
                                             description='Flag to enable use_sim_time'),
-        trans,
+        #trans,
         nav_localization,
-        #slamtool,
+        #slamtool
         nav_navigation
         
     ])

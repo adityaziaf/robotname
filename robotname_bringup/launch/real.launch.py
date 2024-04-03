@@ -24,15 +24,6 @@ def generate_launch_description():
         output='screen'
     )
     
-    localization = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('robotname_localization'),'launch'),'/rtabodom.launch.py']
-        ),
-        launch_arguments={
-            'use_sim_time' : LaunchConfiguration('use_sim_time'
-            )
-        }.items()
-    )
     
     perception = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
@@ -78,7 +69,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time' : LaunchConfiguration('use_sim_time'),
-            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapkuh.yaml')]
+            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapku2.yaml')]
         }.items()
     )
     
@@ -100,7 +91,6 @@ def generate_launch_description():
         hardware,
         #perception,
         rviz_node,
-        #localization,
         odom_offset,
         odom_to_map,
         nav_localization,

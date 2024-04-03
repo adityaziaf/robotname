@@ -52,20 +52,21 @@ def generate_launch_description():
                                             description='Absolute path to robot urdf file'),
         DeclareLaunchArgument(name='use_sim_time', default_value='True',
                                             description='Flag to enable use_sim_time'),
-        DeclareLaunchArgument(name='x', default_value='5.5',
+        DeclareLaunchArgument(name='x', default_value='0', #5.5
                                             description='x spawn coordinate'),
-        DeclareLaunchArgument(name='y', default_value='5.7',
+        DeclareLaunchArgument(name='y', default_value='0', #5.7
                                             description='y spawn coordinate'),
-        DeclareLaunchArgument(name='z', default_value='0.15',
+        DeclareLaunchArgument(name='z', default_value='0.15', #0.15
                                             description='z spawn coordinate'),
         DeclareLaunchArgument(name='R', default_value='0',
                                             description='R spawn coordinate'),
         DeclareLaunchArgument(name='P', default_value='0',
                                             description='P spawn coordinate'),
-        DeclareLaunchArgument(name='Y', default_value='-1.57',
+        DeclareLaunchArgument(name='Y', default_value='0', #-1.57
                                             description='Y spawn coordinate'),
         
         ExecuteProcess(cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_init.so', '-s', 'libgazebo_ros_factory.so',world_path], output='screen'),
+        #ExecuteProcess(cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_init.so', '-s', 'libgazebo_ros_factory.so'], output='screen')
         joint_state_publisher_node,
         robot_state_publisher_node,
         spawn_entity,

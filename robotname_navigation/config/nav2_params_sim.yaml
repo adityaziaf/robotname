@@ -10,34 +10,40 @@ amcl:
     beam_skip_distance: 0.5
     beam_skip_error_threshold: 0.9
     beam_skip_threshold: 0.3
-    do_beamskip: false
+    do_beamskip: true
     global_frame_id: "map"
     lambda_short: 0.1
     laser_likelihood_max_dist: 2.0
-    laser_max_range: 10.0
+    laser_max_range: 6.5
     laser_min_range: -1.0
-    laser_model_type: "likelihood_field"
+    laser_model_type: "beam"
     max_beams: 60
-    max_particles: 2000
+    max_particles: 5000
     min_particles: 500
     odom_frame_id: "odom"
     pf_err: 0.05
     pf_z: 0.99
-    recovery_alpha_fast: 0.0
-    recovery_alpha_slow: 0.0
+    recovery_alpha_fast: 0.01
+    recovery_alpha_slow: 0.01
     resample_interval: 1
     robot_model_type: "nav2_amcl::OmniMotionModel"
     save_pose_rate: 0.5
     sigma_hit: 0.2
     tf_broadcast: true
-    transform_tolerance: 1.0
-    update_min_a: 0.2
-    update_min_d: 0.25
+    transform_tolerance: 0.1
+    update_min_a: 0.1 #radoam
+    update_min_d: 0.1 #meter
     z_hit: 0.5
     z_max: 0.05
     z_rand: 0.5
     z_short: 0.05
     scan_topic: scan
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      yaw: 0.0
 
 global_costmap:
   global_costmap:
@@ -200,18 +206,18 @@ controller_server:
     FollowPath:
 
       plugin: "nav2_omni_pure_pursuit_controller::OmniPurePursuitController"
-      translation_kp : 5.0 # dimensionless
+      translation_kp : 3.0 # dimensionless
       translation_ki : 0.2 # dimensionless
       translation_kd : 0.0 # dimensionless
       rotation_kp : 3.0 #dimensionless
       rotation_ki : 0.1 #dimensionless
       rotation_kd : 0.0 #dimensionless
-      lookahead_distance : 0.3 #meter
+      lookahead_distance : 0.4 #meter
       adaptive_lookahead_distance : false
-      adaptive_min_speed_lookahead : 0.2 #meter
+      adaptive_min_speed_lookahead : 0.1 #meter
       adaptive_max_speed_lookahead : 1.0 #meter
       adaptive_gain_lookahead : 1.0 #dimensionless
-      circle_interpolation : true
+      circle_interpolation : false
       rotate_to_heading : false 
       rotate_to_heading_treshold : 0.1 #rad/s
       min_rotation_speed : -3.0 # m/s

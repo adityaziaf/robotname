@@ -228,7 +228,7 @@
     <include>
       <static>1</static>
       <name>lapangan</name>
-      <pose> 0 0 0 0 0 0</pose>
+      <pose> 5.5 5.5 0 0 0 1.57</pose>
       <uri>model://lapangan</uri>
     </include>
     

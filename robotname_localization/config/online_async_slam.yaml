@@ -15,14 +15,14 @@ slam_toolbox:
     base_frame: base_link
     scan_topic: /scan
     use_map_saver: true
-    #mode: mapping
-    mode: localization 
+    mode: mapping
+    #mode: localization 
 
     # if you'd like to immediately start continuing a map at a given pose
     # or at the dock, but they are mutually exclusive, if pose is given
     # will use pose
-    map_file_name: /home/itsrobocon2/robot_ws/src/robotname/robotname_navigation/maps/mapku1
-    map_start_at_dock: true
+    #map_file_name: /home/itsrobocon2/robot_ws/src/robotname/robotname_navigation/maps/mapku1
+    #map_start_at_dock: true
 
     debug_logging: false
     throttle_scans: 1
@@ -37,7 +37,7 @@ slam_toolbox:
     enable_interactive_mode: true
 
     # General Parameters
-    use_scan_matching: true
+    use_scan_matching: false
     use_scan_barycenter: true
     position_covariance_scale: 10000000000.0
     minimum_travel_distance: 0.5

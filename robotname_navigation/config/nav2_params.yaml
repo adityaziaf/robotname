@@ -159,13 +159,13 @@ controller_server:
     FollowPath:
     
       plugin: "nav2_omni_pure_pursuit_controller::OmniPurePursuitController"
-      translation_kp : 8.0 # dimensionless
+      translation_kp : 12.0 # dimensionless
       translation_ki : 0.2 # dimensionless
       translation_kd : 0.0 # dimensionless
-      rotation_kp : 6.0 #dimensionless
-      rotation_ki : 0.3 #dimensionless
-      rotation_kd : 0.0 #dimensionless
-      lookahead_distance : 0.3 #meter
+      rotation_kp : 12.0 #dimensionless
+      rotation_ki : 0.5 #dimensionless
+      rotation_kd : 0.1 #dimensionless
+      lookahead_distance : 0.4 #meter
       adaptive_lookahead_distance : false
       adaptive_min_speed_lookahead : 0.2 #meter
       adaptive_max_speed_lookahead : 1.0 #meter
@@ -173,10 +173,10 @@ controller_server:
       circle_interpolation : false
       rotate_to_heading : false 
       rotate_to_heading_treshold : 0.1 #rad/s
-      min_rotation_speed : -3.0 # m/s
-      max_rotation_speed : 3.0 # m/s
-      min_translation_speed : -3.0
-      max_translation_speed : 3.0
+      min_rotation_speed : -6.0 # m/s
+      max_rotation_speed : 6.0 # m/s
+      min_translation_speed : -5.0
+      max_translation_speed : 5.0
       # translation_kp : 2.0 # dimensionless
       # translation_ki : 0.1 # dimensionless
       # translation_kd : 0.0 # dimensionless
@@ -206,16 +206,6 @@ planner_server:
       plugin: "nav2_straightline_planner/StraightLine"
       interpolation_resolution: 0.05
 
-smoother_server:
-  ros__parameters:
-    use_sim_time: False
-    smoother_plugins: ["simple_smoother"]
-    simple_smoother:
-      plugin: "nav2_smoother::SimpleSmoother"
-      tolerance: 1.0e-10
-      max_its: 1000
-      do_refinement: True
-
 behavior_server:
   ros__parameters:
     costmap_topic: /local_costmap/costmap_raw
@@ -240,29 +230,3 @@ behavior_server:
     max_rotational_vel: 6.0
     min_rotational_vel: 0.4
     rotational_acc_lim: 6.0
-
-waypoint_follower:
-  ros__parameters:
-    use_sim_time: False
-    loop_rate: 20
-    stop_on_failure: false
-    waypoint_task_executor_plugin: "wait_at_waypoint"
-    wait_at_waypoint:
-      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
-      enabled: True
-      waypoint_pause_duration: 200
-
-velocity_smoother:
-  ros__parameters:
-    use_sim_time: False
-    smoothing_frequency: 100.0
-    scale_velocities: False
-    feedback: "OPEN_LOOP"
-    max_velocity: [3.0, 3.0, 5.0]
-    min_velocity: [-3.0, -3.0, -5.0]
-    max_accel: [3.0, 3.0, 5.0]
-    max_decel: [-3.0, -3.0, -5.0]
-    odom_topic: "/odom"
-    odom_duration: 0.1
-    deadband_velocity: [0.0, 0.0, 0.0]
-    velocity_timeout: 1.0

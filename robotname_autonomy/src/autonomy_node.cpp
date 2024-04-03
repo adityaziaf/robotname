@@ -13,18 +13,16 @@
 #include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include "yaml-cpp/yaml.h"
 
-#include "robotname_autonomy/find_object.hpp"
-#include "robotname_autonomy/go_to_pose.hpp"
+#include "robotname_autonomy/plugins/go_through_poses.hpp"
+#include "robotname_autonomy/plugins/go_to_pose.hpp"
+#include "robotname_autonomy/plugins/set_locations.hpp"
 
 using namespace std::chrono_literals;
 
 const std::string default_bt_xml_file = 
-    ament_index_cpp::get_package_share_directory("robotname_autonomy") + "/bt_xml/findobject.xml";
-// const std::string tb3_worlds_share_dir = 
-//     ament_index_cpp::get_package_share_directory("robotname_gazebo") + "worlds";
-// const std::string default_location_file =
-//     tb3_worlds_share_dir + "/maps/sim_house_locations.yaml";
-
+    ament_index_cpp::get_package_share_directory("robotname_autonomy") + "/bt_xml/robotmove.xml";
+const std::string default_location_file =
+    ament_index_cpp::get_package_share_directory("robotname_autonomy") + "/config/locations.yaml";
 
 class AutonomyNode : public rclcpp::Node {
     public:
@@ -40,6 +38,8 @@ class AutonomyNode : public rclcpp::Node {
             // Declare and get the other node parameters.
             this->declare_parameter<std::string>("tree_xml_file", default_bt_xml_file);
             tree_xml_file_ = this->get_parameter("tree_xml_file").as_string();
+
+            
             // this->declare_parameter<std::string>("target_color", "");
             // target_color_ = this->get_parameter("target_color").as_string();
             // if (target_color_ != "") {
@@ -65,16 +65,15 @@ class AutonomyNode : public rclcpp::Node {
         void create_behavior_tree() {
             // Build a behavior tree from XML and set it up for logging
             BT::BehaviorTreeFactory factory;
-            // factory.registerNodeType<SetLocations>("SetLocations");
-            // factory.registerNodeType<GetLocationFromQueue>("GetLocationFromQueue");
-            // factory.registerNodeType<GoToPose>("GoToPose", shared_from_this());
-            factory.registerNodeType<findObject>("FindObject", shared_from_this());
-            //factory.registerNodeType<goToPose>("GoToPose", shared_from_this());
+            //factory.registerNodeType<SetLocations>("SetLocations");
+            factory.registerNodeType<GoToPose>("GoToPose", shared_from_this());
+            factory.registerNodeType<GoThroughPoses>("GoThroughPoses", shared_from_this());
+            //factory.registerNodeType<findObject>("FindObject", shared_from_this());
             
-            // auto blackboard = BT::Blackboard::create();
-            //blackboard->set<std::string>("location_file", location_file_);
-            // tree_ = factory.createTreeFromFile(tree_xml_file_, blackboard);
-            tree_ = factory.createTreeFromFile(tree_xml_file_);
+            auto blackboard = BT::Blackboard::create();
+            blackboard->set<std::string>("location_file", location_file_);
+            tree_ = factory.createTreeFromFile(tree_xml_file_, blackboard);
+
             // Set up tree logging to monitor the tree in Groot2.
             // Default ports (1666/1667) are used by the Nav2 behavior tree, so we use another port.
             // NOTE: You must have the PRO version of Groot2 to view live tree updates.
@@ -91,6 +90,7 @@ class AutonomyNode : public rclcpp::Node {
             if (tree_status == BT::NodeStatus::SUCCESS) {
                 RCLCPP_INFO(this->get_logger(), "Finished with status SUCCESS");
                 timer_->cancel();
+
             } else if (tree_status == BT::NodeStatus::FAILURE) {
                 RCLCPP_INFO(this->get_logger(), "Finished with status FAILURE");
                 timer_->cancel();
