@@ -32,16 +32,18 @@ UDP n_udp(IP_SERVER, PORT);
 #define BTN_OPT 512
 #define BTN_PS 1024
 
-#define LIFT_SPEED_UP
-#define LIFT_SPEED_DOWN
-#define LIFT_OFF
-#define DRIB_SPEED_UP
-#define DRIB_SPEED_DOWN
-#define DRIB_OFF
+#define LIFT_SPEED_UP 33 //R1+X
+#define LIFT_SPEED_DOWN 34 //R1+O
+#define LIFT_OFF 18 //L1+O
+#define DRIB_SPEED_UP 40 //R1+KOTAK
+#define DRIB_SPEED_DOWN 36 //R1+SGTIGA
+#define DRIB_OFF 20 //L1+sgt
 
 #define LIFT_MAX_SPEED 3
 #define DRIB_MAX_SPEED 3
 
+uint8_t drib_flag = 0;
+uint8_t lift_flag = 0;
 // struct send_to_robot{
 //     uint32_t timestamp;
 
@@ -90,8 +92,8 @@ UDP n_udp(IP_SERVER, PORT);
 //     struct {
 //         float r;
 //         float theta;
-//     } swerve[NUM_SWERVE];
-//     float swerve_drive_current[NUM_SWERVE];
+//     } swerve[NUM_SWERVE];t
+//     float swerve_drive_current[NUM_SWERVE];uint8_t drib_flag = 0;
 
 //     int16_t lifter_pos;
 //     int16_t feeder_pos;
@@ -125,13 +127,12 @@ struct send_to_robot {
       // uint8_t gripper_claw : 1;
     };
     uint32_t flag;
-    
-  struct{
-	  float drib_speed;
-	  float lift_speed;
-  }ball_drib;
-  
   };
+
+  struct{
+	  float lift_speed;
+    float drib_speed;
+  }ball_drib;
 };
 
 struct recv_from_robot {
@@ -270,7 +271,6 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     std::cout<<target_theta<<std::endl;
 
     //mekanisme dribble
-    static uint8_t drib_flag = 0;
     if((button_t == DRIB_SPEED_UP) && (drib_flag == 0)){
       send_data.ball_drib.drib_speed+=0.2;
       drib_flag = 1;
@@ -279,24 +279,25 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
       send_data.ball_drib.drib_speed-=0.2;
       drib_flag = 1;
     }
-    else drib_flag = 0;
+    else if(button_t == DRIB_OFF)send_data.ball_drib.drib_speed = 0;
+    else if ((button_t != DRIB_SPEED_DOWN) && (button_t != DRIB_SPEED_UP) && (drib_flag == 1))drib_flag=0 ;
 
-    static uint8_t lift_flag = 0;
     if((button_t == LIFT_SPEED_UP) && (lift_flag == 0)){
-      send_data.ball_drib.lift_speed+=0.2;
+      send_data.ball_drib.lift_speed+=1.0;
       lift_flag = 1;
     }
     else if((button_t == LIFT_SPEED_DOWN) && (lift_flag == 0)){
-      send_data.ball_drib.lift_speed-=0.2;
+      send_data.ball_drib.lift_speed-=1.0;
       lift_flag = 1;
     }
-    else lift_flag = 0;
+    else if(button_t == LIFT_OFF)send_data.ball_drib.lift_speed = 0;
+    else if((button_t != LIFT_SPEED_DOWN) && (button_t != LIFT_SPEED_UP) && (lift_flag == 1))lift_flag = 0;
 
     if(send_data.ball_drib.drib_speed > DRIB_MAX_SPEED)send_data.ball_drib.drib_speed = DRIB_MAX_SPEED;
     else if(send_data.ball_drib.drib_speed < 0)send_data.ball_drib.drib_speed = 0;
 
-    if(button_t == BTN_UP)send_data.ball_drib.lift_speed+=0.2;
-    else if(button_t == BTN_DOWN)send_data.ball_drib.lift_speed-=0.2;
+    // if(button_t == BTN_UP)send_data.ball_drib.lift_speed+=0.2;
+    // else if(button_t == BTN_DOWN)send_data.ball_drib.lift_speed-=0.2;
     if(send_data.ball_drib.lift_speed > LIFT_MAX_SPEED)send_data.ball_drib.lift_speed = LIFT_MAX_SPEED;
     else if(send_data.ball_drib.lift_speed < 0)send_data.ball_drib.lift_speed = 0;
 

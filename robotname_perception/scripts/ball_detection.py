@@ -138,7 +138,7 @@ def main(args=None):
 
     cv2.namedWindow("Image")
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
 
     # Check if video capture object is opened successfully
     if not cap.isOpened():
