@@ -32,6 +32,18 @@ UDP n_udp(IP_SERVER, PORT);
 #define BTN_OPT 512
 #define BTN_PS 1024
 
+#define LIFT_SPEED_UP 33 //R1+X
+#define LIFT_SPEED_DOWN 34 //R1+O
+#define LIFT_OFF 18 //L1+O
+#define DRIB_SPEED_UP 40 //R1+KOTAK
+#define DRIB_SPEED_DOWN 36 //R1+SGTIGA
+#define DRIB_OFF 20 //L1+sgt
+
+#define LIFT_MAX_SPEED 3
+#define DRIB_MAX_SPEED 3
+
+uint8_t drib_flag = 0;
+uint8_t lift_flag = 0;
 // struct send_to_robot{
 //     uint32_t timestamp;
 
@@ -80,8 +92,8 @@ UDP n_udp(IP_SERVER, PORT);
 //     struct {
 //         float r;
 //         float theta;
-//     } swerve[NUM_SWERVE];
-//     float swerve_drive_current[NUM_SWERVE];
+//     } swerve[NUM_SWERVE];t
+//     float swerve_drive_current[NUM_SWERVE];uint8_t drib_flag = 0;
 
 //     int16_t lifter_pos;
 //     int16_t feeder_pos;
@@ -115,13 +127,12 @@ struct send_to_robot {
       // uint8_t gripper_claw : 1;
     };
     uint32_t flag;
-    
-  struct{
-	  float speed_drib;
-	  float target_lift;
-  }ball_drib;
-  
   };
+
+  struct{
+	  float lift_speed;
+    float drib_speed;
+  }ball_drib;
 };
 
 struct recv_from_robot {
@@ -242,13 +253,6 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     float target_y = -analog_ly;
     float target_theta = analog_rx;
 
-    std::cout<<"analog_lx: "<< analog[0]<<std::endl;
-    std::cout<<"analog_ly: "<< analog[1]<<std::endl;
-    std::cout<<"analog_l2: "<< analog[2]<<std::endl;
-    std::cout<<"analog_rx: "<< analog[3]<<std::endl;
-    std::cout<<"analog_ry: "<< analog[4]<<std::endl;
-    std::cout<<"analog_r2: "<< analog[5]<<std::endl;
-
     if(target_x < 0.3 && target_x > -0.3)target_x = 0;
 	  if(target_y < 0.3 && target_y > -0.3)target_y = 0;
 	  if(target_theta < 0.2 && target_theta > -0.2)target_theta = 0;
@@ -266,18 +270,39 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     std::cout<<target_y<<std::endl;
     std::cout<<target_theta<<std::endl;
 
-    if(button_t == BTN_X)send_data.ball_drib.speed_drib+=0.2;
-    else if(button_t == BTN_O)send_data.ball_drib.speed_drib-=0.2;
-    if(send_data.ball_drib.speed_drib > 3)send_data.ball_drib.speed_drib = 3;
-    else if(send_data.ball_drib.speed_drib < 0)send_data.ball_drib.speed_drib = 0;
+    //mekanisme dribble
+    if((button_t == DRIB_SPEED_UP) && (drib_flag == 0)){
+      send_data.ball_drib.drib_speed+=0.2;
+      drib_flag = 1;
+    }
+    else if((button_t == DRIB_SPEED_DOWN) && (drib_flag == 0)){
+      send_data.ball_drib.drib_speed-=0.2;
+      drib_flag = 1;
+    }
+    else if(button_t == DRIB_OFF)send_data.ball_drib.drib_speed = 0;
+    else if ((button_t != DRIB_SPEED_DOWN) && (button_t != DRIB_SPEED_UP) && (drib_flag == 1))drib_flag=0 ;
 
-    if(button_t == BTN_UP)send_data.ball_drib.target_lift+=0.2;
-    else if(button_t == BTN_DOWN)send_data.ball_drib.target_lift-=0.2;
-    if(send_data.ball_drib.target_lift > 2.5)send_data.ball_drib.target_lift = 2.5;
-    else if(send_data.ball_drib.target_lift < 0)send_data.ball_drib.target_lift = 0;
+    if((button_t == LIFT_SPEED_UP) && (lift_flag == 0)){
+      send_data.ball_drib.lift_speed+=1.0;
+      lift_flag = 1;
+    }
+    else if((button_t == LIFT_SPEED_DOWN) && (lift_flag == 0)){
+      send_data.ball_drib.lift_speed-=1.0;
+      lift_flag = 1;
+    }
+    else if(button_t == LIFT_OFF)send_data.ball_drib.lift_speed = 0;
+    else if((button_t != LIFT_SPEED_DOWN) && (button_t != LIFT_SPEED_UP) && (lift_flag == 1))lift_flag = 0;
 
-    std::cout<<"target drib: "<<send_data.ball_drib.speed_drib<<std::endl;
-    std::cout<<"target lift: "<<send_data.ball_drib.target_lift<<std::endl;
+    if(send_data.ball_drib.drib_speed > DRIB_MAX_SPEED)send_data.ball_drib.drib_speed = DRIB_MAX_SPEED;
+    else if(send_data.ball_drib.drib_speed < 0)send_data.ball_drib.drib_speed = 0;
+
+    // if(button_t == BTN_UP)send_data.ball_drib.lift_speed+=0.2;
+    // else if(button_t == BTN_DOWN)send_data.ball_drib.lift_speed-=0.2;
+    if(send_data.ball_drib.lift_speed > LIFT_MAX_SPEED)send_data.ball_drib.lift_speed = LIFT_MAX_SPEED;
+    else if(send_data.ball_drib.lift_speed < 0)send_data.ball_drib.lift_speed = 0;
+
+    std::cout<<"target drib: "<<send_data.ball_drib.drib_speed<<std::endl;
+    std::cout<<"target lift: "<<send_data.ball_drib.lift_speed<<std::endl;
 
   joy_status = 1;
 }
