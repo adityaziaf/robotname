@@ -16,7 +16,8 @@ def generate_launch_description():
     pkg_share = get_package_share_directory('robotname_bringup')
     
     default_rviz_config_path = os.path.join(pkg_share, 'rviz/navigation.rviz')
-
+    default_model_path = os.path.join(get_package_share_directory('robotname_description'), 'urdf/realomni.urdf')
+    
     hardware = Node(
         package='robotname_hardware',
         executable='robot_node',
@@ -24,7 +25,19 @@ def generate_launch_description():
         output='screen'
     )
     
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        parameters=[{'robot_description': Command(['xacro ', LaunchConfiguration('model')])}]
+    )
     
+    joint_state_publisher_node = Node(
+        package='joint_state_publisher',
+        executable='joint_state_publisher',
+        name='joint_state_publisher',
+        arguments=[default_model_path]
+    )
+
     perception = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('robotname_perception'),'launch'),'/composition.launch.py']
@@ -47,18 +60,6 @@ def generate_launch_description():
                 '0', '0', '0',  # Translation (x, y, z)
                 '0', '0', '0', '1',  # Rotation (Quaternion: x, y, z, w)
                 'map', 'odom'  # Parent and child frame IDs
-            ],
-        output='screen'
-    )
-    
-    odom_offset = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_transform_node',
-        arguments=[
-                '0.25', '0', '0',  # Translation (x, y, z)
-                '0', '0', '0', '1',  # Rotation (Quaternion: x, y, z, w)
-                'base_odom', 'base_link'  # Parent and child frame IDs
             ],
         output='screen'
     )
@@ -89,10 +90,11 @@ def generate_launch_description():
         DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
         hardware,
+        robot_state_publisher_node,
+        joint_state_publisher_node,
         #perception,
         rviz_node,
-        odom_offset,
         odom_to_map,
-        nav_localization,
-        nav_navigation
+        #nav_localization,
+        #nav_navigation
     ])

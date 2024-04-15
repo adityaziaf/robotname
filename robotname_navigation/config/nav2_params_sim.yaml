@@ -31,7 +31,7 @@ amcl:
     sigma_hit: 0.2
     tf_broadcast: true
     transform_tolerance: 0.1
-    update_min_a: 0.1 #radoam
+    update_min_a: 0.1 #radian
     update_min_d: 0.1 #meter
     z_hit: 0.5
     z_max: 0.05
