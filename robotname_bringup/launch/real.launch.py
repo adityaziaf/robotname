@@ -15,8 +15,17 @@ from launch_ros.actions import Node
 def generate_launch_description():
     pkg_share = get_package_share_directory('robotname_bringup')
     
-    default_rviz_config_path = os.path.join(pkg_share, 'rviz/navigation.rviz')
-    default_model_path = os.path.join(get_package_share_directory('robotname_description'), 'urdf/realomni.urdf')
+    default_rviz_config_path = os.path.join(pkg_share, 'rviz/localization.rviz')
+
+    default_model_path = os.path.join(
+        get_package_share_directory('robotname_description'), 
+        'urdf/realomni.urdf'
+        )
+    lidarconfig = os.path.join(
+      get_package_share_directory('robotname_localization'),
+      'config',
+      'lidarserial.yaml'
+      )
     
     hardware = Node(
         package='robotname_hardware',
@@ -25,10 +34,19 @@ def generate_launch_description():
         output='screen'
     )
     
+    lidar = Node(
+        package='urg_node',
+        executable='urg_node_driver',
+        name='urg_node',
+        output='screen',
+        parameters=[lidarconfig]
+        
+    )
+
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        parameters=[{'robot_description': Command(['xacro ', LaunchConfiguration('model')])}]
+        parameters=[{'robot_description': Command(['xacro ', default_model_path])}]
     )
     
     joint_state_publisher_node = Node(
@@ -70,7 +88,8 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time' : LaunchConfiguration('use_sim_time'),
-            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapku2.yaml')]
+            'params_file' : [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params.yaml')],
+            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapku3.yaml')]
         }.items()
     )
     
@@ -90,11 +109,12 @@ def generate_launch_description():
         DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
         hardware,
+        #lidar,
         robot_state_publisher_node,
         joint_state_publisher_node,
         #perception,
         rviz_node,
         odom_to_map,
-        #nav_localization,
-        #nav_navigation
+        nav_localization,
+        nav_navigation
     ])

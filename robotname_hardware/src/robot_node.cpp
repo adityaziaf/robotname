@@ -44,73 +44,6 @@ UDP n_udp(IP_SERVER, PORT);
 
 uint8_t drib_flag = 0;
 uint8_t lift_flag = 0;
-// struct send_to_robot{
-//     uint32_t timestamp;
-
-//     struct {
-//         float r;
-//         float theta;
-//     } swerve_speed[NUM_SWERVE];
-
-//     float lift_speed;
-//     float feeder_speed;
-//     float shooter_speed;
-
-//     float roller_speed_upper;
-//     float roller_speed_lower;
-
-//     struct {
-//         float x;
-//         float y;
-//         float theta;
-//     } body_speed;
-
-//     union {
-//         struct {
-//             uint8_t reset_odom  : 1;
-//         };
-//         uint32_t flag;
-//     };
-// };
-
-// struct recv_from_robot{
-//     uint32_t timestamp;
-
-//     struct {
-//         int32_t x;
-//         int32_t y;
-//         float theta;
-//     } g_position;
-
-//     struct {
-//         float x;
-//         float y;
-//         float theta;
-//     } body_speed;
-
-// 	//Swerve
-//     struct {
-//         float r;
-//         float theta;
-//     } swerve[NUM_SWERVE];t
-//     float swerve_drive_current[NUM_SWERVE];uint8_t drib_flag = 0;
-
-//     int16_t lifter_pos;
-//     int16_t feeder_pos;
-//     int16_t shooter_pos;
-
-//     union {
-//     	struct {
-//     		uint8_t lifter_sensor	: 1;
-
-//         	uint8_t ring_sensor		: 1;
-//     	};
-//     	uint16_t sensor_status;
-//     };
-
-//     float v_bat;
-//     uint32_t global_flag;
-// };
 
 struct send_to_robot {
   uint32_t timestamp;
@@ -124,7 +57,6 @@ struct send_to_robot {
   union {
     struct {
       uint8_t reset_odom : 1;
-      // uint8_t gripper_claw : 1;
     };
     uint32_t flag;
   };
@@ -199,6 +131,10 @@ robotNode::robotNode() : Node("robot_node") {
 
   joy_sub = this->create_subscription<sensor_msgs::msg::Joy>(
     "joy",10,std::bind(&robotNode::joy_callback,this,std::placeholders::_1));
+
+  mekanism_sub = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+    "set_mekanism",10,std::bind(&robotNode::set_mekanism,this,std::placeholders::_1));
+
   /* Subscriber */
 
   // run_status_sub          = this->create_subscription<std_msgs::msg::Bool> (
@@ -221,6 +157,12 @@ robotNode::robotNode() : Node("robot_node") {
   tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 }
 
+void robotNode::set_mekanism(const std_msgs::msg::Float32MultiArray &msg)
+{
+  send_data.ball_drib.drib_speed = msg.data.at(1);
+  send_data.ball_drib.lift_speed = msg.data.at(0);
+
+}
 void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     auto axes = msg.axes;
     auto buttons = msg.buttons;
@@ -262,6 +204,7 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     target_y *= factor;
     target_theta *= factor;
 
+    
     send_data.body_speed.x = target_x;
     send_data.body_speed.y = target_y;
     send_data.body_speed.theta = target_theta;
@@ -340,8 +283,8 @@ int robotNode::udpLoop() {
     q.setRPY(0, 0, recv_data.g_position.theta);
     auto pose = geometry_msgs::msg::Pose();
     pose.orientation = tf2::toMsg(q);
-    pose.position.x = recv_data.g_position.x;
-    pose.position.y = recv_data.g_position.y;
+    pose.position.x = -recv_data.g_position.x;
+    pose.position.y = -recv_data.g_position.y;
     pose.position.z = 0;
 
     odom.pose.pose = pose;
@@ -391,8 +334,8 @@ int robotNode::udpLoop() {
     geometry_msgs::msg::TransformStamped t;
     t.set__header(odom.header);
     t.set__child_frame_id(odom.child_frame_id);
-    t.transform.translation.x = recv_data.g_position.x;
-    t.transform.translation.y = recv_data.g_position.y;
+    t.transform.translation.x = pose.position.x;
+    t.transform.translation.y = pose.position.y;
     t.transform.translation.z = 0;
     t.transform.set__rotation(tf2::toMsg(q));
 

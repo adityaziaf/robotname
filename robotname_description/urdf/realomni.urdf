@@ -8,8 +8,8 @@
     <link name="base_footprint"></link>
 
     <joint name="base_joint" type="fixed">
-        <parent link="base_footprint"/>
-        <child link="base_link" />
+        <parent link="base_link"/>
+        <child link="base_footprint" />
         <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
     </joint>
     
@@ -19,9 +19,9 @@
     
   <joint name="odom_joint"
     type="fixed">
-    <parent link="base_link" />
-    <child link="base_odom" />
-    <origin xyz="-0.25 0 0" />
+    <parent link="base_odom" />
+    <child link="base_link" />
+    <origin xyz="0.28 0 0" />
   </joint>
 
 
@@ -33,6 +33,6 @@
     name="lidar_joint" type="fixed">
     <parent link="base_link" />
     <child link="laser" />
-    <origin xyz="-0.30 0.10 0" rpy="3.14 0 2.6172" />
+    <origin xyz="-0.40 0.20 0" rpy="0 0 2.0944" />
   </joint>
 </robot>

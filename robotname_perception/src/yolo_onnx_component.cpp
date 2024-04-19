@@ -46,7 +46,7 @@ class yoloOnnxComponent : public rclcpp::Node {
     this->declare_parameter("scoretreshold", 0.8);
     this->declare_parameter(
         "modelpath",
-        "/home/ahmadjabar/yolov5/models/ilmiv2.onnx");
+        "/home/ahmadjabar/yolov5/models/omni.onnx");
 
     double conftreshold, nmstreshold, scoretreshold;
   
@@ -55,40 +55,31 @@ class yoloOnnxComponent : public rclcpp::Node {
     this->get_parameter("scoretreshold", scoretreshold);
 
     const std::string modelpath = 
-    ament_index_cpp::get_package_share_directory("robotname_perception") + "/config/ilmiv2.onnx";
+    ament_index_cpp::get_package_share_directory("robotname_perception") + "/config/omni.onnx";
     const std::string classnames = 
     ament_index_cpp::get_package_share_directory("robotname_perception") + "/config/ball.names";
 
-    rclcpp::QoS qos(rclcpp::KeepLast(1), rmw_qos_profile_default);
+    // rclcpp::QoS qos(rclcpp::KeepLast(1), rmw_qos_profile_default);
 
-    // rgb_subs.subscribe(this, "/camera/color/image_raw", qos.get_rmw_qos_profile());
-    // depth_subs.subscribe(this, "/camera/aligned_depth_to_color/image_raw",
-    //                      qos.get_rmw_qos_profile());
-    // rgb_cam_info_subs.subscribe(this, "/camera/color/camera_info",
-    //                             qos.get_rmw_qos_profile());
+    // rgb_subs.subscribe(this, "/camera/color/image_raw"/*,qos.get_rmw_qos_profile()*/);
+    // depth_subs.subscribe(this, "/camera/aligned_depth_to_color/image_raw"/*,
+    //                      qos.get_rmw_qos_profile()*/);
+    // rgb_cam_info_subs.subscribe(this, "/camera/color/camera_info"/*,
+    //                             qos.get_rmw_qos_profile()*/);
 
-    // sync_policies = std::make_shared<message_filters::TimeSynchronizer<
-    //     sensor_msgs::msg::Image, sensor_msgs::msg::Image,
-    //     sensor_msgs::msg::CameraInfo>>(rgb_subs, depth_subs, rgb_cam_info_subs,
-    //                                    1);
-    // sync_policies->registerCallback(&yoloOnnxComponent::rgbd_callback, this);
+    // my_sync_ = std::make_shared<approximate_synchronizer>(approximate_policy(1),rgb_subs , depth_subs, rgb_cam_info_subs);
+    // my_sync_->getPolicy()->setMaxIntervalDuration(rclcpp::Duration(1,0));
+    // my_sync_->registerCallback(&yoloOnnxComponent::rgbd_callback, this);
 
-    rgb_subs.subscribe(this, "/camera/color/image_raw"/*,qos.get_rmw_qos_profile()*/);
-    depth_subs.subscribe(this, "/camera/aligned_depth_to_color/image_raw"/*,
-                         qos.get_rmw_qos_profile()*/);
-    rgb_cam_info_subs.subscribe(this, "/camera/color/camera_info"/*,
-                                qos.get_rmw_qos_profile()*/);
-
-    my_sync_ = std::make_shared<approximate_synchronizer>(approximate_policy(1),rgb_subs , depth_subs, rgb_cam_info_subs);
-    my_sync_->getPolicy()->setMaxIntervalDuration(rclcpp::Duration(1,0));
-    my_sync_->registerCallback(&yoloOnnxComponent::rgbd_callback, this);
+    subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
+    "/image_raw", 1, std::bind(&yoloOnnxComponent::topic_callback, this, std::placeholders::_1));
 
     annotated_img_pub =
     this->create_publisher<sensor_msgs::msg::Image>("/annotated_img", 1);
     detection_pub = this->create_publisher<robotname_msgs::msg::DetectionArray>(
         "/objects/raw", 1);
 
-    NetConfig DetectorConfig = {0.5, 0.5, modelpath, classnames};
+    NetConfig DetectorConfig = {0.7, 0.5, modelpath, classnames};
     net = std::make_unique<YOLODetector>(DetectorConfig);
   }
 
@@ -103,39 +94,20 @@ class yoloOnnxComponent : public rclcpp::Node {
    * @param sensor_msgs::msg::Image depth_image
    * @param sensor_msgs::msg::CameraInfo rgb_cam_info
    */
-  void rgbd_callback(
-      const sensor_msgs::msg::Image::SharedPtr rgb_image,
-      const sensor_msgs::msg::Image::SharedPtr depth_image,
-      const sensor_msgs::msg::CameraInfo::SharedPtr rgb_cam_info) {
-    cv_bridge::CvImagePtr rgb_ptr, depth_ptr;
+  void topic_callback(
+      const sensor_msgs::msg::Image::SharedPtr rgb_image) {
+    cv_bridge::CvImagePtr rgb_ptr;
 
     std::unique_ptr<robotname_msgs::msg::DetectionArray> objects(
         new robotname_msgs::msg::DetectionArray());
 
-    /*parse rgb_camera_info information into ROS pinhole camera model*/
-    realsense_cam_model.fromCameraInfo(rgb_cam_info);
-
     /* try conversion type from ROS Image type to OpenCV Image type*/
     try {
       rgb_ptr = cv_bridge::toCvCopy(rgb_image, sensor_msgs::image_encodings::BGR8);
-      depth_ptr = cv_bridge::toCvCopy(depth_image, depth_image->encoding);
     } catch (cv_bridge::Exception &e) {
       RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
     }
 
-    /* in case of '16UC1' encoding (depth values are in millimeter),
-     * a manually conversion from millimeter to meter is required.
-     */
-    // if(depth_ptr->encoding == sensor_msgs::image_encodings::TYPE_16UC1)
-    // {
-    //     depth_ptr->image.convertTo(depth_ptr->image, -1, 0.001f);
-    // }
-
-    /* Run YOLO Inference */
-    // std::vector<yolo::detection> result = yolomodel->detect(rgb_ptr->image);
-    // cv::Mat canvas(640, 640, CV_8UC3, cv::Scalar(255,255,255));
-    // // Overlay the smaller image onto the larger image
-    // rgb_ptr->image.copyTo(canvas(cv::Rect(0 , 0, rgb_ptr->image.cols, rgb_ptr->image.rows)));
     auto result = net->Detect(rgb_ptr->image);
 
     for (auto &element : result) {
@@ -148,25 +120,6 @@ class yoloOnnxComponent : public rclcpp::Node {
       pixel.x = element.cx;
       pixel.y = element.cy;
 
-      /* Two different Method can be used to obtain depth value from object
-       * 1. centroid z value
-              - Extract x,y centroid point
-              - Extract z centroid point
-      */
-      float depth_at =
-          0.001 * (depth_ptr->image.at<u_int16_t>(pixel.y, pixel.x));
-      // float depth_at = (depth_ptr->image.at<float>(pixel.y, pixel.x));
-      /*
-       * 2. Bounding Box z value
-              - Extract roi from object bbox
-              - Extract single median value from bbox
-      */
-      // cv::Mat roi = depth_ptr->image(element.box);
-      // float depth_at = 0.001 * calculateMedian(roi);
-
-      /* Use deproject from pixel to 3D coordinate*/
-      obj_coor = realsense_cam_model.projectPixelTo3dRay(pixel);
-
       /* Pack information into vision msgs detections*/
       object.pose.header.frame_id = rgb_ptr->header.frame_id;
       object.pose.header.stamp = rgb_ptr->header.stamp;
@@ -175,13 +128,22 @@ class yoloOnnxComponent : public rclcpp::Node {
       // object.pose.pose.position.x = obj_coor.z * depth_at;
       // object.pose.pose.position.y = -obj_coor.x * depth_at;
       // object.pose.pose.position.z = -obj_coor.y * depth_at;
-      object.pose.pose.position.x = obj_coor.x * depth_at;
-      object.pose.pose.position.y = obj_coor.y * depth_at;
-      object.pose.pose.position.z = obj_coor.z * depth_at;
-      object.pose.pose.orientation.x = 0;
-      object.pose.pose.orientation.y = 0;
-      object.pose.pose.orientation.z = 0;
-      object.pose.pose.orientation.w = 1;
+
+      float distancex = pixel.x - 313; //center x
+      float distancey = pixel.y - 230; //center y
+
+      float objdistance = std::hypot(distancex,distancey);
+      float theta = std::atan2(distancey, distancex);
+
+      float real_dist = 0.004310*objdistance;
+      if (real_dist < 0.0) real_dist = 0.0;             
+      tf2::Quaternion quat;
+      quat.setRPY(0.0, 0.0, theta-M_PI/2); // Roll, pitch, yaw
+      tf2::convert(quat, object.pose.pose.orientation);
+      object.pose.pose.position.x = real_dist;
+      object.pose.pose.position.y = 0;
+      object.pose.pose.position.z = 0;
+
       objects->detections.push_back(object);
     }
     // rgb_ptr->image = yolomodel->annotated_img(rgb_ptr->image, result);
@@ -190,24 +152,26 @@ class yoloOnnxComponent : public rclcpp::Node {
     detection_pub->publish(std::move(objects));
   }
 
-  message_filters::Subscriber<sensor_msgs::msg::Image> rgb_subs;
-  message_filters::Subscriber<sensor_msgs::msg::Image> depth_subs;
-  message_filters::Subscriber<sensor_msgs::msg::CameraInfo> rgb_cam_info_subs;
+  // message_filters::Subscriber<sensor_msgs::msg::Image> rgb_subs;
+  // message_filters::Subscriber<sensor_msgs::msg::Image> depth_subs;
+  // message_filters::Subscriber<sensor_msgs::msg::CameraInfo> rgb_cam_info_subs;
 
   std::unique_ptr<YOLODetector> net;
-  image_geometry::PinholeCameraModel realsense_cam_model;
+  // image_geometry::PinholeCameraModel realsense_cam_model;
   // std::shared_ptr<message_filters::TimeSynchronizer<
   //     sensor_msgs::msg::Image, sensor_msgs::msg::Image,
   //     sensor_msgs::msg::CameraInfo>>
   //     sync_policies;
 
-  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo> approximate_policy;
-  typedef message_filters::Synchronizer<approximate_policy> approximate_synchronizer;
-  std::shared_ptr<approximate_synchronizer> my_sync_;
+  // typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo> approximate_policy;
+  // typedef message_filters::Synchronizer<approximate_policy> approximate_synchronizer;
+  // std::shared_ptr<approximate_synchronizer> my_sync_;
 
   rclcpp::Publisher<robotname_msgs::msg::DetectionArray>::SharedPtr
       detection_pub;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr annotated_img_pub;
+  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
+
 };
 
 }  // namespace robotname_perception

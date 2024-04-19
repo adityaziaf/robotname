@@ -66,19 +66,19 @@ def generate_launch_description():
                     plugin='robotname_perception::yoloOnnxComponent',
                     name='yolodetector',
                     extra_arguments=[{'use_intra_process_comms': True}]
-                ),
-                ComposableNode(
-                    package='robotname_perception',
-                    plugin='robotname_perception::transformComponent',
-                    name='transform',
-                    extra_arguments=[{'use_intra_process_comms': True}]
-                ),
-                ComposableNode(
-                    package='robotname_perception',
-                    plugin='robotname_perception::visualizeComponent',
-                    name='visualize',
-                    extra_arguments=[{'use_intra_process_comms': True}]
                 )
+                # ComposableNode(
+                #     package='robotname_perception',
+                #     plugin='robotname_perception::transformComponent',
+                #     name='transform',
+                #     extra_arguments=[{'use_intra_process_comms': True}]
+                # ),
+                # ComposableNode(
+                #     package='robotname_perception',
+                #     plugin='robotname_perception::visualizeComponent',
+                #     name='visualize',
+                #     extra_arguments=[{'use_intra_process_comms': True}]
+                # )
             ],
             output='screen',
     )

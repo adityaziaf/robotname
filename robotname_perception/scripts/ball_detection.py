@@ -137,9 +137,10 @@ def main(args=None):
     publisher = node.create_publisher(msg_type, topic_name, qos)
 
     cv2.namedWindow("Image")
-
-    cap = cv2.VideoCapture(2)
-
+    
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     # Check if video capture object is opened successfully
     if not cap.isOpened():
         print("Error: Could not open video capture device")
@@ -188,6 +189,8 @@ def main(args=None):
 
         contour_list, _ = cv2.findContours(treshold_image, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_SIMPLE)
         
+        contour_list = sorted(contour_list, key=cv2.contourArea, reverse=True)
+
         filtered_contours = filter_contours_by_radius(contour_list, 10.0, 200)
             
         objects = calculate_circularity(filtered_contours, 0.8, 0.9)

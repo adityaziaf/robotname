@@ -15,6 +15,21 @@
         <Action ID="GoToPose" editable="true">
             <input_port name="goal"/>
         </Action>
+        <Action ID="NavThroughPoses" editable="true">
+            <input_port name="frame_id"/>
+            <input_port name="goals"/>
+        </Action>
+        <Action ID="NavToPose" editable="true">
+            <input_port name="frame_id"/>
+            <input_port name="goal"/>
+        </Action>
+        <Condition ID="ReceiveString" editable="true">
+            <input_port name="color"/>
+        </Condition>
+        <Condition ID="SetIntakeMechanism" editable="true">
+            <input_port name="dribble"/>
+            <input_port name="lift"/>
+        </Condition>
         <Action ID="SetLocations" editable="true">
             <output_port name="num_locs"/>
             <output_port name="loc_names"/>

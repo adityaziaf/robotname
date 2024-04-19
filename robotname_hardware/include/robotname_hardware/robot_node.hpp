@@ -46,6 +46,7 @@ private:
     // void gripper_callback(const std_msgs::msg::Float32MultiArray &msg);
     void joy_callback(const sensor_msgs::msg::Joy &msg);
 
+    void set_mekanism(const std_msgs::msg::Float32MultiArray &msg);
     int8_t joy_status;
     /* Subscriptor */
     // rclcpp::Subscription<robot_itsrobocon_msgs::msg::PolarVectorArray>::SharedPtr cmd_swerve_vector_sub;
@@ -58,6 +59,7 @@ private:
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr run_status_sub;
 
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
+    rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr mekanism_sub;
     // rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr seedling_sub;
 
     /* Publisher */

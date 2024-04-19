@@ -46,6 +46,23 @@ set(TARGET_DEPENDS
     tf2 tf2_ros tf2_geometry_msgs robotname_msgs yaml-cpp
 )
 
+set(THIS_PACKAGE_DEPS 
+    behaviortree_ros2
+    std_msgs
+    ament_index_cpp
+    btcpp_ros2_interfaces 
+    tf2 tf2_ros tf2_geometry_msgs
+    nav2_msgs
+    rclcpp_action
+    rclcpp 
+    )
+
+set(THIS_PACKAGE_SOURCES
+    src/plugins/get_intake_color.cpp 
+    src/plugins/set_intake_mechanism.cpp
+    src/plugins/nav_to_pose.cpp 
+    src/plugins/nav_through_poses.cpp
+    )
 include_directories(include)
 add_executable(autonomy_node_cpp src/autonomy_node.cpp ${AUTONOMY_SOURCES})
 install(TARGETS
@@ -54,6 +71,14 @@ install(TARGETS
 )
 ament_target_dependencies(autonomy_node_cpp ${TARGET_DEPENDS})
 target_link_libraries(autonomy_node_cpp ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
+
+
+add_executable(auto src/auto2.cpp ${THIS_PACKAGE_SOURCES})
+install(TARGETS
+    auto
+    DESTINATION lib/${PROJECT_NAME}
+)
+ament_target_dependencies(auto ${THIS_PACKAGE_DEPS})
 
 # add_executable(follow_node src/follow_node.cpp)
 # install(TARGETS

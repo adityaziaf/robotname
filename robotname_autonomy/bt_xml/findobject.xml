@@ -1,19 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root BTCPP_format="4">
-  <BehaviorTree ID="MainTree">
-    <Sequence name="main_loop">
-      <FindObject object="redball"
-                  id="{id}"/>
+<root BTCPP_format="4"
+      main_tree_to_execute="move">
+  <BehaviorTree ID="intake">
+    <Sequence>
+      <SetIntakeMechanism dribble="5"
+                          lift="0.5"/>
+      <ReceiveString color="{detected}"/>
+      <Switch3 case_1="purple"
+               case_2="red"
+               case_3="blue"
+               variable="{detected}">
+        <ForceFailure>
+          <Sequence>
+            <Sleep msec="200"/>
+            <SetIntakeMechanism dribble="0"
+                                lift="3"/>
+            <Sleep msec="1000"/>
+          </Sequence>
+        </ForceFailure>
+        <ForceSuccess>
+          <Sequence>
+            <Sleep msec="1000"/>
+            <SetIntakeMechanism dribble="0"
+                                lift="0"/>
+          </Sequence>
+        </ForceSuccess>
+        <ForceSuccess>
+          <Sequence>
+            <Sleep msec="1000"/>
+            <SetIntakeMechanism dribble="0"
+                                lift="0"/>
+          </Sequence>
+        </ForceSuccess>
+        <AlwaysFailure/>
+      </Switch3>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="move">
+    <Sequence>
+      <NavThroughPoses frame_id="map"
+                       goals="4.8;0.0;0 /&#10;5.0;0.1;0 /&#10;5.2;0.2;0 /&#10;5.4;0.3;0 /&#10;5.6;0.4;0 /&#10;5.8;0.5;0 /&#10;5.9;1.0;0 /&#10;5.9;3.6;0 /"/>
+      <NavToPose frame_id="map"
+                 goal="9;3.6;0"/>
     </Sequence>
   </BehaviorTree>
 
   <!-- Description of Node Models (used by Groot) -->
   <TreeNodesModel>
-    <Action ID="FindObject"
+    <Action ID="NavThroughPoses"
             editable="true">
-      <input_port name="object"/>
-      <output_port name="id"/>
+      <input_port name="frame_id"/>
+      <input_port name="goals"/>
     </Action>
+    <Action ID="NavToPose"
+            editable="true">
+      <input_port name="frame_id"/>
+      <input_port name="goal"/>
+    </Action>
+    <Condition ID="ReceiveString"
+               editable="true">
+      <input_port name="color"/>
+    </Condition>
+    <Condition ID="SetIntakeMechanism"
+               editable="true">
+      <input_port name="dribble"/>
+      <input_port name="lift"/>
+    </Condition>
   </TreeNodesModel>
 
 </root>

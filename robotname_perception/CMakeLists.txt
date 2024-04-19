@@ -150,7 +150,9 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   scripts/tracking_component.py
   scripts/ball_detection.py
+  scripts/intakeprocess.py
   scripts/slowdown.py
+  scripts/omni_ball_detection.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
