@@ -1,6 +1,6 @@
 /**:
     ros__parameters:
-      video_device: "/dev/video0"
+      video_device: "/dev/video2"
       framerate: 30.0
       io_method: "mmap"
       frame_id: "camera_intake"
@@ -12,13 +12,14 @@
       # reusing same camera intrinsics only for demo, should really be unique for camera2"
       # camera_info_url: "package://usb_cam/config/camera_info.yaml"
       brightness: 100
-      contrast: -1
-      saturation: -1
-      sharpness: -1
-      gain: -1
-      auto_white_balance: true
+      contrast: 100
+      saturation: 100
+      sharpness: 0
+      gain: 10
+      auto_white_balance: false
       white_balance: 4000
-      autoexposure: true
+      autoexposure: false
       exposure: 100
       autofocus: false
-      focus: 60
+      focus: 30
+      auto_brightness: false

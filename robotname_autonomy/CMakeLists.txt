@@ -14,7 +14,8 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(ament_index_cpp REQUIRED)
-find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -55,6 +56,8 @@ set(THIS_PACKAGE_DEPS
     nav2_msgs
     rclcpp_action
     rclcpp 
+    robotname_msgs
+    std_srvs
     )
 
 set(THIS_PACKAGE_SOURCES
@@ -62,16 +65,41 @@ set(THIS_PACKAGE_SOURCES
     src/plugins/set_intake_mechanism.cpp
     src/plugins/nav_to_pose.cpp 
     src/plugins/nav_through_poses.cpp
+    src/plugins/find_nearest_ball.cpp
+    src/plugins/follow_path.cpp
+    src/plugins/ball_available.cpp
+    src/plugins/set_speed.cpp
     )
-include_directories(include)
-add_executable(autonomy_node_cpp src/autonomy_node.cpp ${AUTONOMY_SOURCES})
-install(TARGETS
-    autonomy_node_cpp
-    DESTINATION lib/${PROJECT_NAME}
-)
-ament_target_dependencies(autonomy_node_cpp ${TARGET_DEPENDS})
-target_link_libraries(autonomy_node_cpp ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
 
+include_directories(include)
+
+add_executable(set_speed_server src/server/set_speed_server.cpp)
+ament_target_dependencies(set_speed_server rclcpp robotname_msgs geometry_msgs)
+
+install(TARGETS
+set_speed_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(find_nearest_ball_server src/server/find_nearest_ball_server.cpp)
+ament_target_dependencies(find_nearest_ball_server rclcpp robotname_msgs)
+
+install(TARGETS
+  find_nearest_ball_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(ball_available_server src/server/ball_available_server.cpp)
+ament_target_dependencies(ball_available_server rclcpp robotname_msgs)
+
+install(TARGETS
+  ball_available_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(get_intake_color_server src/server/get_intake_color_server.cpp)
+ament_target_dependencies(get_intake_color_server rclcpp std_msgs std_srvs)
+
+install(TARGETS
+get_intake_color_server
+  DESTINATION lib/${PROJECT_NAME})
 
 add_executable(auto src/auto2.cpp ${THIS_PACKAGE_SOURCES})
 install(TARGETS
@@ -80,17 +108,11 @@ install(TARGETS
 )
 ament_target_dependencies(auto ${THIS_PACKAGE_DEPS})
 
-# add_executable(follow_node src/follow_node.cpp)
-# install(TARGETS
-#     follow_node
-#     DESTINATION lib/${PROJECT_NAME}
-# )
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
-# ament_target_dependencies(follow_node
-#   rclcpp
-#   robotname_msgs
-#   geometry_msgs
-# )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

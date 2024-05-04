@@ -13,8 +13,8 @@
               <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
             </RecoveryNode>
           </RateController>
-          <RecoveryNode number_of_retries="1" name="FollowPath">
-            <FollowPath path="{path}" controller_id="FollowPath"/>
+          <RecoveryNode number_of_retries="1" name="FollowBall">
+            <FollowPath path="{path}" controller_id="FollowBall"/>
             <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
           </RecoveryNode>
         </PipelineSequence>

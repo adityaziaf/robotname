@@ -23,11 +23,11 @@ class visualizeComponent : public rclcpp::Node {
 
     viz_subs_ =
         this->create_subscription<robotname_msgs::msg::DetectionArray>(
-            "/objects/transformed", rclcpp::QoS(10),
+            "/omni/objects/tracked", rclcpp::QoS(10),
             std::bind(&visualizeComponent::callback, this, _1));
     viz_pubs_ =
         this->create_publisher<visualization_msgs::msg::MarkerArray>(
-            "/objects/visualize", rclcpp::QoS(10));
+            "/omni/objects/visualize", rclcpp::QoS(10));
 
   }
 

@@ -58,7 +58,7 @@ def generate_launch_description():
 
     perception = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('robotname_perception'),'launch'),'/composition.launch.py']
+            get_package_share_directory('robotname_perception'),'launch'),'/intake.launch.py']
         )
     )
     
@@ -66,7 +66,7 @@ def generate_launch_description():
         package='rviz2',
         executable='rviz2',
         name='rviz2',
-        output='screen',
+        
         arguments=['-d', LaunchConfiguration('rvizconfig')],
     )
  
@@ -109,12 +109,12 @@ def generate_launch_description():
         DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
         hardware,
-        #lidar,
+        lidar,
         robot_state_publisher_node,
         joint_state_publisher_node,
-        #perception,
+        perception,
         rviz_node,
-        odom_to_map,
+        #odom_to_map,
         nav_localization,
         nav_navigation
     ])

@@ -5,6 +5,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 from norfair import Detection, Tracker
+
 from robotname_msgs.msg import DetectionArray as dta
 from robotname_msgs.msg import Detection as dt
 
@@ -14,18 +15,18 @@ class trackingComponent(Node):
 
           # Load parameters
         #norfair_setup = rclpy.get_param("norfair_setup")
-        self.tracked_obj_pub = self.create_publisher(dta, '/objects/transformed/tracked',10)
-        self.detected_obj_subs = self.create_subscription(dta, '/objects/transformed',self.trackingCallback,10)
+        self.tracked_obj_pub = self.create_publisher(dta, '/omni/objects/tracked',1)
+        self.detected_obj_subs = self.create_subscription(dta, '/omni/objects/raw',self.trackingCallback,1)
 
         # Norfair tracker initialization
         self.tracker = Tracker(
             distance_function="euclidean",#norfair_setup["distance_function"],
-            distance_threshold=0.1,#norfair_setup["distance_threshold"],
-            hit_counter_max=15,#norfair_setup["hit_counter_max"],
-            # initialization_delay=7.5,#norfair_setup["initialization_delay"],
+            distance_threshold=0.5,#norfair_setup["distance_threshold"],
+            # hit_counter_max=15,#norfair_setup["hit_counter_max"],
+            initialization_delay=3,#norfair_setup["initialization_delay"],
             # pointwise_hit_counter_max=4,#norfair_setup["pointwise_hit_counter_max"],
-            # detection_threshold=0.01,#norfair_setup["detection_threshold"],
-            # past_detections_length=4,#norfair_setup["past_detections_length"],
+            # detection_threshold=10,#norfair_setup["detection_threshold"],
+            past_detections_length=8,#norfair_setup["past_detections_length"],
         )
         
 
@@ -47,19 +48,23 @@ class trackingComponent(Node):
                     points=np.array([object.pose.pose.position.x, object.pose.pose.position.y]),
                     scores=np.array([object.score]),
                     label=object.classname,
+                    data=object.pose
                 )
             )
         
         tracked_objects = self.tracker.update(detections)
 
-        if len(msg.detections) != len(tracked_objects): 
-            return
+        newobjs = dta()
 
-        for idx, detected_object in enumerate(msg.detections):
-            detected_object.id = tracked_objects[idx].id
-
+        for obj in tracked_objects:
+            newobj = dt()
+            newobj.id = obj.id
+            newobj.classname = obj.label
+            newobj.pose = obj.last_detection.data
             
-        self.tracked_obj_pub.publish(msg)
+            newobjs.detections.append(newobj)
+
+        self.tracked_obj_pub.publish(newobjs)
     
 
 def main(args=None):

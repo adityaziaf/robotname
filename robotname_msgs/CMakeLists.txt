@@ -20,6 +20,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Detection.msg"
   "msg/DetectionArray.msg"
   "action/NavigateToPose.action"
+  "srv/FindNearestBall.srv"
+  "srv/BallAvailable.srv"
+  "srv/SetSpeed.srv"
   DEPENDENCIES geometry_msgs std_msgs nav_msgs# Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg
 )
 

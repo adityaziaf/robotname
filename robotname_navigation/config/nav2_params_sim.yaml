@@ -30,7 +30,7 @@ amcl:
     save_pose_rate: 0.5
     sigma_hit: 0.2
     tf_broadcast: true
-    transform_tolerance: 0.1
+    transform_tolerance: 1.0
     update_min_a: 0.1 #radian
     update_min_d: 0.1 #meter
     z_hit: 0.5
@@ -187,13 +187,13 @@ controller_server:
   ros__parameters:
     use_sim_time: True
     controller_frequency: 50.0
+    controller_plugins: ["FollowBall", "FollowPath"]
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.001
     min_theta_velocity_threshold: 0.001
     progress_checker_plugins: ["progress_checker"] # progress_checker_plugin: "progress_checker" For Humble and older
     goal_checker_plugins: ["goal_checker"]
-    controller_plugins: ["FollowPath"]
-
+    
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
       required_movement_radius: 0.5
@@ -203,8 +203,29 @@ controller_server:
       xy_goal_tolerance: 0.05
       yaw_goal_tolerance: 0.05
       stateful: True
-    FollowPath:
+    
+    FollowBall:
+      plugin: "nav2_omni_pure_pursuit_controller::OmniPurePursuitController"
+      translation_kp : 1.0 # dimensionless
+      translation_ki : 0.2 # dimensionless
+      translation_kd : 0.0 # dimensionless
+      rotation_kp : 3.0 #dimensionless
+      rotation_ki : 0.1 #dimensionless
+      rotation_kd : 0.0 #dimensionless
+      lookahead_distance : 0.4 #meter
+      adaptive_lookahead_distance : false
+      adaptive_min_speed_lookahead : 0.1 #meter
+      adaptive_max_speed_lookahead : 1.0 #meter
+      adaptive_gain_lookahead : 1.0 #dimensionless
+      circle_interpolation : false
+      rotate_to_heading : false 
+      rotate_to_heading_treshold : 0.1 #rad/s
+      min_rotation_speed : -3.0 # m/s
+      max_rotation_speed : 3.0 # m/s
+      min_translation_speed : -3.0
+      max_translation_speed : 3.0
 
+    FollowPath:
       plugin: "nav2_omni_pure_pursuit_controller::OmniPurePursuitController"
       translation_kp : 3.0 # dimensionless
       translation_ki : 0.2 # dimensionless

@@ -1,0 +1,5 @@
+string color
+int32 id
+---
+bool status
+geometry_msgs/PoseStamped pose

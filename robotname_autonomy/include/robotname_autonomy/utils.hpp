@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vector"
+
 // Struct to keep location pose data
 struct Pose{
   double x;

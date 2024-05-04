@@ -39,7 +39,7 @@ UDP n_udp(IP_SERVER, PORT);
 #define DRIB_SPEED_DOWN 36 //R1+SGTIGA
 #define DRIB_OFF 20 //L1+sgt
 
-#define LIFT_MAX_SPEED 3
+#define LIFT_MAX_SPEED 5
 #define DRIB_MAX_SPEED 3
 
 uint8_t drib_flag = 0;
@@ -81,6 +81,12 @@ struct recv_from_robot {
     float y;
     float theta;
   } body_speed;
+  
+  struct {
+    float roll;
+    float pitch;
+    float yaw;
+  } body_angle;
 
   float linear_speed[3];
   float angular_speed[3];
@@ -93,6 +99,11 @@ struct recv_from_robot {
 
   float v_bat;
   uint32_t global_flag;
+
+  struct {
+    float distance; 
+  } ball_drib;
+
 };
 
 send_to_robot send_data;
@@ -135,6 +146,7 @@ robotNode::robotNode() : Node("robot_node") {
   mekanism_sub = this->create_subscription<std_msgs::msg::Float32MultiArray>(
     "set_mekanism",10,std::bind(&robotNode::set_mekanism,this,std::placeholders::_1));
 
+  proximity_pub = this->create_publisher<std_msgs::msg::Float32>("proximity",qos);
   /* Subscriber */
 
   // run_status_sub          = this->create_subscription<std_msgs::msg::Bool> (
@@ -169,21 +181,21 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     float analog[6];
     int button_t;
 
-    std::cout << "Axes: ";
+    // std::cout << "Axes: ";
     int8_t i = 0;
     for (auto axis : axes) {
         analog[i] = axis;
         i++;
-        std::cout << axis << " ";
+        // std::cout << axis << " ";
     }
-    std::cout << std::endl;
+    // std::cout << std::endl;
 
-    std::cout << "Buttons: ";
+    // std::cout << "Buttons: ";
     for (auto button : buttons) {
-        std::cout << button << " ";
+        // std::cout << button << " ";
         button_t = button;
     }
-    std::cout << std::endl;
+    // std::cout << std::endl;
 
     float analog_lx = analog[0];
     float analog_ly = analog[1];
@@ -209,9 +221,9 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     send_data.body_speed.y = target_y;
     send_data.body_speed.theta = target_theta;
 
-    std::cout<<target_x<<std::endl;
-    std::cout<<target_y<<std::endl;
-    std::cout<<target_theta<<std::endl;
+    // std::cout<<target_x<<std::endl;
+    // std::cout<<target_y<<std::endl;
+    // std::cout<<target_theta<<std::endl;
 
     //mekanisme dribble
     if((button_t == DRIB_SPEED_UP) && (drib_flag == 0)){
@@ -244,8 +256,8 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     if(send_data.ball_drib.lift_speed > LIFT_MAX_SPEED)send_data.ball_drib.lift_speed = LIFT_MAX_SPEED;
     else if(send_data.ball_drib.lift_speed < 0)send_data.ball_drib.lift_speed = 0;
 
-    std::cout<<"target drib: "<<send_data.ball_drib.drib_speed<<std::endl;
-    std::cout<<"target lift: "<<send_data.ball_drib.lift_speed<<std::endl;
+    // std::cout<<"target drib: "<<send_data.ball_drib.drib_speed<<std::endl;
+    // std::cout<<"target lift: "<<send_data.ball_drib.lift_speed<<std::endl;
 
   joy_status = 1;
 }
@@ -342,6 +354,10 @@ int robotNode::udpLoop() {
     tf_broadcaster_->sendTransform(t);
     imu_pub->publish(imu);
     odometry_pub->publish(odom);
+
+    std_msgs::msg::Float32 prox; 
+    prox.data = recv_data.ball_drib.distance;
+    proximity_pub->publish(prox);
   }
   //return 0;
 }
@@ -382,9 +398,9 @@ int robotNode::speedSub(const geometry_msgs::msg::Twist &msg) {
       send_data.body_speed.y = msg.linear.x;
        send_data.body_speed.theta = -msg.angular.z;
   }
-  std::cout<<msg.linear.x<<std::endl;
-  std::cout<<msg.linear.y<<std::endl;
-  std::cout<<msg.angular.z<<std::endl;
+  // std::cout<<msg.linear.x<<std::endl;
+  // std::cout<<msg.linear.y<<std::endl;
+  // std::cout<<msg.angular.z<<std::endl;
 }
 
 /**

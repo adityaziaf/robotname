@@ -26,8 +26,8 @@ class transformComponent : public rclcpp::Node {
 
   explicit transformComponent(const rclcpp::NodeOptions &options)
       : Node("transformcomponent", options) {
-    // this->declare_parameter("source_frame", "camera_color_optical_frame");
-    this->declare_parameter("target_frame", "map");
+    //this->declare_parameter("source_frame", "camera_color_optical_frame");
+    this->declare_parameter("target_frame", "base_link");
     this->get_parameter("target_frame", t_frame);
 
     detection_subs_ =

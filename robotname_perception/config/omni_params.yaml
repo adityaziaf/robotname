@@ -1,9 +1,9 @@
 /**:
     ros__parameters:
-      video_device: "/dev/video2"
+      video_device: "/dev/video0"
       framerate: 30.0
       io_method: "mmap"
-      frame_id: "camera_omni"
+      frame_id: "omnicam_link"
       pixel_format: "mjpeg2rgb"
       av_device_format: "YUV422P"
       image_width: 640
@@ -11,11 +11,11 @@
       camera_name: "cameraomni"
       # reusing same camera intrinsics only for demo, should really be unique for camera2"
       # camera_info_url: "package://usb_cam/config/camera_info.yaml"
-      brightness: 50
+      brightness: 100
       contrast: 0
-      saturation: 120
+      saturation: 150
       sharpness: 0
-      gain: 100
+      gain: 120
       auto_white_balance: true
       white_balance: 4000
       autoexposure: true

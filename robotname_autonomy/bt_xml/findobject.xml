@@ -1,53 +1,210 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4"
-      main_tree_to_execute="move">
+      main_tree_to_execute="maintree">
+  <BehaviorTree ID="cobaspeed">
+    <Sequence>
+      <SetSpeed speed="-1;0.0;0.0"/>
+      <Sleep msec="1000"/>
+      <SetSpeed speed="0;0;0"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="findandfollowball">
+    <Sequence>
+      <RetryUntilSuccessful num_attempts="-1">
+        <Sequence>
+          <FindNearestBall id="{newball}"
+                           color="blueball"
+                           _successIf="ballfound==1&#10;"
+                           _onSuccess="ballfound:=1&#10;"/>
+          <BallAvailable id="{newball}"
+                         color="blueball"
+                         position="{ballpose}"
+                         _onFailure="ballfound:=0"/>
+          <FollowPose frame_id="map"
+                      goal="{ballpose}"/>
+          <SubTree ID="intake"/>
+        </Sequence>
+      </RetryUntilSuccessful>
+      <NavToPose frame_id="base_link"
+                 goal="0;0;0"/>
+    </Sequence>
+  </BehaviorTree>
+
   <BehaviorTree ID="intake">
     <Sequence>
       <SetIntakeMechanism dribble="5"
-                          lift="0.5"/>
-      <ReceiveString color="{detected}"/>
-      <Switch3 case_1="purple"
-               case_2="red"
-               case_3="blue"
-               variable="{detected}">
+                          lift="1"/>
+      <GetIntakeColor color="{intakecolor}"/>
+      <Switch2 case_1="purple"
+               case_2="blue"
+               variable="{intakecolor}">
         <ForceFailure>
           <Sequence>
             <Sleep msec="200"/>
             <SetIntakeMechanism dribble="0"
-                                lift="3"/>
-            <Sleep msec="1000"/>
+                                lift="4"/>
+            <Sleep msec="500"/>
           </Sequence>
         </ForceFailure>
         <ForceSuccess>
           <Sequence>
-            <Sleep msec="1000"/>
-            <SetIntakeMechanism dribble="0"
-                                lift="0"/>
-          </Sequence>
-        </ForceSuccess>
-        <ForceSuccess>
-          <Sequence>
-            <Sleep msec="1000"/>
+            <Sleep msec="300"/>
             <SetIntakeMechanism dribble="0"
                                 lift="0"/>
           </Sequence>
         </ForceSuccess>
         <AlwaysFailure/>
-      </Switch3>
+      </Switch2>
     </Sequence>
   </BehaviorTree>
 
+  <BehaviorTree ID="maintree">
+    <SequenceWithMemory>
+      <Script code="ballfound:=0"/>
+      <NavToPose frame_id="map"
+                 goal="9.5;1.0;-1.57"/>
+      <NavToPose frame_id="base_link"
+                 goal="0;0;0"/>
+      <Repeat num_cycles="9">
+        <Sequence>
+          <SubTree ID="findandfollowball"
+                   _autoremap="true"/>
+          <SubTree ID="silo2"/>
+          <SubTree ID="naikroutine"
+                   _autoremap="false"/>
+          <Script code="ballfound:=0"/>
+          <SubTree ID="findandfollowball"
+                   _autoremap="true"/>
+          <SubTree ID="silo3"/>
+          <SubTree ID="naikroutine"
+                   _autoremap="true"/>
+          <Script code="ballfound:=0"/>
+          <SubTree ID="findandfollowball"
+                   _autoremap="true"/>
+          <SubTree ID="silo4"/>
+          <SubTree ID="naikroutine"
+                   _autoremap="true"/>
+          <Script code="ballfound:=0"/>
+        </Sequence>
+      </Repeat>
+    </SequenceWithMemory>
+  </BehaviorTree>
+
   <BehaviorTree ID="move">
+    <SequenceWithMemory>
+      <NavThroughPoses frame_id="map"
+                       goals="4.9;0.0;3.14/&#10;5.2;0.1;-2.0944 /&#10;5.3;0.2;-2.0944 /&#10;5.5;0.4;-2.0944 /&#10;5.7;0.8;-2.0944 /&#10;5.9;3.55;-1.57"/>
+      <NavThroughPoses frame_id="map"
+                       goals="8.8;3.55;-1.75/&#10;9.1;3.45;-1.75 /&#10;9.2;3.25;-1.57 /&#10;9.3;3.05;-1.57 /&#10;9.4;2.5;-1.57 /&#10;9.5;1.7;-1.57"/>
+      <NavToPose frame_id="base_link"
+                 goal="0;0;0"/>
+    </SequenceWithMemory>
+  </BehaviorTree>
+
+  <BehaviorTree ID="movetest">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="4.8;0.0;0 /&#10;5.0;0.1;0 /&#10;5.2;0.2;0 /&#10;5.4;0.3;0 /&#10;5.6;0.4;0 /&#10;5.8;0.5;0 /&#10;5.9;1.0;0 /&#10;5.9;3.6;0 /"/>
+                       goals="4.9;0.0;3.14 /&#10;5.2;0.1;3.14 /&#10;5.3;0.2;3.14 /&#10;5.5;0.4;3.14 /&#10;5.7;0.8;3.14 /&#10;5.8;3.7;3.14"/>
+      <NavThroughPoses frame_id="map"
+                       goals="7.5;3.6;3.14/&#10;8.4;3.45;-1.75 /&#10;8.5;3.25;-1.57 /&#10;8.7;3.05;-1.57 /&#10;8.7;2.5;-1.57 /&#10;8.7;1.0;-0.8"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="naikroutine">
+    <Sequence>
+      <SetIntakeMechanism dribble="0"
+                          lift="1.2"/>
+      <Sleep msec="1000"/>
+      <SetIntakeMechanism dribble="0"
+                          lift="0"/>
+      <NavThroughPoses frame_id="map"
+                       goals="9.5;1.0;-1.57"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="silo2">
+    <Sequence>
+      <NavThroughPoses frame_id="map"
+                       goals="8.70;4.0;-1.57"/>
       <NavToPose frame_id="map"
-                 goal="9;3.6;0"/>
+                 goal="8.72;4.9;-1.57"/>
+      <FollowPose frame_id="map"
+                  goal="8.70;5.1;-1.57"/>
+      <Sleep msec="1000"/>
+      <NavToPose frame_id="base_link"
+                 goal="0;0;0"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="silo3">
+    <Sequence>
+      <NavThroughPoses frame_id="map"
+                       goals="9.42;4.0;-1.57"/>
+      <NavToPose frame_id="map"
+                 goal="9.42;4.9;-1.57"/>
+      <FollowPose frame_id="map"
+                  goal="9.42;5.1;-1.57"/>
+      <Sleep msec="1000"/>
+      <NavToPose frame_id="base_link"
+                 goal="0;0;0"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="silo4">
+    <Sequence>
+      <NavThroughPoses frame_id="map"
+                       goals="10.20;4.0;-1.57"/>
+      <NavToPose frame_id="map"
+                 goal="10.20;4.9;-1.57"/>
+      <FollowPose frame_id="map"
+                  goal="10.20;5.1;-1.57"/>
+      <Sleep msec="1000"/>
+      <NavToPose frame_id="base_link"
+                 goal="0;0;0"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="silotest">
+    <Sequence>
+      <Repeat num_cycles="2">
+        <Sequence>
+          <NavToPose frame_id="map"
+                     goal="9.45;1.0;-1.57"/>
+          <SubTree ID="silo2"/>
+          <NavToPose frame_id="map"
+                     goal="9.45;1.0;-1.57"/>
+          <SubTree ID="silo3"/>
+          <NavToPose frame_id="map"
+                     goal="9.45;1.0;-1.57"/>
+          <SubTree ID="silo4"/>
+        </Sequence>
+      </Repeat>
     </Sequence>
   </BehaviorTree>
 
   <!-- Description of Node Models (used by Groot) -->
   <TreeNodesModel>
+    <Action ID="BallAvailable"
+            editable="true">
+      <input_port name="id"/>
+      <input_port name="color"/>
+      <output_port name="position"/>
+    </Action>
+    <Action ID="FindNearestBall"
+            editable="true">
+      <output_port name="id"/>
+      <input_port name="color"/>
+    </Action>
+    <Condition ID="FollowPose"
+               editable="true">
+      <input_port name="frame_id"/>
+      <input_port name="goal"/>
+    </Condition>
+    <Action ID="GetIntakeColor"
+            editable="true">
+      <output_port name="color"/>
+    </Action>
     <Action ID="NavThroughPoses"
             editable="true">
       <input_port name="frame_id"/>
@@ -58,15 +215,15 @@
       <input_port name="frame_id"/>
       <input_port name="goal"/>
     </Action>
-    <Condition ID="ReceiveString"
-               editable="true">
-      <input_port name="color"/>
-    </Condition>
     <Condition ID="SetIntakeMechanism"
                editable="true">
       <input_port name="dribble"/>
       <input_port name="lift"/>
     </Condition>
+    <Action ID="SetSpeed"
+            editable="true">
+      <input_port name="speed"/>
+    </Action>
   </TreeNodesModel>
 
 </root>

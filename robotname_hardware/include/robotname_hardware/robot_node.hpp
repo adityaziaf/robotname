@@ -72,7 +72,7 @@ private:
     // rclcpp::Publisher<robot_itsrobocon_msgs::msg::Swerve>::SharedPtr act_swerve_pub;
     // rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr act_swerve_current_pub;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr v_bat_pub;
-
+    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr proximity_pub;
     /* Timer */
     rclcpp::TimerBase::SharedPtr udp_timer;
     rclcpp::TimerBase::SharedPtr joy_timer; 

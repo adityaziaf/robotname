@@ -1,22 +1,18 @@
-#include "behaviortree_ros2/bt_topic_sub_node.hpp"
-#include <std_msgs/msg/string.hpp>
-
 #include <behaviortree_ros2/bt_service_node.hpp>
-#include "std_srvs/srv/trigger.hpp"
-#include "std_msgs/msg/string.hpp"
-
+#include <robotname_msgs/srv/find_nearest_ball.hpp>
+#include "robotname_msgs/msg/detection_array.hpp"
 
 using namespace BT;
 
 
-class GetIntakeColor: public RosServiceNode<std_srvs::srv::Trigger>
+class FindNearestBall: public RosServiceNode<robotname_msgs::srv::FindNearestBall>
 {
   public:
 
-  GetIntakeColor(const std::string& name,
+  FindNearestBall(const std::string& name,
                   const NodeConfig& conf,
                   const RosNodeParams& params)
-    : RosServiceNode<std_srvs::srv::Trigger>(name, conf, params)
+    : RosServiceNode<robotname_msgs::srv::FindNearestBall>(name, conf, params)
   {}
 
   // The specific ports of this Derived class
@@ -26,11 +22,11 @@ class GetIntakeColor: public RosServiceNode<std_srvs::srv::Trigger>
 
   // This is called when the TreeNode is ticked and it should
   // send the request to the service provider
-  bool setRequest(std_srvs::srv::Trigger::Request::SharedPtr& request) override;
+  bool setRequest(robotname_msgs::srv::FindNearestBall::Request::SharedPtr& request) override;
 
   // Callback invoked when the answer is received.
   // It must return SUCCESS or FAILURE
-  NodeStatus onResponseReceived(const std_srvs::srv::Trigger::Response::SharedPtr& response) override;
+  NodeStatus onResponseReceived(const robotname_msgs::srv::FindNearestBall::Response::SharedPtr& response) override;
 
   // Callback invoked when there was an error at the level
   // of the communication between client and server.

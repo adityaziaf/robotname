@@ -48,7 +48,7 @@ def generate_launch_description():
         name='static_transform_node',
         arguments=[
                 '0', '0', '0',  # Translation (x, y, z)
-                '0', '0', '0', '1',  # Rotation (Quaternion: x, y, z, w)
+                '0', '0', '0', '1',  # Rotation (Quaternion: x, y, z, w) or ypr
                 'map', 'odom'  # Parent and child frame IDs
             ],
         output='screen'
@@ -58,7 +58,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(name='use_sim_time', default_value='true',
                                             description='Flag to enable use_sim_time'),
-        trans,
+        #trans,
         nav_localization,
         #slamtool
         nav_navigation

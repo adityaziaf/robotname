@@ -1,39 +1,38 @@
-#include "behaviortree_ros2/bt_topic_sub_node.hpp"
 #include <std_msgs/msg/string.hpp>
 #include "robotname_autonomy/plugins/get_intake_color.hpp"
 
-PortsList ReceiveString::providedPorts()
+PortsList GetIntakeColor::providedPorts()
 {
     return { OutputPort<std::string>("color") };
 }
 
-NodeStatus ReceiveString::onTick(const std::shared_ptr<std_msgs::msg::String>& last_msg)
+
+bool GetIntakeColor::setRequest(std_srvs::srv::Trigger::Request::SharedPtr& request)
 {
-  if(last_msg) // empty if no new message received, since the last tick
+  (void)request;
+    // use input ports to set A and B
+    // must return true if we are ready to send the request
+    return true;
+}
+
+NodeStatus GetIntakeColor::onResponseReceived(const std_srvs::srv::Trigger::Response::SharedPtr& response) 
   {
-    std::string detectedcolor = last_msg->data;
-
-    RCLCPP_INFO(logger(), "[%s] new message: %s", name().c_str(), detectedcolor.c_str());
-
-    if(!first_msg)
+    
+    if(response->success)
     {
-      first_msg = true;
-      
+      RCLCPP_INFO(node_->get_logger(), "[%s] IntakeBall Found with color %s", name().c_str(), response->message.c_str());
+      setOutput("color",response->message);
+      //RCLCPP_INFO(node_->get_logger(), "Sum: %ld", response->sum);
+      return NodeStatus::SUCCESS;
     }
-    else{
-      if(prev_detectedcolor == detectedcolor)
-      {
-        return NodeStatus::FAILURE;
-      }
-    }
-    setOutput("color", detectedcolor);
-    prev_detectedcolor = detectedcolor;
-  }
-  else
-  {
+    RCLCPP_INFO(node_->get_logger(), "[%s] Failed retrieve Intakeball", name().c_str());
     return NodeStatus::FAILURE;
   }
-  return NodeStatus::SUCCESS;
-}
+
+NodeStatus GetIntakeColor::onFailure(ServiceNodeErrorCode error) 
+  {
+    RCLCPP_ERROR(node_->get_logger(), "[%s] Error: %d", name().c_str(), error);
+    return NodeStatus::FAILURE;
+  }
 
 

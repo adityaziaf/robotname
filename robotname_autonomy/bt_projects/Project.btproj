@@ -5,9 +5,25 @@
     <include path="../bt_xml/robotmove.xml"/>
     <!-- Description of Node Models (used by Groot) -->
     <TreeNodesModel>
+        <Action ID="BallAvailable" editable="true">
+            <input_port name="id"/>
+            <input_port name="color"/>
+            <output_port name="position"/>
+        </Action>
+        <Action ID="FindNearestBall" editable="true">
+            <output_port name="id"/>
+            <input_port name="color"/>
+        </Action>
         <Action ID="FindObject" editable="true">
             <input_port name="object"/>
             <output_port name="id"/>
+        </Action>
+        <Condition ID="FollowPose" editable="true">
+            <input_port name="frame_id"/>
+            <input_port name="goal"/>
+        </Condition>
+        <Action ID="GetIntakeColor" editable="true">
+            <output_port name="color"/>
         </Action>
         <Action ID="GoThroughPoses" editable="true">
             <input_port name="goals"/>
@@ -23,9 +39,6 @@
             <input_port name="frame_id"/>
             <input_port name="goal"/>
         </Action>
-        <Condition ID="ReceiveString" editable="true">
-            <input_port name="color"/>
-        </Condition>
         <Condition ID="SetIntakeMechanism" editable="true">
             <input_port name="dribble"/>
             <input_port name="lift"/>
@@ -34,6 +47,9 @@
             <output_port name="num_locs"/>
             <output_port name="loc_names"/>
             <output_port name="loc_poses"/>
+        </Action>
+        <Action ID="SetSpeed" editable="true">
+            <input_port name="speed"/>
         </Action>
         <Action ID="Spin" editable="true">
             <input_port name="anglestep" default="1.57"/>

@@ -3,11 +3,11 @@
       hmax_blue: 115
       hmax_purple: 140
       hmax_red: 10
-      hmin_blue: 105
+      hmin_blue: 107
       hmin_purple: 125
       hmin_red: 0
       use_sim_time: false
-      x_max: 79
-      x_min: 29
-      y_max: 46
-      y_min: 0
+      x_max: 100
+      x_min: 0
+      y_max: 100
+      y_min: 60

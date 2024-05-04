@@ -85,11 +85,11 @@ class intakeBallDetection(Node):
         upper_red = np.array([10, 255, 255])
         
         # define range of green color in HSV
-        lower_green = np.array([120, 0, 50])
+        lower_green = np.array([120, 50, 50])
         upper_green = np.array([145, 255, 255])
         
         # define range of blue color in HSV
-        lower_blue = np.array([100, 50, 50])
+        lower_blue = np.array([90, 50, 50])
         upper_blue = np.array([110, 255, 255])
 
         # create a mask for red color

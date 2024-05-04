@@ -1,7 +1,8 @@
 urg_node:
   ros__parameters:
-    angle_max: 2.2689 
-    angle_min: -2.2689 
+    angle_max: 2.0944 
+    angle_min: -2.0944 
+
     ip_port: 10940
     serial_port: "/dev/ttyACM0"
     serial_baud: 115200
@@ -14,5 +15,5 @@ urg_node:
     get_detailed_status: false
     publish_intensity: false
     publish_multiecho: false
-    cluster: 1
+    cluster: 3
     skip: 0

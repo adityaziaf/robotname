@@ -59,28 +59,21 @@ class yoloOnnxComponent : public rclcpp::Node {
     const std::string classnames = 
     ament_index_cpp::get_package_share_directory("robotname_perception") + "/config/ball.names";
 
-    // rclcpp::QoS qos(rclcpp::KeepLast(1), rmw_qos_profile_default);
-
-    // rgb_subs.subscribe(this, "/camera/color/image_raw"/*,qos.get_rmw_qos_profile()*/);
-    // depth_subs.subscribe(this, "/camera/aligned_depth_to_color/image_raw"/*,
-    //                      qos.get_rmw_qos_profile()*/);
-    // rgb_cam_info_subs.subscribe(this, "/camera/color/camera_info"/*,
-    //                             qos.get_rmw_qos_profile()*/);
-
-    // my_sync_ = std::make_shared<approximate_synchronizer>(approximate_policy(1),rgb_subs , depth_subs, rgb_cam_info_subs);
-    // my_sync_->getPolicy()->setMaxIntervalDuration(rclcpp::Duration(1,0));
-    // my_sync_->registerCallback(&yoloOnnxComponent::rgbd_callback, this);
-
     subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
-    "/image_raw", 1, std::bind(&yoloOnnxComponent::topic_callback, this, std::placeholders::_1));
+    "/omni/image_raw", 1, std::bind(&yoloOnnxComponent::topic_callback, this, std::placeholders::_1));
 
     annotated_img_pub =
-    this->create_publisher<sensor_msgs::msg::Image>("/annotated_img", 1);
-    detection_pub = this->create_publisher<robotname_msgs::msg::DetectionArray>(
-        "/objects/raw", 1);
+    this->create_publisher<sensor_msgs::msg::Image>("/omni/annotated_img", 1);
 
-    NetConfig DetectorConfig = {0.7, 0.5, modelpath, classnames};
+    detection_pub = this->create_publisher<robotname_msgs::msg::DetectionArray>(
+        "/omni/objects/raw", 1);
+
+    NetConfig DetectorConfig = {0.5, 0.5, modelpath, classnames};
     net = std::make_unique<YOLODetector>(DetectorConfig);
+
+    tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
   }
 
   ~yoloOnnxComponent() {}
@@ -98,58 +91,85 @@ class yoloOnnxComponent : public rclcpp::Node {
       const sensor_msgs::msg::Image::SharedPtr rgb_image) {
     cv_bridge::CvImagePtr rgb_ptr;
 
-    std::unique_ptr<robotname_msgs::msg::DetectionArray> objects(
-        new robotname_msgs::msg::DetectionArray());
-
     /* try conversion type from ROS Image type to OpenCV Image type*/
     try {
       rgb_ptr = cv_bridge::toCvCopy(rgb_image, sensor_msgs::image_encodings::BGR8);
     } catch (cv_bridge::Exception &e) {
       RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
     }
-
+    
     auto result = net->Detect(rgb_ptr->image);
 
-    for (auto &element : result) {
+    /*Iterate through the inference result*/
+
+    robotname_msgs::msg::DetectionArray objects;
+
+    try {
+        geometry_msgs::msg::TransformStamped transform =
+   tf_buffer_->lookupTransform("base_link",
+                              "omnicam_link",
+                              tf2::TimePointZero);
+    geometry_msgs::msg::TransformStamped transform_map =
+   tf_buffer_->lookupTransform("map",
+                              "base_link",
+                              tf2::TimePointZero);
+
+    for(auto &element : result)
+    {
       cv::Point2d pixel;
       cv::Point3d obj_coor;
-
       robotname_msgs::msg::Detection object;
 
-      /* Get the center point of the bounding box*/
-      pixel.x = element.cx;
-      pixel.y = element.cy;
+         /* Get the center point of the bounding box*/
+        pixel.x = -element.cx;
+        pixel.y = element.cy;
 
-      /* Pack information into vision msgs detections*/
-      object.pose.header.frame_id = rgb_ptr->header.frame_id;
-      object.pose.header.stamp = rgb_ptr->header.stamp;
-      object.classname = net->classNames[element.label];
-      object.score = element.score;
-      // object.pose.pose.position.x = obj_coor.z * depth_at;
-      // object.pose.pose.position.y = -obj_coor.x * depth_at;
-      // object.pose.pose.position.z = -obj_coor.y * depth_at;
+        float distancex = pixel.x + 313; //center x
+        float distancey = pixel.y - 230; //center y
 
-      float distancex = pixel.x - 313; //center x
-      float distancey = pixel.y - 230; //center y
+        float objdistance = std::hypot(distancex,distancey);
+        float theta = std::atan2(distancey, distancex);
 
-      float objdistance = std::hypot(distancex,distancey);
-      float theta = std::atan2(distancey, distancex);
+        float real_dist = 0.004310*objdistance - 0.475;
+        if (real_dist < 0.0) real_dist = 0.0;             
+        
+        //omnicam_link to base_link
+        geometry_msgs::msg::PoseStamped poseInSourceFrame, poseInTargetFrame,poseinTargetMap;
+        poseInSourceFrame.pose.position.x = real_dist*sin(theta);
+        poseInSourceFrame.pose.position.y = real_dist*cos(theta);
+        poseInSourceFrame.pose.position.z = 0.0;
+        poseInSourceFrame.header.frame_id = "omnicam_link";
+        tf2::doTransform(poseInSourceFrame, poseInTargetFrame, transform);
+        
+        tf2::Quaternion quat;
+        quat.setRPY(0.0, 0.0, std::atan2(poseInTargetFrame.pose.position.y, poseInTargetFrame.pose.position.x));
+        poseInTargetFrame.pose.set__orientation(tf2::toMsg(quat)); // Roll, pitch, yaw
+        tf2::doTransform(poseInTargetFrame, poseinTargetMap, transform_map);
 
-      float real_dist = 0.004310*objdistance;
-      if (real_dist < 0.0) real_dist = 0.0;             
-      tf2::Quaternion quat;
-      quat.setRPY(0.0, 0.0, theta-M_PI/2); // Roll, pitch, yaw
-      tf2::convert(quat, object.pose.pose.orientation);
-      object.pose.pose.position.x = real_dist;
-      object.pose.pose.position.y = 0;
-      object.pose.pose.position.z = 0;
+         /* Pack information into vision msgs detections*/
+                
+        object.classname = net->classNames[element.label];
+        object.pixelx = pixel.x;
+        object.pixely = pixel.y;
+        object.score = element.score;
+        object.pose.set__header(poseinTargetMap.header);
+        object.pose.set__pose(poseinTargetMap.pose);
+       
 
-      objects->detections.push_back(object);
+        objects.detections.push_back(object);
     }
+      } catch (const tf2::TransformException &ex) {
+        RCLCPP_INFO(this->get_logger(), "Could not transform");
+                    return;
+      }
+                              
+    
+    
+    detection_pub->publish(objects);
     // rgb_ptr->image = yolomodel->annotated_img(rgb_ptr->image, result);
     net->DrawBoxes(rgb_ptr->image, result);
     annotated_img_pub->publish(*rgb_ptr->toImageMsg());
-    detection_pub->publish(std::move(objects));
+    
   }
 
   // message_filters::Subscriber<sensor_msgs::msg::Image> rgb_subs;
@@ -171,6 +191,10 @@ class yoloOnnxComponent : public rclcpp::Node {
       detection_pub;
   rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr annotated_img_pub;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
+
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+  geometry_msgs::msg::TransformStamped transform;
 
 };
 
