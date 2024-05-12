@@ -34,6 +34,13 @@ def generate_launch_description():
         output='screen'
     )
     
+    ballcounter = Node(
+        package='robotname_hardware',
+        executable='ballcounter',
+        name='ballcounter',
+        output='screen'
+    )
+
     lidar = Node(
         package='urg_node',
         executable='urg_node_driver',
@@ -103,12 +110,19 @@ def generate_launch_description():
         }.items()
     )
     
+    autonomy = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('robotname_autonomy'),'launch'),'/server.launch.py']
+        )
+    )
+
     return LaunchDescription([
         DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path,
                                             description='Absolute path to rviz config file'),
         DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
         hardware,
+        ballcounter,
         lidar,
         robot_state_publisher_node,
         joint_state_publisher_node,
@@ -116,5 +130,6 @@ def generate_launch_description():
         rviz_node,
         #odom_to_map,
         nav_localization,
-        nav_navigation
+        nav_navigation,
+        autonomy
     ])

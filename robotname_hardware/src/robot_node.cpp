@@ -65,9 +65,18 @@ struct send_to_robot {
 	  float lift_speed;
     float drib_speed;
   }ball_drib;
-};
 
-struct recv_from_robot {
+  struct
+  {
+    uint8_t num_of_beep;
+    uint8_t on_time;
+    uint8_t off_time;
+  }buzzer;
+  
+}fromROS_t;
+
+
+typedef struct recv_from_robot {
   uint32_t timestamp;
 
   struct {
@@ -81,18 +90,19 @@ struct recv_from_robot {
     float y;
     float theta;
   } body_speed;
-  
-  struct {
-    float roll;
-    float pitch;
-    float yaw;
-  } body_angle;
 
-  float linear_speed[3];
+  struct{
+	  float roll;
+	  float pitch;
+	  float yaw;
+  }body_angle;
+
+  float linear_accel[3];
   float angular_speed[3];
   union {
     struct {
       uint8_t odom_sensor : 1;
+      uint8_t start_button : 1;
     };
     uint16_t sensor_status;
   };
@@ -100,11 +110,15 @@ struct recv_from_robot {
   float v_bat;
   uint32_t global_flag;
 
-  struct {
-    float distance; 
-  } ball_drib;
+  struct{
+//	uint8_t drib_status;
+//	uint8_t lift_status;
+//	float lift_pos;
+	float distance;
+  uint8_t proximity_array[3]; //dari bawah ke atas
 
-};
+  }ball_drib;
+}toROS_t;
 
 send_to_robot send_data;
 recv_from_robot recv_data;
@@ -146,7 +160,9 @@ robotNode::robotNode() : Node("robot_node") {
   mekanism_sub = this->create_subscription<std_msgs::msg::Float32MultiArray>(
     "set_mekanism",10,std::bind(&robotNode::set_mekanism,this,std::placeholders::_1));
 
-  proximity_pub = this->create_publisher<std_msgs::msg::Float32>("proximity",qos);
+  proximity_pub = this->create_publisher<std_msgs::msg::Float32>("proximity",10);
+
+  proximityarray_pub = this->create_publisher<std_msgs::msg::UInt8MultiArray>("proximity_array",10);
   /* Subscriber */
 
   // run_status_sub          = this->create_subscription<std_msgs::msg::Bool> (
@@ -249,8 +265,8 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     else if((button_t != LIFT_SPEED_DOWN) && (button_t != LIFT_SPEED_UP) && (lift_flag == 1))lift_flag = 0;
 
     if(send_data.ball_drib.drib_speed > DRIB_MAX_SPEED)send_data.ball_drib.drib_speed = DRIB_MAX_SPEED;
-    else if(send_data.ball_drib.drib_speed < 0)send_data.ball_drib.drib_speed = 0;
-
+    // else if(send_data.ball_drib.drib_speed < 0)send_data.ball_drib.drib_speed = 0;
+     if(send_data.ball_drib.drib_speed < -3)send_data.ball_drib.drib_speed = -3;
     // if(button_t == BTN_UP)send_data.ball_drib.lift_speed+=0.2;
     // else if(button_t == BTN_DOWN)send_data.ball_drib.lift_speed-=0.2;
     if(send_data.ball_drib.lift_speed > LIFT_MAX_SPEED)send_data.ball_drib.lift_speed = LIFT_MAX_SPEED;
@@ -267,7 +283,9 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
  * timer di constructor class ini
  */
 int robotNode::udpLoop() {
-  //terima
+  //terima = this->create_publisher<std_msgs::msg::Float32MultiArray>("proximity_array",10);
+  /* Subscriber */
+
   int ret = n_udp.receive();
   // std::cout<<ret<<std::endl;
   if (ret > 0) {  // jika tidak ada atau error, ret == -1
@@ -325,9 +343,9 @@ int robotNode::udpLoop() {
     auto imu = sensor_msgs::msg::Imu();
     imu.header.frame_id = "imu";
     imu.header.stamp = this->get_clock()->now();
-    imu.linear_acceleration.x = recv_data.linear_speed[0];
-    imu.linear_acceleration.y = recv_data.linear_speed[1];
-    imu.linear_acceleration.z = recv_data.linear_speed[2];
+    imu.linear_acceleration.x = recv_data.linear_accel[0];
+    imu.linear_acceleration.y = recv_data.linear_accel[1];
+    imu.linear_acceleration.z = recv_data.linear_accel[2];
     imu.angular_velocity.x = recv_data.angular_speed[0];
     imu.angular_velocity.y = recv_data.angular_speed[1];
     imu.angular_velocity.z = recv_data.angular_speed[2];
@@ -358,6 +376,12 @@ int robotNode::udpLoop() {
     std_msgs::msg::Float32 prox; 
     prox.data = recv_data.ball_drib.distance;
     proximity_pub->publish(prox);
+
+    std_msgs::msg::UInt8MultiArray proximity_array_data;
+    proximity_array_data.data.push_back(recv_data.ball_drib.proximity_array[0]);
+    proximity_array_data.data.push_back(recv_data.ball_drib.proximity_array[1]);
+    proximity_array_data.data.push_back(recv_data.ball_drib.proximity_array[2]);
+    proximityarray_pub->publish(proximity_array_data);
   }
   //return 0;
 }

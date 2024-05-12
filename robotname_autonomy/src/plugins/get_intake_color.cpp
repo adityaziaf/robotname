@@ -1,38 +1,53 @@
-#include <std_msgs/msg/string.hpp>
 #include "robotname_autonomy/plugins/get_intake_color.hpp"
+#include "behaviortree_ros2/plugins.hpp"
 
-PortsList GetIntakeColor::providedPorts()
+
+BT::PortsList GetIntakeColor::providedPorts()
 {
-    return { OutputPort<std::string>("color") };
+    return { InputPort<std::string>("color")};
+}
+bool GetIntakeColor::setGoal(RosActionNode::Goal &goal)
+{
+  auto data = getInput<std::string>("color");
+  goal.color = data.value();
+
+  return true;
 }
 
-
-bool GetIntakeColor::setRequest(std_srvs::srv::Trigger::Request::SharedPtr& request)
+NodeStatus GetIntakeColor::onResultReceived(const RosActionNode::WrappedResult &wr)
 {
-  (void)request;
-    // use input ports to set A and B
-    // must return true if we are ready to send the request
-    return true;
+//   RCLCPP_INFO( node_->get_logger(), "%s: onResultReceived. Done = %s", name().c_str(), 
+//                wr.result->result );
+
+  if(wr.code == rclcpp_action::ResultCode::SUCCEEDED)
+  {
+    RCLCPP_INFO( node_->get_logger(), "[GetIntakeColor] Goal Reached");
+    return NodeStatus::SUCCESS;
+  }
+  
+    RCLCPP_INFO( node_->get_logger(), "[GetIntakeColor] Goal Failed");
+    return NodeStatus::FAILURE;
 }
 
-NodeStatus GetIntakeColor::onResponseReceived(const std_srvs::srv::Trigger::Response::SharedPtr& response) 
-  {
-    
-    if(response->success)
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] IntakeBall Found with color %s", name().c_str(), response->message.c_str());
-      setOutput("color",response->message);
-      //RCLCPP_INFO(node_->get_logger(), "Sum: %ld", response->sum);
-      return NodeStatus::SUCCESS;
-    }
-    RCLCPP_INFO(node_->get_logger(), "[%s] Failed retrieve Intakeball", name().c_str());
-    return NodeStatus::FAILURE;
-  }
+NodeStatus GetIntakeColor::onFeedback(const std::shared_ptr<const Feedback> feedback)
+{
+  
+  RCLCPP_INFO( node_->get_logger(), "[GetIntakeColor] current color: %s", feedback->current_color.c_str());
+  
+  return NodeStatus::RUNNING;
+}
 
-NodeStatus GetIntakeColor::onFailure(ServiceNodeErrorCode error) 
-  {
-    RCLCPP_ERROR(node_->get_logger(), "[%s] Error: %d", name().c_str(), error);
-    return NodeStatus::FAILURE;
-  }
+NodeStatus GetIntakeColor::onFailure(ActionNodeErrorCode error)
+{
+  RCLCPP_ERROR( node_->get_logger(), "[GetIntakeColor] %s: onFailure with error: %s", name().c_str(), toStr(error) );
+  return NodeStatus::FAILURE;
+}
 
+void GetIntakeColor::onHalt()
+{
+  RCLCPP_INFO( node_->get_logger(), "[GetIntakeColor] %s: onHalt", name().c_str() );
+}
 
+// Plugin registration.
+// The class GetIntakeColor will self register with name  "Sleep".
+// CreateRosNodePlugin(GetIntakeColor, "GetIntakeColor");

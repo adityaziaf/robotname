@@ -1,0 +1,23 @@
+/**:
+    ros__parameters:
+      video_device: "/dev/video4"
+      framerate: 30.0
+      io_method: "mmap"
+      frame_id: "camera_intake"
+      pixel_format: "mjpeg2rgb"
+      av_device_format: "YUV422P"
+      image_width: 320
+      image_height: 240
+      camera_name: "cameraintake2"
+      # reusing same camera intrinsics only for demo, should really be unique for camera2"
+      # camera_info_url: "package://usb_cam/config/camera_info.yaml"
+      brightness: 100
+      contrast: 100
+      saturation: 100
+      sharpness: 0
+      gain: 0
+      auto_white_balance: false
+      white_balance: 3000
+      autoexposure: true
+      exposure: 100
+      autofocus: true

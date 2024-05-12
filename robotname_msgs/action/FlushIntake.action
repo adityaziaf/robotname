@@ -1,0 +1,5 @@
+int32 target_remaining_ball
+---
+int32 status
+---
+int32 remaining_ball

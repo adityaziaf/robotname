@@ -6,9 +6,20 @@
 #include "robotname_autonomy/plugins/follow_path.hpp"
 #include "robotname_autonomy/plugins/ball_available.hpp"
 #include "robotname_autonomy/plugins/set_speed.hpp"
-
+#include "robotname_autonomy/plugins/get_intake_distance.hpp"
+#include "robotname_autonomy/plugins/get_intake_proximity_array.hpp"
+#include "robotname_autonomy/plugins/get_ball_grabbed.hpp"
+#include "robotname_autonomy/plugins/flush_intake.hpp"
+#include "robotname_autonomy/plugins/follow_ball.hpp"
+#include "robotname_autonomy/plugins/get_nearest_ball.hpp"
+#include "robotname_autonomy/plugins/grab_nearest_ball.hpp"
+#include "robotname_autonomy/plugins/ball_grabbed.hpp"
+#include "robotname_autonomy/plugins/amcl_update.hpp"
+#include "robotname_autonomy/plugins/reset_ball_grabbed.hpp"
+#include "robotname_autonomy/plugins/get_ball_grabbed_top.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
+
 
 const std::string default_bt_xml_file = 
     ament_index_cpp::get_package_share_directory("robotname_autonomy") + "/bt_xml/findobject.xml";
@@ -30,26 +41,26 @@ int main(int argc, char **argv)
 
   RosNodeParams pub_param;
   pub_param.nh = nh;
-  pub_param.default_port_value = "/set_mekanism";
+  pub_param.default_port_value = "/set_intake_mechanism";
   factory.registerNodeType<SetIntakeMechanism>("SetIntakeMechanism",pub_param);
 
   RosNodeParams nav_param;
   nav_param.nh = nh;
   nav_param.default_port_value = "/navigate_to_pose";
-  nav_param.server_timeout = std::chrono::seconds(5);
+  nav_param.server_timeout = std::chrono::seconds(10);
   nav_param.wait_for_server_timeout = std::chrono::seconds(10);
   factory.registerNodeType<NavToPose>("NavToPose", nav_param);
 
   RosNodeParams navt_param;
   navt_param.nh = nh;
   navt_param.default_port_value = "/navigate_through_poses";
-  navt_param.server_timeout = std::chrono::seconds(5);
+  navt_param.server_timeout = std::chrono::seconds(10);
   navt_param.wait_for_server_timeout = std::chrono::seconds(10);
   factory.registerNodeType<NavThroughPoses>("NavThroughPoses", navt_param);
 
   RosNodeParams follow;
   follow.nh = nh;
-  follow.default_port_value = "/goal_pose";
+  follow.default_port_value = "/follow_path";
   follow.server_timeout = std::chrono::seconds(5);
   follow.wait_for_server_timeout = std::chrono::seconds(10);
   factory.registerNodeType<FollowPose>("FollowPose", follow);
@@ -69,27 +80,71 @@ int main(int argc, char **argv)
   setspeed.default_port_value = "/set_speed";
   factory.registerNodeType<SetSpeed>("SetSpeed", setspeed);
 
+  RosNodeParams intakedis;
+  intakedis.nh = nh;
+  intakedis.default_port_value = "/get_intake_distance";
+  factory.registerNodeType<GetIntakeDistance>("GetIntakeDistance", intakedis);
+
+  RosNodeParams proximityarrayconfig;
+  proximityarrayconfig.nh = nh;
+  proximityarrayconfig.default_port_value = "/get_intake_proximity_array";
+  factory.registerNodeType<GetIntakeProximityArray>("GetIntakeProximityArray", proximityarrayconfig);
+
+  RosNodeParams ballgrabbedconfig;
+  ballgrabbedconfig.nh = nh;
+  ballgrabbedconfig.default_port_value = "/get_ball_grabbed";
+  factory.registerNodeType<GetBallGrabbed>("GetBallGrabbed", ballgrabbedconfig);
+
+  RosNodeParams flushconfig;
+  flushconfig.nh = nh;
+  flushconfig.default_port_value = "/flush_intake";
+  factory.registerNodeType<FlushIntake>("FlushIntake", flushconfig);
+
+  RosNodeParams followballconfig;
+  followballconfig.nh = nh;
+  followballconfig.default_port_value = "/follow_ball";
+  factory.registerNodeType<Follow>("Follow", followballconfig);
+
+  RosNodeParams getnearestballconfig;
+  getnearestballconfig.nh = nh;
+  getnearestballconfig.default_port_value = "/get_nearest_ball";
+  factory.registerNodeType<GetNearestBall>("GetNearestBall", getnearestballconfig);
+
+  RosNodeParams grabnearestballconfig;
+  grabnearestballconfig.nh = nh;
+  grabnearestballconfig.default_port_value = "/omni/objects/tracked";
+  factory.registerNodeType<GrabNearestBall>("GrabNearestBall", grabnearestballconfig);
+
+  RosNodeParams ballgrabbed;
+  ballgrabbed.nh = nh;
+  ballgrabbed.default_port_value = "/ballgrabbed";
+  factory.registerNodeType<BallGrabbed>("BallGrabbed", ballgrabbed);
+
+  RosNodeParams amclupdateocnfig;
+  amclupdateocnfig.nh = nh;
+  amclupdateocnfig.default_port_value = "/request_nomotion_update";
+  factory.registerNodeType<AMCLUpdate>("AMCLUpdate", amclupdateocnfig);
+
+  RosNodeParams resetball;
+  resetball.nh = nh;
+  resetball.default_port_value = "/reset_ball_grabbed";
+  factory.registerNodeType<ResetBallGrabbed>("ResetBallGrabbed", resetball);
+
+  RosNodeParams ballgrabtop;
+  ballgrabtop.nh = nh;
+  ballgrabtop.default_port_value = "/get_ball_grabbed_top";
+  factory.registerNodeType<GetBallGrabbedTop>("GetBallGrabbedTop", ballgrabtop);
 
   auto tree = factory.createTreeFromFile(default_bt_xml_file);
 
+  
+
   BT::NodeStatus status;
-  //status = tree.tickOnce();
-  // while(status == NodeStatus::RUNNING || status == NodeStatus::FAILURE) 
-  // {
-  //   // Sleep to avoid busy loops.
-  //   // do NOT use other sleep functions!
-  //   // Small sleep time is OK, here we use a large one only to
-  //   // have less messages on the console.
-  //   tree.sleep(std::chrono::milliseconds(10));
-  //   //std::cout << "--- Tree ticking ---\n";
-  //   status = tree.tickOnce();
-  //   std::cout << "--- Tree status: " << toStr(status) << " ---\n\n";
-  // }
   while(!BT::isStatusCompleted(status)) 
 {
-  status = tree.tickOnce();
+  status = tree.tickWhileRunning();
   std::cout << "--- Tree status: " << toStr(status) << " ---\n\n";
-  tree.sleep(std::chrono::milliseconds(10));
+  tree.sleep(std::chrono::milliseconds(20));
 }
   
 

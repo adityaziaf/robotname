@@ -2,14 +2,17 @@
 <root BTCPP_format="4" project_name="Project">
     <include path="../bt_xml/cobaobjects.xml"/>
     <include path="../bt_xml/findobject.xml"/>
+    <include path="../bt_xml/newapi.xml"/>
     <include path="../bt_xml/robotmove.xml"/>
     <!-- Description of Node Models (used by Groot) -->
     <TreeNodesModel>
+        <Action ID="AMCLUpdate" editable="true"/>
         <Action ID="BallAvailable" editable="true">
             <input_port name="id"/>
             <input_port name="color"/>
             <output_port name="position"/>
         </Action>
+        <Condition ID="BallGrabbed" editable="true"/>
         <Action ID="FindNearestBall" editable="true">
             <output_port name="id"/>
             <input_port name="color"/>
@@ -18,12 +21,33 @@
             <input_port name="object"/>
             <output_port name="id"/>
         </Action>
+        <Action ID="FlushIntake" editable="true">
+            <input_port name="target_remaining_ball"/>
+        </Action>
+        <Action ID="Follow" editable="true">
+            <input_port name="color"/>
+            <input_port name="id"/>
+        </Action>
         <Condition ID="FollowPose" editable="true">
             <input_port name="frame_id"/>
             <input_port name="goal"/>
         </Condition>
+        <Action ID="GetBallGrabbed" editable="true">
+            <input_port name="color"/>
+        </Action>
+        <Action ID="GetBallGrabbedTop" editable="true">
+            <input_port name="color"/>
+        </Action>
         <Action ID="GetIntakeColor" editable="true">
-            <output_port name="color"/>
+            <input_port name="color"/>
+        </Action>
+        <Action ID="GetIntakeDistance" editable="true">
+            <input_port name="condition"/>
+            <input_port name="treshold"/>
+            <output_port name="distance"/>
+        </Action>
+        <Action ID="GetIntakeProximityArray" editable="true">
+            <input_port name="pattern"/>
         </Action>
         <Action ID="GoThroughPoses" editable="true">
             <input_port name="goals"/>
@@ -31,6 +55,10 @@
         <Action ID="GoToPose" editable="true">
             <input_port name="goal"/>
         </Action>
+        <Condition ID="GrabNearestBall" editable="true">
+            <input_port name="color"/>
+            <output_port name="id"/>
+        </Condition>
         <Action ID="NavThroughPoses" editable="true">
             <input_port name="frame_id"/>
             <input_port name="goals"/>
@@ -39,6 +67,7 @@
             <input_port name="frame_id"/>
             <input_port name="goal"/>
         </Action>
+        <Action ID="ResetBallGrabbed" editable="true"/>
         <Condition ID="SetIntakeMechanism" editable="true">
             <input_port name="dribble"/>
             <input_port name="lift"/>

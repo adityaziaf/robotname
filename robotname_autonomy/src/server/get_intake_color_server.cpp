@@ -10,7 +10,7 @@ class GetIntakeColor : public rclcpp::Node {
   public:
     GetIntakeColor() : Node("GetIntakeColor")
     {
-        rmw_qos_profile_t qos_profile = rmw_qos_profile_default;
+        rmw_qos_profile_t qos_profile = rmw_qos_profile_services_default;
 
       _service = this->create_service<std_srvs::srv::Trigger>("get_intake_color",
         std::bind(&GetIntakeColor::handle_service, this, _1, _2),

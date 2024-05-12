@@ -10,7 +10,7 @@ class SetSpeed : public rclcpp::Node {
   public:
     SetSpeed() : Node("SetSpeed")
     {
-        rmw_qos_profile_t qos_profile = rmw_qos_profile_default;
+        rmw_qos_profile_t qos_profile = rmw_qos_profile_services_default;
 
       _service = this->create_service<robotname_msgs::srv::SetSpeed>("set_speed",
         std::bind(&SetSpeed::handle_service, this, _1, _2),

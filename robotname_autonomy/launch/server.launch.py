@@ -43,9 +43,88 @@ def generate_launch_description():
         output='screen'
     )
     
+    intake_distance = Node(
+        package='robotname_autonomy',
+        executable='get_intake_distance_server',
+        name='get_intake_distance',
+        output='screen'
+    )
+
+    intake_proximity_array = Node(
+        package='robotname_autonomy',
+        executable='get_intake_proximity_array_server',
+        name='get_intake_proximity_array',
+        output='screen'
+    )
+
+    set_intake_mechanism = Node(
+        package='robotname_autonomy',
+        executable='set_intake_mechanism_server',
+        name='set_intake_mechanism',
+        output='screen'
+    )
+
+    ball_grabbed = Node(
+        package='robotname_autonomy',
+        executable='get_ball_grabbed_server',
+        name='get_ball_grabbeds',
+        output='screen'
+    )
+
+    ball_grabbed_top = Node(
+        package='robotname_autonomy',
+        executable='get_ball_grabbed_top_server',
+        name='get_ball_grabbeds_top',
+        output='screen'
+    )
+
+    flush = Node(
+        package='robotname_autonomy',
+        executable='flush_intake_server',
+        name='flush_intake',
+        output='screen'
+    )
+
+    follow_ball = Node(
+        package='robotname_autonomy',
+        executable='follow_ball_server',
+        name='follow_ball',
+        output='screen'
+    )
+
+    follow_path = Node(
+        package='robotname_autonomy',
+        executable='follow_path_server',
+        name='follow_path',
+        output='screen'
+    )
+    get_nearest_ball = Node(
+        package='robotname_autonomy',
+        executable='get_nearest_ball_server',
+        name='get_nearest_ball',
+        output='screen'
+    )
+
+    resetball = Node(
+        package='robotname_autonomy',
+        executable='reset_ball_grabbed_server',
+        name='reset_ball_grabbed',
+        output='screen'
+    )
+
     return LaunchDescription([
         get_intake_color,
         find_nearest_ball,
         ball_available,
-        set_speed
+        set_speed,
+        intake_distance,
+        intake_proximity_array,
+        set_intake_mechanism,
+        ball_grabbed,
+        flush,
+        follow_ball,
+        follow_path,
+        get_nearest_ball,
+        resetball,
+        ball_grabbed_top
     ])

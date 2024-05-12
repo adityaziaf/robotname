@@ -23,6 +23,15 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/FindNearestBall.srv"
   "srv/BallAvailable.srv"
   "srv/SetSpeed.srv"
+  "srv/GetIntakeDistance.srv"
+  "action/GetIntakeColor.action"
+  "action/GetIntakeProximityArray.action"
+  "srv/SetIntakeMechanism.srv"
+  "action/FindNearestBall.action"
+  "action/GetBallGrabbed.action"
+  "action/FlushIntake.action"
+  "action/Follow.action"
+  "srv/FollowPose.srv"
   DEPENDENCIES geometry_msgs std_msgs nav_msgs# Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg
 )
 

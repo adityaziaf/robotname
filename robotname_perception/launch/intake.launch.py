@@ -35,6 +35,12 @@ def generate_launch_description():
       'intakeprocess_params.yaml'
       )
     
+    top_config = os.path.join(
+      get_package_share_directory('robotname_perception'),
+      'config',
+      'top_params.yaml'
+      )
+    
     intakecam = Node(
         package='usb_cam',
         executable='usb_cam_node_exe',
@@ -54,33 +60,56 @@ def generate_launch_description():
         
     )
 
+    topcam= Node(
+        package='usb_cam',
+        executable='usb_cam_node_exe',
+        namespace='intake2',
+        name='usb_cam_node_exe',
+        output='screen',
+        parameters=[top_config],
+        
+    )
+
+
     intakeprocessing = Node(
         package='robotname_perception',
         executable='intakeprocess.py',
         name='intakeprocess',
+        namespace='intake',
         output='screen',
-        parameters=[intakeprocess_config]
+        parameters=[intakeprocess_config],
+        
         
     )
     
+    topprocessing = Node(
+        package='robotname_perception',
+        executable='topprocess.py',
+        name='intakeprocess',
+        output='screen',
+        namespace='intake2'
+        #parameters=[intakeprocess_config]
+        
+    )
+
     container = ComposableNodeContainer(
             name='my_container',
             namespace='omni',
             package='rclcpp_components',
             executable='component_container',
             composable_node_descriptions=[
-                ComposableNode(
-                    package='robotname_perception',
-                    plugin='robotname_perception::yoloOnnxComponent',
-                    name='yolodetector',
-                    namespace='omni',
-                    extra_arguments=[{'use_intra_process_comms': True}]
-                ),
+                # ComposableNode(
+                #     package='robotname_perception',
+                #     plugin='robotname_perception::yoloOnnxComponent',
+                #     name='yolodetector',
+                #     namespace='omni',
+                #     extra_arguments=[{'use_intra_process_comms': True}]
+                # ),
                 ComposableNode(
                     package='robotname_perception',
                     plugin='robotname_perception::visualizeComponent',
                     name='visualize',
-                    extra_arguments=[{'use_intra_process_comms': True}]
+                    extra_arguments=[{'use_intra_process_comms': False}]
                 )
             ],
             output='screen',
@@ -92,10 +121,28 @@ def generate_launch_description():
         output='screen'
     )
 
+    detector_node_cmd = Node(
+        package="robotname_perception_py",
+        executable="yolov5_node",
+        name="yolov5_node",
+        # parameters=[{
+        #     "model": "home/itsrobocon3/robot_ws/omni.pt",
+        #     # "device": device,
+        #     # "enable": enable,
+        #     # "threshold": threshold,
+        #     # "image_reliability": image_reliability,
+        # }],
+        # remappings=[("image_raw", input_image_topic)]
+    )
+
     return LaunchDescription([
         intakecam,
         intakeprocessing,
         omnicam,
+        
+        topcam,
+        topprocessing,
+        detector_node_cmd,
         container,
         tracker
     ])

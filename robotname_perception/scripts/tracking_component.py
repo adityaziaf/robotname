@@ -21,12 +21,12 @@ class trackingComponent(Node):
         # Norfair tracker initialization
         self.tracker = Tracker(
             distance_function="euclidean",#norfair_setup["distance_function"],
-            distance_threshold=0.5,#norfair_setup["distance_threshold"],
+            distance_threshold=0.4,#norfair_setup["distance_threshold"],
             # hit_counter_max=15,#norfair_setup["hit_counter_max"],
             initialization_delay=3,#norfair_setup["initialization_delay"],
             # pointwise_hit_counter_max=4,#norfair_setup["pointwise_hit_counter_max"],
             # detection_threshold=10,#norfair_setup["detection_threshold"],
-            past_detections_length=8,#norfair_setup["past_detections_length"],
+            past_detections_length=5,#norfair_setup["past_detections_length"],
         )
         
 

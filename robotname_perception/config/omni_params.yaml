@@ -13,12 +13,12 @@
       # camera_info_url: "package://usb_cam/config/camera_info.yaml"
       brightness: 100
       contrast: 0
-      saturation: 150
+      saturation: 300
       sharpness: 0
-      gain: 120
+      gain: 200
       auto_white_balance: true
-      white_balance: 4000
+      white_balance: 7000
       autoexposure: true
       exposure: 100
-      autofocus: false
+      autofocus: true
       focus: 60

@@ -15,11 +15,9 @@
       contrast: 100
       saturation: 100
       sharpness: 0
-      gain: 10
+      gain: 0
       auto_white_balance: false
-      white_balance: 4000
-      autoexposure: false
+      white_balance: 3000
+      autoexposure: true
       exposure: 100
-      autofocus: false
-      focus: 30
-      auto_brightness: false
+      autofocus: true

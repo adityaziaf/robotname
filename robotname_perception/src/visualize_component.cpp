@@ -51,19 +51,19 @@ class visualizeComponent : public rclcpp::Node {
         marker.scale.z = 0.2;
         marker.color.a = 1.0;
 
-        if(object->classname == "redball")
+        if(object->classname == "red")
         {
             marker.color.r = 1.0;
             marker.color.g = 0.0;
             marker.color.b = 0.0;
         }
-        else if(object->classname == "blueball")
+        else if(object->classname == "blue")
         {
             marker.color.r = 0.0;
             marker.color.g = 0.0;
             marker.color.b = 1.0;
         }
-        else if(object->classname == "purpleball")
+        else if(object->classname == "purple")
         {
             marker.color.r = 0.8;
             marker.color.g = 0.1;

@@ -52,9 +52,21 @@ ament_target_dependencies(
   sensor_msgs
 )
 
+add_executable(
+  ballcounter 
+  src/ball_counter.cpp 
+)
+
+ament_target_dependencies(
+  ballcounter
+  rclcpp 
+  std_msgs 
+)
+
 install(TARGETS
   robot_node
   joy_node
+  ballcounter
   DESTINATION lib/${PROJECT_NAME})
 
 

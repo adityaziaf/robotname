@@ -58,7 +58,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(name='use_sim_time', default_value='true',
                                             description='Flag to enable use_sim_time'),
-        #trans,
+        trans,
         nav_localization,
         #slamtool
         nav_navigation

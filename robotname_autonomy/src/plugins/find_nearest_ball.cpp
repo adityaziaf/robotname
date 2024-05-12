@@ -1,47 +1,54 @@
 #include "robotname_autonomy/plugins/find_nearest_ball.hpp"
-#include "robotname_msgs/msg/detection_array.hpp"
+#include "behaviortree_ros2/plugins.hpp"
 
-#include "tf2/LinearMath/Quaternion.h"
-#include "tf2/exceptions.h"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include "robotname_msgs/msg/detection_array.hpp"
-#include "tf2/utils.h"
-
-#include "robotname_autonomy/utils.hpp"
 
 BT::PortsList FindNearestBall::providedPorts()
 {
-    return {InputPort<std::string>("color"), OutputPort<int32_t>("id") };
+    return { InputPort<std::string>("color"), OutputPort<int>("id")};
 }
-
-bool FindNearestBall::setRequest(robotname_msgs::srv::FindNearestBall::Request::SharedPtr& request)
+bool FindNearestBall::setGoal(RosActionNode::Goal &goal)
 {
-    // use input ports to set A and B
-    getInput("color", request->color);
-    // must return true if we are ready to send the request
-    return true;
+  auto data = getInput<std::string>("color");
+  goal.color = data.value();
+
+  return true;
 }
 
-NodeStatus FindNearestBall::onResponseReceived(const robotname_msgs::srv::FindNearestBall::Response::SharedPtr& response) 
+NodeStatus FindNearestBall::onResultReceived(const RosActionNode::WrappedResult &wr)
+{
+//   RCLCPP_INFO( node_->get_logger(), "%s: onResultReceived. Done = %s", name().c_str(), 
+//                wr.result->result );
+
+  if(wr.code == rclcpp_action::ResultCode::SUCCEEDED)
   {
-    
-    if(response->status)
-    {
-      RCLCPP_INFO(node_->get_logger(), "[%s] Ball Found with id %d", name().c_str(), response->id);
-      setOutput("id",response->id);
-    //RCLCPP_INFO(node_->get_logger(), "Sum: %ld", response->sum);
-      return NodeStatus::SUCCESS;
-    }
-    
-    RCLCPP_INFO(node_->get_logger(), "[%s] Ball not found with id %d", name().c_str(), response->id);
-    return NodeStatus::FAILURE;
-    
+    setOutput("id", wr.result->id);
+    RCLCPP_INFO( node_->get_logger(), "[FindNearestBall] Ball found with id:%d", wr.result->id);
+    return NodeStatus::SUCCESS;
   }
-
-NodeStatus FindNearestBall::onFailure(ServiceNodeErrorCode error) 
-  {
-    RCLCPP_ERROR(node_->get_logger(), "[%s] Error: %d", name().c_str(), error);
+  
+    RCLCPP_INFO( node_->get_logger(), "[FindNearestBall] Ball not found");
     return NodeStatus::FAILURE;
-  }
+}
 
+NodeStatus FindNearestBall::onFeedback(const std::shared_ptr<const Feedback> feedback)
+{
+  
+  //RCLCPP_INFO( node_->get_logger(), "[FindNearestBall] current color: %s", feedback->current_reading.c_str());
+  
+  return NodeStatus::RUNNING;
+}
 
+NodeStatus FindNearestBall::onFailure(ActionNodeErrorCode error)
+{
+  RCLCPP_ERROR( node_->get_logger(), "[FindNearestBall] %s: onFailure with error: %s", name().c_str(), toStr(error) );
+  return NodeStatus::FAILURE;
+}
+
+void FindNearestBall::onHalt()
+{
+  RCLCPP_INFO( node_->get_logger(), "[FindNearestBall] %s: onHalt", name().c_str() );
+}
+
+// Plugin registration.
+// The class FindNearestBall will self register with name  "Sleep".
+// CreateRosNodePlugin(FindNearestBall, "FindNearestBall");

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="findandfollow">
+    <Sequence>
+      <Fallback>
+        <BallAvailable id=""
+                       color=""
+                       position=""/>
+        <FindNearestBall id=""
+                         color=""/>
+      </Fallback>
+      <Parallel failure_count="1"
+                success_count="-1">
+        <Sequence>
+          <BallAvailable id=""
+                         color=""
+                         position=""/>
+          <FollowPose frame_id=""
+                      goal=""/>
+        </Sequence>
+        <SubTree ID="intake"/>
+      </Parallel>
+    </Sequence>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="BallAvailable"
+            editable="true">
+      <input_port name="id"/>
+      <input_port name="color"/>
+      <output_port name="position"/>
+    </Action>
+    <Action ID="FindNearestBall"
+            editable="true">
+      <output_port name="id"/>
+      <input_port name="color"/>
+    </Action>
+    <Condition ID="FollowPose"
+               editable="true">
+      <input_port name="frame_id"/>
+      <input_port name="goal"/>
+    </Condition>
+  </TreeNodesModel>
+
+</root>

@@ -43,7 +43,7 @@ set(AUTONOMY_SOURCES
 
 set(TARGET_DEPENDS
     ament_index_cpp rclcpp rclcpp_action
-    nav2_msgs sensor_msgs behaviortree_cpp
+    nav2_msgs sensor_msgs behaviortree_cpp behaviortree_ros2
     tf2 tf2_ros tf2_geometry_msgs robotname_msgs yaml-cpp
 )
 
@@ -69,9 +69,51 @@ set(THIS_PACKAGE_SOURCES
     src/plugins/follow_path.cpp
     src/plugins/ball_available.cpp
     src/plugins/set_speed.cpp
+    src/plugins/get_intake_distance.cpp
+    src/plugins/get_intake_proximity_array.cpp
+    src/plugins/get_ball_grabbed.cpp
+    src/plugins/flush_intake.cpp
+    src/plugins/follow_ball.cpp
+    src/plugins/get_nearest_ball.cpp
+    src/plugins/grab_nearest_ball.cpp
+    src/plugins/ball_grabbed.cpp
+    src/plugins/amcl_update.cpp
+    src/plugins/reset_ball_grabbed.cpp
+    src/plugins/get_ball_grabbed_top.cpp
     )
 
 include_directories(include)
+
+
+#install server
+
+add_executable(get_ball_grabbed_top_server src/action_server/get_ball_grabbed_top_server.cpp)
+ament_target_dependencies(get_ball_grabbed_top_server rclcpp ${TARGET_DEPENDS})
+
+install(TARGETS
+get_ball_grabbed_top_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(reset_ball_grabbed_server src/server/reset_ball_grabbed_server.cpp)
+ament_target_dependencies(reset_ball_grabbed_server rclcpp std_srvs std_msgs)
+
+install(TARGETS
+reset_ball_grabbed_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(set_intake_mechanism_server src/server/set_intake_mechanism_server.cpp)
+ament_target_dependencies(set_intake_mechanism_server rclcpp robotname_msgs std_msgs)
+
+install(TARGETS
+set_intake_mechanism_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(get_intake_distance_server src/server/get_intake_distance_server.cpp)
+ament_target_dependencies(get_intake_distance_server rclcpp robotname_msgs std_srvs)
+
+install(TARGETS
+get_intake_distance_server
+  DESTINATION lib/${PROJECT_NAME})
 
 add_executable(set_speed_server src/server/set_speed_server.cpp)
 ament_target_dependencies(set_speed_server rclcpp robotname_msgs geometry_msgs)
@@ -80,8 +122,8 @@ install(TARGETS
 set_speed_server
   DESTINATION lib/${PROJECT_NAME})
 
-add_executable(find_nearest_ball_server src/server/find_nearest_ball_server.cpp)
-ament_target_dependencies(find_nearest_ball_server rclcpp robotname_msgs)
+add_executable(find_nearest_ball_server src/action_server/find_nearest_ball_server.cpp)
+ament_target_dependencies(find_nearest_ball_server rclcpp robotname_msgs ${TARGET_DEPENDS})
 
 install(TARGETS
   find_nearest_ball_server
@@ -94,11 +136,50 @@ install(TARGETS
   ball_available_server
   DESTINATION lib/${PROJECT_NAME})
 
-add_executable(get_intake_color_server src/server/get_intake_color_server.cpp)
-ament_target_dependencies(get_intake_color_server rclcpp std_msgs std_srvs)
+add_executable(get_intake_color_server src/action_server/get_intake_color_server.cpp)
+ament_target_dependencies(get_intake_color_server ${TARGET_DEPENDS})
+
+add_executable(get_intake_proximity_array_server src/action_server/get_intake_proximity_array_server.cpp)
+ament_target_dependencies(get_intake_proximity_array_server ${TARGET_DEPENDS})
 
 install(TARGETS
-get_intake_color_server
+get_intake_proximity_array_server
+ DESTINATION lib/${PROJECT_NAME})
+
+
+add_executable(get_ball_grabbed_server src/action_server/get_ball_grabbed_server.cpp)
+ament_target_dependencies(get_ball_grabbed_server ${TARGET_DEPENDS})
+
+install(TARGETS
+get_ball_grabbed_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(flush_intake_server src/action_server/flush_intake_server.cpp)
+ament_target_dependencies(flush_intake_server ${TARGET_DEPENDS})
+
+install(TARGETS
+flush_intake_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(follow_ball_server src/action_server/follow_ball_server.cpp)
+ament_target_dependencies(follow_ball_server ${TARGET_DEPENDS})
+
+install(TARGETS
+follow_ball_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(follow_path_server src/server/follow_path_server.cpp)
+ament_target_dependencies(follow_path_server ${TARGET_DEPENDS})
+
+install(TARGETS
+follow_path_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(get_nearest_ball_server src/server/find_nearest_ball_server.cpp)
+ament_target_dependencies(get_nearest_ball_server rclcpp robotname_msgs std_msgs)
+
+install(TARGETS
+get_nearest_ball_server
   DESTINATION lib/${PROJECT_NAME})
 
 add_executable(auto src/auto2.cpp ${THIS_PACKAGE_SOURCES})

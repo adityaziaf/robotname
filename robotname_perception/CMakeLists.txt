@@ -153,6 +153,7 @@ install(PROGRAMS
   scripts/intakeprocess.py
   scripts/slowdown.py
   scripts/omni_ball_detection.py
+  scripts/topprocess.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
