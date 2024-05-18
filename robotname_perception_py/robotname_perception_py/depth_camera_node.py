@@ -214,8 +214,8 @@ class DepthCameraNode(LifecycleNode):
 
             # depth times the projection value
             poseInSourceFrame.pose.position.x = depth_at * obj_coor[2]
-            poseInSourceFrame.pose.position.y = depth_at * obj_coor[0]
-            poseInSourceFrame.pose.position.z = depth_at * obj_coor [1]
+            poseInSourceFrame.pose.position.y = -depth_at * obj_coor[0]
+            poseInSourceFrame.pose.position.z = -depth_at * obj_coor [1]
             poseInSourceFrame.header.frame_id = "camera_link"
 
             poseInTargetFrame = tf2_geometry_msgs.do_transform_pose_stamped(poseInSourceFrame, self.cam_transform)
@@ -237,9 +237,9 @@ class DepthCameraNode(LifecycleNode):
 
     def image_cb(self, image: RGBD) -> None:
         if self.enable:
-            # self.get_logger().info('blaba')
+            self.get_logger().info('blaba')
             try:
-                self.cam_transform = self.tf_buffer.lookup_transform('map', 'camera_link', rclpy.time.Time(), rclpy.duration.Duration(seconds=10))
+                self.cam_transform = self.tf_buffer.lookup_transform('map', 'camera_link', rclpy.time.Time(), rclpy.duration.Duration(nanoseconds=1000))
             #     # self.get_logger().info('Got transform from {} to {}: {}'.format(
             #     # self.cam_transform.header.frame_id, self.cam_transform.child_frame_id,
             #     # self.cam_transform.transform))
@@ -250,7 +250,7 @@ class DepthCameraNode(LifecycleNode):
                 self.get_logger().error('Failed to extrapolate transform: {}'.format(e))
                 return 
     
-            # self.realsense_cam_model.fromCameraInfo(image.rgb_camera_info)
+            self.realsense_cam_model.fromCameraInfo(image.rgb_camera_info)
             # # convert image + predict                   
             cv_rgb_image = self.cv_bridge.imgmsg_to_cv2(image.rgb, desired_encoding='bgr8')
             cv_depth_image = self.cv_bridge.imgmsg_to_cv2(image.depth, desired_encoding="passthrough")
@@ -267,25 +267,25 @@ class DepthCameraNode(LifecycleNode):
             )
             ann_results: Results = results[0].cpu()
 
-            # if ann_results.boxes:
-                # hypothesis = self.parse_hypothesis(ann_results)
-                # poses = self.parse_transformation(ann_results, cv_depth_image)
+            if ann_results.boxes:
+                hypothesis = self.parse_hypothesis(ann_results)
+                poses = self.parse_transformation(ann_results, cv_depth_image)
 
             newmsg = self.cv_bridge.cv2_to_imgmsg(results[0].plot())
             self._pub_ann.publish(newmsg)
 
-            # detections_msg = DetectionArray()
+            detections_msg = DetectionArray()
 
-            # for i in range(len(ann_results)):
-            #     aux_msg = Detection()
+            for i in range(len(ann_results)):
+                aux_msg = Detection()
                 
-            #     aux_msg.id = hypothesis[i]["class_id"]
-            #     aux_msg.classname = hypothesis[i]["class_name"]
-            #     aux_msg.score = hypothesis[i]["score"]
-            #     aux_msg.pose = poses[i]
-            #     detections_msg.detections.append(aux_msg)
+                aux_msg.id = hypothesis[i]["class_id"]
+                aux_msg.classname = hypothesis[i]["class_name"]
+                aux_msg.score = hypothesis[i]["score"]
+                aux_msg.pose = poses[i]
+                detections_msg.detections.append(aux_msg)
                 
-            # self._pub.publish(detections_msg)
+            self._pub.publish(detections_msg)
 
             del results
             del cv_rgb_image
