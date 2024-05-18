@@ -1,85 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4"
-      main_tree_to_execute="newfindandfollow">
-  <BehaviorTree ID="findandfollowball">
-    <Sequence>
-      <Script code="ballfound:=0"/>
-      <Parallel failure_count="1"
-                success_count="1">
-        <RetryUntilSuccessful num_attempts="-1">
-          <Sequence>
-            <FindNearestBall id="{newball}"
-                             color="blueball"
-                             _skipIf="ballfound == 1"
-                             _onSuccess="ballfound:=1"/>
-            <ForceFailure>
-              <Sequence>
-                <BallAvailable id="{newball}"
-                               color="blueball"
-                               position="{ballpose}"
-                               _onFailure="ballfound:=0"/>
-                <FollowPose frame_id="map"
-                            goal="{ballpose}"/>
-              </Sequence>
-            </ForceFailure>
-          </Sequence>
-        </RetryUntilSuccessful>
-        <SubTree ID="intake"
-                 _autoremap="false"/>
-      </Parallel>
-      <FollowPose frame_id="base_link"
-                  goal="0;0;0"/>
-    </Sequence>
-  </BehaviorTree>
-
+      main_tree_to_execute="newfindball">
   <BehaviorTree ID="findnewballtest">
     <RetryUntilSuccessful num_attempts="-1">
       <Sequence>
-        <ReactiveFallback>
-          <BallGrabbed/>
-          <GrabNearestBall color="blue"
-                           id="{id}"/>
-          <Repeat num_cycles="3">
+        <SetIntakeMechanism dribble="3"
+                            lift="0.3"/>
+        <Sequence>
+          <ReactiveFallback>
+            <BallGrabbed color="blue"/>
+            <GrabNearestBall color="blueball"
+                             id="{id}"/>
+            <Repeat num_cycles="3">
+              <Sequence>
+                <NavToPose frame_id="map"
+                           goal="9.5;2.0;-1.0"/>
+                <Sleep msec="2000"/>
+                <NavToPose frame_id="map"
+                           goal="9.5;2.0;-2.07"/>
+              </Sequence>
+            </Repeat>
+          </ReactiveFallback>
+          <ReactiveFallback>
+            <BallGrabbed color="blue"/>
+            <BallGrabbed color="purple"/>
+            <Follow color="blueball"
+                    id="{id}"/>
+          </ReactiveFallback>
+          <FollowPose frame_id="base_link"
+                      goal="0;0;0"/>
+        </Sequence>
+        <Fallback>
+          <BallGrabbed color="blue"/>
+          <ForceFailure>
             <Sequence>
-              <NavThroughPoses frame_id="map"
-                               goals="11;0.5;-1.57"/>
-              <NavToPose frame_id="base_link"
-                         goal="0;0;0"/>
-              <Sleep msec="2000"/>
-              <NavThroughPoses frame_id="map"
-                               goals="8.5;0.5;-1.57"/>
-              <NavToPose frame_id="base_link"
-                         goal="0;0;0"/>
+              <Rotate pose=""
+                      angle="-2.5"
+                      rotated_pose=""
+                      frame_id=""/>
               <Sleep msec="1000"/>
+              <SetIntakeMechanism dribble="0"
+                                  lift="2"/>
+              <GetIntakeProximityArray pattern="000"/>
+              <Rotate pose=""
+                      angle="-1.57"
+                      rotated_pose=""
+                      frame_id=""/>
+              <Sleep msec="1000"/>
+              <SetIntakeMechanism dribble="3"
+                                  lift="0.5"/>
             </Sequence>
-          </Repeat>
-        </ReactiveFallback>
-        <ReactiveFallback>
-          <BallGrabbed/>
-          <Follow color="blue"
-                  id="{id}"/>
-        </ReactiveFallback>
-        <FollowPose frame_id="base_link"
-                    goal="0;0;0"/>
+          </ForceFailure>
+        </Fallback>
+        <GetIntakeProximityArray pattern="010"/>
+        <SetIntakeMechanism dribble="0"
+                            lift="0"/>
       </Sequence>
     </RetryUntilSuccessful>
   </BehaviorTree>
 
-  <BehaviorTree ID="intake">
-    <Sequence>
-      <SetIntakeMechanism dribble="5"
-                          lift="1.5"/>
-      <GetIntakeColor color="blue"/>
-      <SetIntakeMechanism dribble="0"
-                          lift="0"/>
-    </Sequence>
+  <BehaviorTree ID="grabball">
+    <ReactiveFallback>
+      <Sequence>
+        <GrabNearestBall color="blueball"
+                         id="{id}"/>
+      </Sequence>
+      <Sequence>
+        <NavToPose frame_id="map"
+                   goal="9.5;0.8;-0.8"/>
+        <Sleep msec="1000"/>
+        <NavToPose frame_id="map"
+                   goal="9.5;0.8;-2.3"/>
+      </Sequence>
+    </ReactiveFallback>
   </BehaviorTree>
 
   <BehaviorTree ID="intakenew">
     <Sequence>
       <SetIntakeMechanism dribble="3"
                           lift="0.8"/>
-      <GetBallGrabbed color="blue"/>
+      <GetBallGrabbed color_output=""
+                      color_input="blue"/>
       <SetIntakeMechanism dribble="0"
                           lift="0.5"/>
       <FollowPose frame_id="base_link"
@@ -133,12 +134,10 @@
     </SequenceWithMemory>
   </BehaviorTree>
 
-  <BehaviorTree ID="movemove">
+  <BehaviorTree ID="movenew">
     <Sequence>
-      <SetIntakeMechanism dribble="-3"
-                          lift="0"/>
-      <NavToPose frame_id="map"
-                 goal="9.5;0.4;-1.57"/>
+      <NavThroughPoses frame_id="map"
+                       goals="2.0;0,0;-2.0944 /&#10;4.8;0.0;-2.0944 /&#10;5.2;0.1;-2.0944 /&#10;5.4;0.4;-2.0944 /&#10;5.8;0.8;-2.0944 /&#10;6.2;3.74;-1.57"/>
     </Sequence>
   </BehaviorTree>
 
@@ -147,20 +146,7 @@
       <NavThroughPoses frame_id="map"
                        goals="5.1;0.0;3.14 /&#10;5.3;0.1;3.14 /&#10;5.4;0.2;3.14 /&#10;5.6;0.4;3.14 /&#10;5.8;0.8;3.14 /&#10;6.0;3.74;3.14"/>
       <NavThroughPoses frame_id="map"
-                       goals="8.0;3.74;3.14/&#10;8.4;3.45;-1.75 /&#10;8.5;3.25;-1.57 /&#10;8.7;3.05;-1.57 /&#10;8.7;2.5;-1.57 /&#10;8.7;0.8;-0.8"/>
-      <NavToPose frame_id="map"
-                 goal="9.5;0.8;-1.57"/>
-    </Sequence>
-  </BehaviorTree>
-
-  <BehaviorTree ID="new">
-    <Sequence>
-      <SetIntakeMechanism dribble="2"
-                          lift="0.5"/>
-      <GetBallGrabbed color=""/>
-      <FlushIntake target_remaining_ball="1"/>
-      <SetIntakeMechanism dribble="0"
-                          lift="0"/>
+                       goals="8.0;3.74;3.14/&#10;8.4;3.45;-1.75 /&#10;8.5;3.25;-1.57 /&#10;8.7;3.05;-1.57 /&#10;9.0;2.5;-1.57 /&#10;9.5;0.8;-1.57"/>
     </Sequence>
   </BehaviorTree>
 
@@ -168,21 +154,60 @@
     <Sequence>
       <Parallel failure_count="1"
                 success_count="-1">
-        <SubTree ID="findnewballtest"
-                 _autoremap="false"/>
-        <SubTree ID="intakenew"
-                 _autoremap="false"/>
+        <SubTree ID="oldfindnewball"/>
+        <SubTree ID="intakenew"/>
       </Parallel>
       <NavToPose frame_id="base_link"
                  goal="0;0;0"/>
-      <ResetBallGrabbed/>
     </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="newfindball">
+    <RetryUntilSuccessful num_attempts="-1">
+      <Sequence>
+        <Fallback>
+          <BallGrabbed color="blue"/>
+          <ForceFailure>
+            <Sequence>
+              <BallGrabbed color="purple"/>
+              <SubTree ID="rotateToTarget"/>
+            </Sequence>
+          </ForceFailure>
+          <Sequence>
+            <BallGrabbed color="null"/>
+            <SubTree ID="grabball"/>
+            <ReactiveFallback>
+              <BallGrabbed color="blue"/>
+              <BallGrabbed color="purple"/>
+              <Follow color="blueball"
+                      id="{id}"/>
+            </ReactiveFallback>
+          </Sequence>
+        </Fallback>
+        <BallGrabbed color="blue"/>
+      </Sequence>
+    </RetryUntilSuccessful>
+  </BehaviorTree>
+
+  <BehaviorTree ID="newintake">
+    <RetryUntilSuccessful num_attempts="-1">
+      <Sequence>
+        <SetIntakeMechanism dribble="1"
+                            lift="0.5"/>
+        <Fallback>
+          <BallGrabbed color="blue"/>
+          <BallGrabbed color="purple"/>
+        </Fallback>
+        <GetIntakeProximityArray pattern="010"/>
+        <SetIntakeMechanism dribble="0"
+                            lift="0"/>
+      </Sequence>
+    </RetryUntilSuccessful>
   </BehaviorTree>
 
   <BehaviorTree ID="newnew">
     <Sequence>
       <SubTree ID="movetest"/>
-      <Sleep msec="500"/>
       <Sequence>
         <Repeat num_cycles="3">
           <Sequence>
@@ -190,7 +215,7 @@
             <SubTree ID="silo2"/>
             <SubTree ID="outtake"/>
             <NavThroughPoses frame_id="map"
-                             goals="10.0;0.8;-1.57"/>
+                             goals="9.5;3.0;-1.57"/>
           </Sequence>
         </Repeat>
         <Repeat num_cycles="3">
@@ -199,7 +224,7 @@
             <SubTree ID="silo3"/>
             <SubTree ID="outtake"/>
             <NavThroughPoses frame_id="map"
-                             goals="10.0;0.8;-1.57"/>
+                             goals="9.5;3.0;-1.57"/>
           </Sequence>
         </Repeat>
         <Repeat num_cycles="3">
@@ -208,17 +233,46 @@
             <SubTree ID="silo4"/>
             <SubTree ID="outtake"/>
             <NavThroughPoses frame_id="map"
-                             goals="10.0;0.8;-1.57"/>
+                             goals="9.5;3.0;-1.57"/>
           </Sequence>
         </Repeat>
       </Sequence>
     </Sequence>
   </BehaviorTree>
 
+  <BehaviorTree ID="oldfindnewball">
+    <RetryUntilSuccessful num_attempts="-1">
+      <Sequence>
+        <ReactiveFallback>
+          <BallGrabbed color="blue"/>
+          <GrabNearestBall color="blueball"
+                           id="{id}"/>
+          <Repeat num_cycles="3">
+            <Sequence>
+              <NavToPose frame_id="map"
+                         goal="9.5;2.0;-1.0"/>
+              <Sleep msec="2000"/>
+              <NavToPose frame_id="map"
+                         goal="9.5;2.0;-2.07"/>
+            </Sequence>
+          </Repeat>
+        </ReactiveFallback>
+        <ReactiveFallback>
+          <BallGrabbed color="blue"/>
+          <Follow color="blueball"
+                  id="{id}"/>
+        </ReactiveFallback>
+        <FollowPose frame_id="base_link"
+                    goal="0;0;0"/>
+        <ResetBallGrabbed/>
+      </Sequence>
+    </RetryUntilSuccessful>
+  </BehaviorTree>
+
   <BehaviorTree ID="outtake">
     <Sequence>
-      <SetIntakeMechanism dribble="3"
-                          lift="0.9"/>
+      <SetIntakeMechanism dribble="0"
+                          lift="0.8"/>
       <GetIntakeProximityArray pattern="001"/>
       <GetIntakeProximityArray pattern="000"/>
       <SetIntakeMechanism dribble="0"
@@ -226,13 +280,29 @@
     </Sequence>
   </BehaviorTree>
 
+  <BehaviorTree ID="rotateToTarget">
+    <Sequence>
+      <GetCurrentPose parent_frame_id="map"
+                      child_frame_id="base_link"
+                      pose="{currentpose}"/>
+      <Rotate pose="{currentpose}"
+              angle="0"
+              rotated_pose="{rotated_pose}"
+              frame_id="map"/>
+      <NavToPose frame_id="map"
+                 goal="{rotated_pose}"/>
+      <NavToPose frame_id="map"
+                 goal="{currentpose}"/>
+    </Sequence>
+  </BehaviorTree>
+
   <BehaviorTree ID="silo2">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="8.75;2.5;-1.57 /&#10;8.75;4.0;-1.57"/>
+                       goals="8.72;2.5;-1.57 /&#10;8.72;4.7;-1.57"/>
       <AMCLUpdate/>
       <FollowPose frame_id="map"
-                  goal="8.75;5.1;-1.57"/>
+                  goal="8.72;5.1;-1.57"/>
       <Sleep msec="1000"/>
       <NavToPose frame_id="base_link"
                  goal="0;0;0"/>
@@ -242,10 +312,10 @@
   <BehaviorTree ID="silo3">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="9.45;2.5;-1.57 /&#10;9.45;4.0;-1.57"/>
+                       goals="9.43;2.5;-1.57 /&#10;9.43;4.7;-1.57"/>
       <AMCLUpdate/>
       <FollowPose frame_id="map"
-                  goal="9.45;5.1;-1.57"/>
+                  goal="9.43;5.1;-1.57"/>
       <Sleep msec="1000"/>
       <NavToPose frame_id="base_link"
                  goal="0;0;0"/>
@@ -255,51 +325,24 @@
   <BehaviorTree ID="silo4">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="10.25;2.5;-1.57 /&#10;10.25;4.0;-1.57"/>
+                       goals="10.23;2.5;-1.57 /&#10;10.23;4.7;-1.57"/>
       <AMCLUpdate/>
       <FollowPose frame_id="map"
-                  goal="10.25;5.1;-1.57"/>
+                  goal="10.23;5.1;-1.57"/>
       <Sleep msec="1000"/>
       <NavToPose frame_id="base_link"
                  goal="0;0;0"/>
     </Sequence>
   </BehaviorTree>
 
-  <BehaviorTree ID="silotest">
-    <Repeat num_cycles="3">
-      <Sequence>
-        <SubTree ID="newfindandfollow"/>
-        <SetIntakeMechanism dribble="3"
-                            lift="0"/>
-        <SubTree ID="silo2"/>
-        <SubTree ID="outtake"/>
-        <NavThroughPoses frame_id="map"
-                         goals="9.5;0.8;-0.8"/>
-      </Sequence>
-    </Repeat>
-  </BehaviorTree>
-
   <!-- Description of Node Models (used by Groot) -->
   <TreeNodesModel>
     <Action ID="AMCLUpdate"
             editable="true"/>
-    <Action ID="BallAvailable"
-            editable="true">
-      <input_port name="id"/>
-      <input_port name="color"/>
-      <output_port name="position"/>
-    </Action>
     <Condition ID="BallGrabbed"
-               editable="true"/>
-    <Action ID="FindNearestBall"
-            editable="true">
-      <output_port name="id"/>
+               editable="true">
       <input_port name="color"/>
-    </Action>
-    <Action ID="FlushIntake"
-            editable="true">
-      <input_port name="target_remaining_ball"/>
-    </Action>
+    </Condition>
     <Action ID="Follow"
             editable="true">
       <input_port name="color"/>
@@ -312,15 +355,18 @@
     </Condition>
     <Action ID="GetBallGrabbed"
             editable="true">
-      <input_port name="color"/>
+      <output_port name="color_output"/>
+      <input_port name="color_input"/>
     </Action>
     <Action ID="GetBallGrabbedTop"
             editable="true">
       <input_port name="color"/>
     </Action>
-    <Action ID="GetIntakeColor"
+    <Action ID="GetCurrentPose"
             editable="true">
-      <input_port name="color"/>
+      <input_port name="parent_frame_id"/>
+      <input_port name="child_frame_id"/>
+      <output_port name="pose"/>
     </Action>
     <Action ID="GetIntakeProximityArray"
             editable="true">
@@ -343,6 +389,13 @@
     </Action>
     <Action ID="ResetBallGrabbed"
             editable="true"/>
+    <Action ID="Rotate"
+            editable="true">
+      <input_port name="pose"/>
+      <input_port name="angle"/>
+      <output_port name="rotated_pose"/>
+      <input_port name="frame_id"/>
+    </Action>
     <Condition ID="SetIntakeMechanism"
                editable="true">
       <input_port name="dribble"/>

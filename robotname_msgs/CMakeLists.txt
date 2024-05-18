@@ -32,6 +32,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/FlushIntake.action"
   "action/Follow.action"
   "srv/FollowPose.srv"
+  "srv/Rotate.srv"
+  "srv/GetCurrentPose.srv"
   DEPENDENCIES geometry_msgs std_msgs nav_msgs# Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg
 )
 

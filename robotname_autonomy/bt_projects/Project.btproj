@@ -12,7 +12,9 @@
             <input_port name="color"/>
             <output_port name="position"/>
         </Action>
-        <Condition ID="BallGrabbed" editable="true"/>
+        <Condition ID="BallGrabbed" editable="true">
+            <input_port name="color"/>
+        </Condition>
         <Action ID="FindNearestBall" editable="true">
             <output_port name="id"/>
             <input_port name="color"/>
@@ -33,10 +35,16 @@
             <input_port name="goal"/>
         </Condition>
         <Action ID="GetBallGrabbed" editable="true">
-            <input_port name="color"/>
+            <output_port name="color_output"/>
+            <input_port name="color_input"/>
         </Action>
         <Action ID="GetBallGrabbedTop" editable="true">
             <input_port name="color"/>
+        </Action>
+        <Action ID="GetCurrentPose" editable="true">
+            <input_port name="parent_frame_id"/>
+            <input_port name="child_frame_id"/>
+            <output_port name="pose"/>
         </Action>
         <Action ID="GetIntakeColor" editable="true">
             <input_port name="color"/>
@@ -59,6 +67,7 @@
             <input_port name="color"/>
             <output_port name="id"/>
         </Condition>
+        <Condition ID="IdFound" editable="true"/>
         <Action ID="NavThroughPoses" editable="true">
             <input_port name="frame_id"/>
             <input_port name="goals"/>
@@ -68,6 +77,13 @@
             <input_port name="goal"/>
         </Action>
         <Action ID="ResetBallGrabbed" editable="true"/>
+        <Action ID="Rotate" editable="true">
+            <input_port name="pose"/>
+            <input_port name="angle"/>
+            <output_port name="rotated_pose"/>
+            <input_port name="frame_id"/>
+        </Action>
+        <Condition ID="SetIdFound" editable="true"/>
         <Condition ID="SetIntakeMechanism" editable="true">
             <input_port name="dribble"/>
             <input_port name="lift"/>

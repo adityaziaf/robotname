@@ -136,12 +136,11 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        intakecam,
-        intakeprocessing,
-        omnicam,
-        
-        topcam,
-        topprocessing,
+        #intakecam,
+        #intakeprocessing,
+        #omnicam,
+        #topcam,
+        #topprocessing,
         detector_node_cmd,
         container,
         tracker

@@ -92,14 +92,6 @@ private:
 
       if(last_color_msg && last_prox_msg)
       {
-        // feedback->current_reading = last_msg->data;
-        // goal_handle->publish_feedback(feedback);
-        // RCLCPP_INFO(this->get_logger(), "Publish feedback :%s", feedback->current_reading.c_str());
-
-        // if(goal->pattern == last_msg->data)
-        // {
-        //   state = false;
-        // }
         
         if(last_color_msg->data == goal->color)
         {

@@ -2,9 +2,9 @@ amcl:
   ros__parameters:
     alpha1: 0.1 # rotation from rotation
     alpha2: 0.01 #0.001 # rotation from translation
-    alpha3: 0.4 # translation from translation
+    alpha3: 0.1 # translation from translation
     alpha4: 0.05 #0.05 # translation from rotation
-    alpha5: 0.4 # translation from translation
+    alpha5: 0.1 # translation from translation
     use_sim_time : False
     base_frame_id: "base_footprint"
     beam_skip_distance: 0.5
@@ -36,9 +36,9 @@ amcl:
 
     # beam model use all of the z, while likelihood only use zhit and zrand
     # total z must be 1
-    z_hit: 0.5
+    z_hit: 0.7
     z_max: 0.05
-    z_rand: 0.5
+    z_rand: 0.3
     z_short: 0.05
 
     scan_topic: scan
@@ -124,8 +124,8 @@ global_costmap:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0
-      publish_frequency: 2.0
+      update_frequency: 1.0
+      publish_frequency: 1.0
       global_frame: odom
       robot_base_frame: base_link
       use_sim_time: True
@@ -259,8 +259,8 @@ controller_server:
     FollowPath:
       plugin: "nav2_omni_pure_pursuit_controller::OmniPurePursuitController"
       translation_kp : 5.0 # dimensionless
-      translation_ki : 0.2 # dimensionless
-      translation_kd : 0.0 # dimensionless
+      translation_ki : 0.0 # dimensionless
+      translation_kd : 0.5 # dimensionless
       rotation_kp : 10.0 #dimensionless
       rotation_ki : 0.2 #dimensionless
       rotation_kd : 0.0 #dimensionless
@@ -279,10 +279,10 @@ controller_server:
 
     FollowBall:
       plugin: "nav2_omni_pure_pursuit_controller::OmniPurePursuitController"
-      translation_kp : 6.0 # dimensionless
+      translation_kp : 5.0 # dimensionless
       translation_ki : 0.2 # dimensionless
       translation_kd : 0.2 # dimensionless
-      rotation_kp : 10.0 #dimensionless
+      rotation_kp : 8.0 #dimensionless
       rotation_ki : 0.1 #dimensionless
       rotation_kd : 0.0 #dimensionless
       lookahead_distance : 0.4 #meter
@@ -291,7 +291,7 @@ controller_server:
       adaptive_max_speed_lookahead : 1.0 #meter
       adaptive_gain_lookahead : 1.0 #dimensionless
       circle_interpolation : false
-      rotate_to_heading : true 
+      rotate_to_heading : false 
       rotate_to_heading_treshold : 0.1 #rad/sF
       min_rotation_speed : -6.0 # m/s
       max_rotation_speed : 6.0 # m/s
@@ -339,11 +339,11 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [6.0, 6.0, 10.0]
-    min_velocity: [-6.0, -6.0, -10.0]
+    max_velocity: [6.0, 6.0, 15.0]
+    min_velocity: [-6.0, -6.0, -15.0]
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 5.0
-    max_accel: [12.0, 12.0, 15.0]
-    max_decel: [-12.0, -12.0, -15.0]
+    max_accel: [16.0, 16.0, 15.0]
+    max_decel: [-16.0, -16.0, -15.0]
     use_realtime_priority: false
     enable_stamped_cmd_vel: false

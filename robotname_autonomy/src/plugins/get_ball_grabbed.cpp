@@ -4,11 +4,11 @@
 
 BT::PortsList GetBallGrabbed::providedPorts()
 {
-    return { InputPort<std::string>("color")};
+    return { InputPort<std::string>("color_input"), OutputPort<std::string>("color_output")};
 }
 bool GetBallGrabbed::setGoal(RosActionNode::Goal &goal)
 {
-  auto data = getInput<std::string>("color");
+  auto data = getInput<std::string>("color_input");
   goal.color = data.value();
 
   return true;
@@ -22,6 +22,7 @@ NodeStatus GetBallGrabbed::onResultReceived(const RosActionNode::WrappedResult &
   if(wr.code == rclcpp_action::ResultCode::SUCCEEDED)
   {
     RCLCPP_INFO( node_->get_logger(), "[GetBallGrabbed] Goal Reached");
+    setOutput("color_output",wr.result->color);
     return NodeStatus::SUCCESS;
   }
   

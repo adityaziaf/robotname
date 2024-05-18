@@ -17,6 +17,10 @@
 #include "robotname_autonomy/plugins/amcl_update.hpp"
 #include "robotname_autonomy/plugins/reset_ball_grabbed.hpp"
 #include "robotname_autonomy/plugins/get_ball_grabbed_top.hpp"
+#include "robotname_autonomy/plugins/rotate.hpp"
+#include "robotname_autonomy/plugins/intake_color.hpp"
+#include "robotname_autonomy/plugins/id_found.hpp"
+#include "robotname_autonomy/plugins/get_current_pose.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -112,12 +116,12 @@ int main(int argc, char **argv)
 
   RosNodeParams grabnearestballconfig;
   grabnearestballconfig.nh = nh;
-  grabnearestballconfig.default_port_value = "/omni/objects/tracked";
+  grabnearestballconfig.default_port_value = "/camera/objects/tracked";
   factory.registerNodeType<GrabNearestBall>("GrabNearestBall", grabnearestballconfig);
 
   RosNodeParams ballgrabbed;
   ballgrabbed.nh = nh;
-  ballgrabbed.default_port_value = "/ballgrabbed";
+  ballgrabbed.default_port_value = "/intake/detectedcolor";
   factory.registerNodeType<BallGrabbed>("BallGrabbed", ballgrabbed);
 
   RosNodeParams amclupdateocnfig;
@@ -135,6 +139,26 @@ int main(int argc, char **argv)
   ballgrabtop.default_port_value = "/get_ball_grabbed_top";
   factory.registerNodeType<GetBallGrabbedTop>("GetBallGrabbedTop", ballgrabtop);
 
+  RosNodeParams rotateconfig;
+  rotateconfig.nh = nh;
+  rotateconfig.default_port_value = "/rotate_server";
+  factory.registerNodeType<Rotate>("Rotate", rotateconfig);
+
+  RosNodeParams intakecolorconf;
+  intakecolorconf.nh = nh;
+  intakecolorconf.default_port_value = "/intake/detectedcolor";
+  factory.registerNodeType<IntakeColor>("IntakeColor", intakecolorconf);
+
+  RosNodeParams idfound;
+  idfound.nh = nh;
+  idfound.default_port_value = "/idfound";
+  factory.registerNodeType<IdFound>("IdFound", idfound);
+
+  RosNodeParams getcurrentpose;
+  getcurrentpose.nh = nh;
+  getcurrentpose.default_port_value = "/get_current_pose_server";
+  factory.registerNodeType<GetCurrentPose>("GetCurrentPose", getcurrentpose);
+
   auto tree = factory.createTreeFromFile(default_bt_xml_file);
 
   
@@ -144,7 +168,7 @@ int main(int argc, char **argv)
 {
   status = tree.tickWhileRunning();
   std::cout << "--- Tree status: " << toStr(status) << " ---\n\n";
-  tree.sleep(std::chrono::milliseconds(20));
+  tree.sleep(std::chrono::milliseconds(10));
 }
   
 

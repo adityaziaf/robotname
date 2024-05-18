@@ -3,10 +3,10 @@
 
 using namespace BT;
 
-class BallGrabbed: public RosTopicSubNode<std_msgs::msg::String>
+class IntakeColor: public RosTopicSubNode<std_msgs::msg::String>
 {
 public:
-  BallGrabbed(const std::string& name,
+  IntakeColor(const std::string& name,
                 const NodeConfig& conf,
                 const RosNodeParams& params)
     : RosTopicSubNode<std_msgs::msg::String>(name, conf, params)

@@ -29,7 +29,7 @@ public:
       std::bind(&FollowServer::handle_cancel, this, _1),
       std::bind(&FollowServer::handle_accepted, this, _1));
 
-    _ball_sub = this->create_subscription<robotname_msgs::msg::DetectionArray>("/omni/objects/tracked", 1, std::bind(&FollowServer::handle_subscription, this,_1));
+    _ball_sub = this->create_subscription<robotname_msgs::msg::DetectionArray>("/camera/objects/tracked", 1, std::bind(&FollowServer::handle_subscription, this,_1));
     _goal_pub = this->create_publisher<geometry_msgs::msg::PoseStamped>("goal_pose",10);
   }
 
@@ -92,6 +92,9 @@ private:
             if(object.id == goal->id)
             {
               objectfound = true;
+              // geometry_msgs::msg::PoseStamped target;
+              // target.set__header(object.pose.header);
+              // target.pose.set__position(object.pose.pose.position);
               _goal_pub->publish(object.pose);
             }
           

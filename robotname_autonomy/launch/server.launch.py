@@ -112,8 +112,23 @@ def generate_launch_description():
         output='screen'
     )
 
+    get_current_pose_server = Node(
+        package='robotname_autonomy',
+        executable='get_current_pose_server',
+        name='get_current_pose',
+        output='screen'
+    )
+
+    rotate_server = Node(
+        package='robotname_autonomy',
+        executable='rotate_server',
+        name='rotate',
+        output='screen'
+    )
+
+
     return LaunchDescription([
-        get_intake_color,
+        #get_intake_color,
         find_nearest_ball,
         ball_available,
         set_speed,
@@ -126,5 +141,7 @@ def generate_launch_description():
         follow_path,
         get_nearest_ball,
         resetball,
-        ball_grabbed_top
+        ball_grabbed_top,
+        get_current_pose_server,
+        rotate_server
     ])

@@ -1,7 +1,7 @@
 {
     "device": {
-        "fw version": "5.15.1",
-        "name": "Intel RealSense D435I",
+        "fw version": "5.15.0.2",
+        "name": "Intel RealSense D455",
         "product line": "D400"
     },
     "parameters": {
@@ -23,21 +23,21 @@
         "aux-param-disparityshift": "0",
         "controls-autoexposure-auto": "True",
         "controls-autoexposure-manual": "8500",
-        "controls-color-autoexposure-auto": "False",
-        "controls-color-autoexposure-manual": "260",
+        "controls-color-autoexposure-auto": "True",
+        "controls-color-autoexposure-manual": "166",
         "controls-color-backlight-compensation": "1",
-        "controls-color-brightness": "21",
+        "controls-color-brightness": "20",
         "controls-color-contrast": "50",
-        "controls-color-gain": "128",
+        "controls-color-gain": "64",
         "controls-color-gamma": "300",
-        "controls-color-hue": "0",
+        "controls-color-hue": "25",
         "controls-color-power-line-frequency": "3",
-        "controls-color-saturation": "70",
+        "controls-color-saturation": "68",
         "controls-color-sharpness": "50",
         "controls-color-white-balance-auto": "True",
         "controls-color-white-balance-manual": "4600",
         "controls-depth-gain": "16",
-        "controls-laserpower": "30",
+        "controls-laserpower": "150",
         "controls-laserstate": "off",
         "ignoreSAD": "0",
         "param-amplitude-factor": "0",
@@ -98,8 +98,7 @@
     "viewer": {
         "stream-depth-format": "Z16",
         "stream-fps": "30",
-        "stream-height": "480",
-        "stream-ir-format": "R8L8",
-        "stream-width": "640"
+        "stream-height": "720",
+        "stream-width": "1280"
     }
 }

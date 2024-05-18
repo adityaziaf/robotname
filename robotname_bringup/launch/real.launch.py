@@ -34,12 +34,12 @@ def generate_launch_description():
         output='screen'
     )
     
-    ballcounter = Node(
-        package='robotname_hardware',
-        executable='ballcounter',
-        name='ballcounter',
-        output='screen'
-    )
+    # ballcounter = Node(
+    #     package='robotname_hardware',
+    #     executable='ballcounter',
+    #     name='ballcounter',
+    #     output='screen'
+    # )
 
     lidar = Node(
         package='urg_node',
@@ -65,8 +65,12 @@ def generate_launch_description():
 
     perception = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('robotname_perception'),'launch'),'/intake.launch.py']
-        )
+            get_package_share_directory('robotname_perception'),'launch'),'/composition.launch.py']
+        ),
+        launch_arguments={
+            'use_sim_time' : LaunchConfiguration('use_sim_time'),
+            'params_file': [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params_sim.yaml')]
+        }.items()
     )
     
     rviz_node = Node(
@@ -122,7 +126,7 @@ def generate_launch_description():
         DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
         hardware,
-        ballcounter,
+        #ballcounter,
         lidar,
         robot_state_publisher_node,
         joint_state_publisher_node,

@@ -100,7 +100,9 @@ namespace robotname_perception
             
             /* in case of '16UC1' encoding (depth values are in millimeter),
              * a manually conversion from millimeter to meter is required.
-            */
+            */ _subscriber = this->create_subscription<robotname_msgs::msg::DetectionArray>
+        ("/omni/objects/tracked", rclcpp::QoS(10),
+            std::bind(&GetCurrentPose::detection_callback, this, _1));
             // if(depth_ptr->encoding == sensor_msgs::image_encodings::TYPE_16UC1)
             // {
             //     depth_ptr->image.convertTo(depth_ptr->image, -1, 0.001f);

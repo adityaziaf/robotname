@@ -16,7 +16,7 @@ class BallAvailable : public rclcpp::Node {
         std::bind(&BallAvailable::handle_service, this, _1, _2),
         qos_profile);
       _subscriber = this->create_subscription<robotname_msgs::msg::DetectionArray>
-        ("/omni/objects/tracked", rclcpp::QoS(1),
+        ("/camera/objects/tracked", rclcpp::QoS(1),
             std::bind(&BallAvailable::detection_callback, this, _1));
     }
 

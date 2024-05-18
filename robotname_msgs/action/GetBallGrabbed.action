@@ -1,4 +1,5 @@
 string color
 ---
+string color
 int32 status
 ---

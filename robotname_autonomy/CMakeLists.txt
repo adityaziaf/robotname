@@ -80,12 +80,31 @@ set(THIS_PACKAGE_SOURCES
     src/plugins/amcl_update.cpp
     src/plugins/reset_ball_grabbed.cpp
     src/plugins/get_ball_grabbed_top.cpp
+    src/plugins/rotate.cpp
+    src/plugins/intake_color.cpp
+    src/plugins/id_found.cpp
+    src/plugins/get_current_pose.cpp
     )
 
 include_directories(include)
 
 
 #install server
+
+add_executable(rotate_server src/server/rotate_server.cpp)
+ament_target_dependencies(rotate_server rclcpp ${TARGET_DEPENDS})
+
+install(TARGETS
+rotate_server
+  DESTINATION lib/${PROJECT_NAME})
+
+add_executable(get_current_pose_server src/server/get_current_pose_server.cpp)
+ament_target_dependencies(get_current_pose_server rclcpp ${TARGET_DEPENDS})
+
+install(TARGETS
+get_current_pose_server
+  DESTINATION lib/${PROJECT_NAME})
+
 
 add_executable(get_ball_grabbed_top_server src/action_server/get_ball_grabbed_top_server.cpp)
 ament_target_dependencies(get_ball_grabbed_top_server rclcpp ${TARGET_DEPENDS})

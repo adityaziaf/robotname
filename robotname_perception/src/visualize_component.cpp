@@ -23,11 +23,11 @@ class visualizeComponent : public rclcpp::Node {
 
     viz_subs_ =
         this->create_subscription<robotname_msgs::msg::DetectionArray>(
-            "/omni/objects/tracked", rclcpp::QoS(10),
+            "/camera/objects/tracked", rclcpp::QoS(10),
             std::bind(&visualizeComponent::callback, this, _1));
     viz_pubs_ =
         this->create_publisher<visualization_msgs::msg::MarkerArray>(
-            "/omni/objects/visualize", rclcpp::QoS(10));
+            "/camera/objects/visualize", rclcpp::QoS(10));
 
   }
 
@@ -51,19 +51,19 @@ class visualizeComponent : public rclcpp::Node {
         marker.scale.z = 0.2;
         marker.color.a = 1.0;
 
-        if(object->classname == "red")
+        if(object->classname == "redball")
         {
             marker.color.r = 1.0;
             marker.color.g = 0.0;
             marker.color.b = 0.0;
         }
-        else if(object->classname == "blue")
+        else if(object->classname == "blueball")
         {
             marker.color.r = 0.0;
             marker.color.g = 0.0;
             marker.color.b = 1.0;
         }
-        else if(object->classname == "purple")
+        else if(object->classname == "purpleball")
         {
             marker.color.r = 0.8;
             marker.color.g = 0.1;

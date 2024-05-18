@@ -29,7 +29,7 @@ public:
       std::bind(&FindNearestBallServer::handle_cancel, this, _1),
       std::bind(&FindNearestBallServer::handle_accepted, this, _1));
 
-    _ball_sub = this->create_subscription<robotname_msgs::msg::DetectionArray>("/omni/objects/tracked", 1, std::bind(&FindNearestBallServer::handle_subscription, this,_1));
+    _ball_sub = this->create_subscription<robotname_msgs::msg::DetectionArray>("/camera/objects/tracked", 1, std::bind(&FindNearestBallServer::handle_subscription, this,_1));
 
   }
 

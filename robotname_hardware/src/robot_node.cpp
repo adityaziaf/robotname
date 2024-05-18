@@ -45,7 +45,7 @@ UDP n_udp(IP_SERVER, PORT);
 uint8_t drib_flag = 0;
 uint8_t lift_flag = 0;
 
-struct send_to_robot {
+typedef struct send_to_robot{
   uint32_t timestamp;
 
   struct {
@@ -57,22 +57,27 @@ struct send_to_robot {
   union {
     struct {
       uint8_t reset_odom : 1;
+      // uint8_t gripper_claw : 1;
     };
     uint32_t flag;
   };
 
   struct{
 	  float lift_speed;
-    float drib_speed;
+	  float drib_speed;
+	  union{
+		  uint8_t pnuematic : 1;
+	  };
+//	  float distance;
   }ball_drib;
 
-  struct
-  {
-    uint8_t num_of_beep;
-    uint8_t on_time;
-    uint8_t off_time;
+
+  struct{
+	  uint8_t num_of_beep;
+	  uint8_t on_time;
+	  uint8_t off_time;
   }buzzer;
-  
+
 }fromROS_t;
 
 
@@ -254,24 +259,20 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     else if ((button_t != DRIB_SPEED_DOWN) && (button_t != DRIB_SPEED_UP) && (drib_flag == 1))drib_flag=0 ;
 
     if((button_t == LIFT_SPEED_UP) && (lift_flag == 0)){
-      send_data.ball_drib.lift_speed+=1.0;
+      send_data.ball_drib.lift_speed+=0.1;
       lift_flag = 1;
     }
     else if((button_t == LIFT_SPEED_DOWN) && (lift_flag == 0)){
-      send_data.ball_drib.lift_speed-=1.0;
+      send_data.ball_drib.lift_speed-=0.1;
       lift_flag = 1;
     }
     else if(button_t == LIFT_OFF)send_data.ball_drib.lift_speed = 0;
     else if((button_t != LIFT_SPEED_DOWN) && (button_t != LIFT_SPEED_UP) && (lift_flag == 1))lift_flag = 0;
 
     if(send_data.ball_drib.drib_speed > DRIB_MAX_SPEED)send_data.ball_drib.drib_speed = DRIB_MAX_SPEED;
-    // else if(send_data.ball_drib.drib_speed < 0)send_data.ball_drib.drib_speed = 0;
-     if(send_data.ball_drib.drib_speed < -3)send_data.ball_drib.drib_speed = -3;
-    // if(button_t == BTN_UP)send_data.ball_drib.lift_speed+=0.2;
-    // else if(button_t == BTN_DOWN)send_data.ball_drib.lift_speed-=0.2;
+    if(send_data.ball_drib.drib_speed < -3)send_data.ball_drib.drib_speed = -5;
     if(send_data.ball_drib.lift_speed > LIFT_MAX_SPEED)send_data.ball_drib.lift_speed = LIFT_MAX_SPEED;
-    else if(send_data.ball_drib.lift_speed < 0)send_data.ball_drib.lift_speed = 0;
-
+    if(send_data.ball_drib.lift_speed < -3)send_data.ball_drib.lift_speed = -5;
     // std::cout<<"target drib: "<<send_data.ball_drib.drib_speed<<std::endl;
     // std::cout<<"target lift: "<<send_data.ball_drib.lift_speed<<std::endl;
 
