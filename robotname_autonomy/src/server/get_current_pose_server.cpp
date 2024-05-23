@@ -6,9 +6,13 @@
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2/LinearMath/Quaternion.h>
 
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <memory>
-
+#include "tf2/utils.h"
 using namespace std::placeholders;
 
 class GetCurrentPoseServer : public rclcpp::Node {
@@ -46,10 +50,12 @@ class GetCurrentPoseServer : public rclcpp::Node {
         in.pose.orientation.y = 0;
         in.pose.orientation.x = 0;
         in.pose.orientation.w = 1;
-        tf2::doTransform<geometry_msgs::msg::PoseStamped>(in, out, transform);
-        
+        tf2::doTransform<geometry_msgs::msg::PoseStamped>(in, out, transform); 
         response->status = true;
         response->set__pose(out);
+        response->set__x(out.pose.position.x);
+        response->set__y(out.pose.position.y);
+        response->set__theta(tf2::getYaw(out.pose.orientation));
         return ;
 
       } catch (const tf2::TransformException &ex) {

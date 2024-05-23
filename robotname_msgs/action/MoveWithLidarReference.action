@@ -1,0 +1,8 @@
+string parent_frame
+string child_frame
+float64 x
+float64 y
+---
+int32 status
+---
+float64 remaining_distance

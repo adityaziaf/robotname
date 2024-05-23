@@ -41,13 +41,10 @@ def generate_launch_description():
     #     output='screen'
     # )
 
-    lidar = Node(
-        package='urg_node',
-        executable='urg_node_driver',
-        name='urg_node',
-        output='screen',
-        parameters=[lidarconfig]
-        
+    lidar = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('urg_node2'),'launch'),'/urg_node2.launch.py']
+        )
     )
 
     robot_state_publisher_node = Node(
@@ -66,11 +63,7 @@ def generate_launch_description():
     perception = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('robotname_perception'),'launch'),'/composition.launch.py']
-        ),
-        launch_arguments={
-            'use_sim_time' : LaunchConfiguration('use_sim_time'),
-            'params_file': [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params_retry.yaml')]
-        }.items()
+        )
     )
     
     rviz_node = Node(
@@ -99,7 +92,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time' : LaunchConfiguration('use_sim_time'),
-            'params_file' : [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params.yaml')],
+            'params_file' : [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params_retry.yaml')],
             'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapku3.yaml')]
         }.items()
     )
@@ -127,7 +120,7 @@ def generate_launch_description():
                                             description='Flag to enable use_sim_time'),
         hardware,
         #ballcounter,
-        lidar,
+        #lidar,
         robot_state_publisher_node,
         joint_state_publisher_node,
         perception,

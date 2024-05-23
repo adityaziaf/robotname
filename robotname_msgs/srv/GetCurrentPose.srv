@@ -3,3 +3,6 @@ string child_frame_id
 ---
 int32 status
 geometry_msgs/PoseStamped pose
+float64 x
+float64 y
+float64 theta

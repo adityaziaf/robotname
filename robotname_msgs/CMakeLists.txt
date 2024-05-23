@@ -22,6 +22,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/NavigateToPose.action"
   "srv/FindNearestBall.srv"
   "srv/BallAvailable.srv"
+  "srv/BallGrabbed.srv"
   "srv/SetSpeed.srv"
   "srv/GetIntakeDistance.srv"
   "action/GetIntakeColor.action"
@@ -34,6 +35,11 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/FollowPose.srv"
   "srv/Rotate.srv"
   "srv/GetCurrentPose.srv"
+  "action/WaitButton.action"
+  "action/SetSpeed.action"
+  "action/MoveWithLidarReference.action"
+  "msg/MenuList.msg"
+  "srv/MenuRequest.srv"
   DEPENDENCIES geometry_msgs std_msgs nav_msgs# Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg
 )
 

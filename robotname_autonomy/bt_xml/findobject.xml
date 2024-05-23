@@ -61,17 +61,21 @@
 
   <BehaviorTree ID="grabball">
     <ReactiveFallback>
-      <Sequence>
+      <Fallback>
+        <BallGrabbed color="blue"/>
+        <BallGrabbed color="purple"/>
         <GrabNearestBall color="blueball"
                          id="{id}"/>
-      </Sequence>
-      <Sequence>
-        <NavToPose frame_id="map"
-                   goal="9.5;0.8;-0.8"/>
-        <Sleep msec="1000"/>
-        <NavToPose frame_id="map"
-                   goal="9.5;0.8;-2.3"/>
-      </Sequence>
+      </Fallback>
+      <Repeat num_cycles="-1">
+        <Sequence>
+          <NavToPose frame_id="map"
+                     goal="9.5;1.0;-0.8"/>
+          <Sleep msec="1000"/>
+          <NavToPose frame_id="map"
+                     goal="9.5;1.0;-2.3"/>
+        </Sequence>
+      </Repeat>
     </ReactiveFallback>
   </BehaviorTree>
 
@@ -123,22 +127,21 @@
     </SequenceWithMemory>
   </BehaviorTree>
 
-  <BehaviorTree ID="move">
-    <SequenceWithMemory>
-      <NavThroughPoses frame_id="map"
-                       goals="4.9;0.0;3.14/&#10;5.2;0.1;-2.0944 /&#10;5.3;0.2;-2.0944 /&#10;5.5;0.4;-2.0944 /&#10;5.7;0.8;-2.0944 /&#10;5.9;3.55;-1.57"/>
-      <NavThroughPoses frame_id="map"
-                       goals="8.8;3.55;-1.75/&#10;9.1;3.45;-1.75 /&#10;9.2;3.25;-1.57 /&#10;9.3;3.05;-1.57 /&#10;9.4;2.5;-1.57 /&#10;9.5;1.7;-1.57"/>
-      <NavToPose frame_id="base_link"
-                 goal="0;0;0"/>
-    </SequenceWithMemory>
-  </BehaviorTree>
-
   <BehaviorTree ID="movenew">
     <Sequence>
+      <WaitButton/>
       <NavThroughPoses frame_id="map"
-                       goals="2.0;0,0;-2.0944 /&#10;4.8;0.0;-2.0944 /&#10;5.2;0.1;-2.0944 /&#10;5.4;0.4;-2.0944 /&#10;5.8;0.8;-2.0944 /&#10;6.2;3.74;-1.57"/>
+                       goals="4.8;0.0;-3.14 /&#10;5.2;0.1;-3.14 /&#10;5.6;0.4;-3.14 /&#10;5.9;0.8;-3.14 /&#10;6.2;3.74;-1.57"/>
+      <NavThroughPoses frame_id="map"
+                       goals="8.0;3.74;-1.57/&#10;8.4;3.45;-1.57 /&#10;8.5;3.25;-1.57 /&#10;8.7;3.05;-1.57 /&#10;9.0;2.0;-1.57 /&#10;10.0;0.0;-1.57"/>
+      <NavThroughPoses frame_id="map"
+                       goals="9.5;2.0;-1.57"/>
     </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="movepivot">
+    <NavThroughPoses frame_id="map"
+                     goals="8.70;2.0;-1.57 /&#10;8.70;3.0;-1.57"/>
   </BehaviorTree>
 
   <BehaviorTree ID="movetest">
@@ -165,17 +168,21 @@
   <BehaviorTree ID="newfindball">
     <RetryUntilSuccessful num_attempts="-1">
       <Sequence>
+        <SetIntakeMechanism dribble="3"
+                            lift="0.5"/>
         <Fallback>
           <BallGrabbed color="blue"/>
           <ForceFailure>
             <Sequence>
               <BallGrabbed color="purple"/>
-              <SubTree ID="rotateToTarget"/>
+              <SubTree ID="rotateToTarget"
+                       _autoremap="true"/>
             </Sequence>
           </ForceFailure>
           <Sequence>
             <BallGrabbed color="null"/>
-            <SubTree ID="grabball"/>
+            <SubTree ID="grabball"
+                     _autoremap="true"/>
             <ReactiveFallback>
               <BallGrabbed color="blue"/>
               <BallGrabbed color="purple"/>
@@ -185,6 +192,11 @@
           </Sequence>
         </Fallback>
         <BallGrabbed color="blue"/>
+        <GetIntakeProximityArray pattern="100"/>
+        <SetIntakeMechanism dribble="3"
+                            lift="0"/>
+        <NavToPose frame_id="base_link"
+                   goal="0;0;0"/>
       </Sequence>
     </RetryUntilSuccessful>
   </BehaviorTree>
@@ -207,12 +219,14 @@
 
   <BehaviorTree ID="newnew">
     <Sequence>
-      <SubTree ID="movetest"/>
+      <WaitButton/>
       <Sequence>
         <Repeat num_cycles="3">
           <Sequence>
-            <SubTree ID="newfindandfollow"/>
-            <SubTree ID="silo2"/>
+            <SubTree ID="newfindball"
+                     _autoremap="false"/>
+            <SubTree ID="silo2"
+                     _autoremap="false"/>
             <SubTree ID="outtake"/>
             <NavThroughPoses frame_id="map"
                              goals="9.5;3.0;-1.57"/>
@@ -220,7 +234,7 @@
         </Repeat>
         <Repeat num_cycles="3">
           <Sequence>
-            <SubTree ID="newfindandfollow"/>
+            <SubTree ID="newfindball"/>
             <SubTree ID="silo3"/>
             <SubTree ID="outtake"/>
             <NavThroughPoses frame_id="map"
@@ -229,7 +243,8 @@
         </Repeat>
         <Repeat num_cycles="3">
           <Sequence>
-            <SubTree ID="newfindandfollow"/>
+            <SubTree ID="newfindball"
+                     _autoremap="false"/>
             <SubTree ID="silo4"/>
             <SubTree ID="outtake"/>
             <NavThroughPoses frame_id="map"
@@ -264,9 +279,18 @@
         </ReactiveFallback>
         <FollowPose frame_id="base_link"
                     goal="0;0;0"/>
-        <ResetBallGrabbed/>
       </Sequence>
     </RetryUntilSuccessful>
+  </BehaviorTree>
+
+  <BehaviorTree ID="optimizedfindball">
+    <Sequence>
+      <SetBlackboard value="NULL"
+                     output_key="ball_state"/>
+      <BallGrabbed color="{ball_state}"/>
+      <SubTree ID="rotateToTarget"
+               _autoremap="true"/>
+    </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="outtake">
@@ -280,29 +304,71 @@
     </Sequence>
   </BehaviorTree>
 
+  <BehaviorTree ID="reactivetest">
+    <ReactiveFallback>
+      <GetBallGrabbed color_output=""
+                      color_input="blue"/>
+      <AMCLUpdate/>
+    </ReactiveFallback>
+  </BehaviorTree>
+
+  <BehaviorTree ID="repeattest">
+    <Sequence>
+      <Repeat num_cycles="1">
+        <SubTree ID="silo1"/>
+      </Repeat>
+    </Sequence>
+  </BehaviorTree>
+
   <BehaviorTree ID="rotateToTarget">
     <Sequence>
+      <GetIntakeProximityArray pattern="010"/>
+      <SetIntakeMechanism dribble="0"
+                          lift="0"/>
       <GetCurrentPose parent_frame_id="map"
                       child_frame_id="base_link"
-                      pose="{currentpose}"/>
-      <Rotate pose="{currentpose}"
-              angle="0"
-              rotated_pose="{rotated_pose}"
-              frame_id="map"/>
+                      pose="{outpose}"
+                      x="{prev_x}"
+                      y="{prev_y}"
+                      theta="{prev_theta}"/>
+      <RotateSpeed speed="6.0"
+                   angle="0.0"/>
+      <SetIntakeMechanism dribble="0.0"
+                          lift="2.0"/>
+      <GetBallGrabbedTop color="purple"/>
+      <GetIntakeProximityArray pattern="000"/>
+      <RotateSpeed speed="6.0"
+                   angle="{prev_theta}"/>
+      <SetIntakeMechanism dribble="3"
+                          lift="0.5"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="silo1">
+    <Sequence>
+      <NavThroughPoses frame_id="map"
+                       goals="7.95;3.0;-1.57 /&#10;7.95;4.0;-1.57"/>
+      <AMCLUpdate/>
       <NavToPose frame_id="map"
-                 goal="{rotated_pose}"/>
-      <NavToPose frame_id="map"
-                 goal="{currentpose}"/>
+                 goal="7.95;4.8;-1.57"/>
+      <AMCLUpdate/>
+      <FollowPose frame_id="map"
+                  goal="7.95;5.1;-1.57"/>
+      <Sleep msec="1000"/>
+      <NavToPose frame_id="base_link"
+                 goal="0;0;0"/>
     </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="silo2">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="8.72;2.5;-1.57 /&#10;8.72;4.7;-1.57"/>
+                       goals="8.70;3.0;-1.57"/>
       <AMCLUpdate/>
+      <NavToPose frame_id="map"
+                 goal="8.70;4.8;-1.57"/>
       <FollowPose frame_id="map"
-                  goal="8.72;5.1;-1.57"/>
+                  goal="8.70;5.1;-1.57"/>
       <Sleep msec="1000"/>
       <NavToPose frame_id="base_link"
                  goal="0;0;0"/>
@@ -312,10 +378,12 @@
   <BehaviorTree ID="silo3">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="9.43;2.5;-1.57 /&#10;9.43;4.7;-1.57"/>
+                       goals="9.45;3.0;-1.57"/>
       <AMCLUpdate/>
+      <NavToPose frame_id="map"
+                 goal="9.45;4.8;-1.57"/>
       <FollowPose frame_id="map"
-                  goal="9.43;5.1;-1.57"/>
+                  goal="9.45;5.1;-1.57"/>
       <Sleep msec="1000"/>
       <NavToPose frame_id="base_link"
                  goal="0;0;0"/>
@@ -325,13 +393,32 @@
   <BehaviorTree ID="silo4">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="10.23;2.5;-1.57 /&#10;10.23;4.7;-1.57"/>
+                       goals="10.23;3.0;-1.57"/>
       <AMCLUpdate/>
+      <NavToPose frame_id="map"
+                 goal="10.23;4.8;-1.57"/>
       <FollowPose frame_id="map"
                   goal="10.23;5.1;-1.57"/>
       <Sleep msec="1000"/>
       <NavToPose frame_id="base_link"
                  goal="0;0;0"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="silotest">
+    <Sequence>
+      <NavToPose frame_id="map"
+                 goal="9.5 ;0.5;-1.57"/>
+      <NavToPose frame_id="map"
+                 goal="9.5 ;2.0;-1.57"/>
+      <Repeat num_cycles="-1">
+        <Sequence>
+          <SubTree ID="newfindball"/>
+          <NavToPose frame_id="map"
+                     goal="9.5;3.0;-1.57"/>
+          <SubTree ID="outtake"/>
+        </Sequence>
+      </Repeat>
     </Sequence>
   </BehaviorTree>
 
@@ -367,6 +454,9 @@
       <input_port name="parent_frame_id"/>
       <input_port name="child_frame_id"/>
       <output_port name="pose"/>
+      <output_port name="x"/>
+      <output_port name="y"/>
+      <output_port name="theta"/>
     </Action>
     <Action ID="GetIntakeProximityArray"
             editable="true">
@@ -387,8 +477,6 @@
       <input_port name="frame_id"/>
       <input_port name="goal"/>
     </Action>
-    <Action ID="ResetBallGrabbed"
-            editable="true"/>
     <Action ID="Rotate"
             editable="true">
       <input_port name="pose"/>
@@ -396,11 +484,18 @@
       <output_port name="rotated_pose"/>
       <input_port name="frame_id"/>
     </Action>
+    <Action ID="RotateSpeed"
+            editable="true">
+      <input_port name="speed"/>
+      <input_port name="angle"/>
+    </Action>
     <Condition ID="SetIntakeMechanism"
                editable="true">
       <input_port name="dribble"/>
       <input_port name="lift"/>
     </Condition>
+    <Action ID="WaitButton"
+            editable="true"/>
   </TreeNodesModel>
 
 </root>

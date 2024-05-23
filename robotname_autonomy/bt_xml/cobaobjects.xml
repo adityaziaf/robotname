@@ -26,6 +26,17 @@
     </KeepRunningUntilFailure>
   </BehaviorTree>
 
+  <BehaviorTree ID="move">
+    <SequenceWithMemory>
+      <NavThroughPoses frame_id="map"
+                       goals="4.9;0.0;3.14/&#10;5.2;0.1;-2.0944 /&#10;5.3;0.2;-2.0944 /&#10;5.5;0.4;-2.0944 /&#10;5.7;0.8;-2.0944 /&#10;5.9;3.55;-1.57"/>
+      <NavThroughPoses frame_id="map"
+                       goals="8.8;3.55;-1.75/&#10;9.1;3.45;-1.75 /&#10;9.2;3.25;-1.57 /&#10;9.3;3.05;-1.57 /&#10;9.4;2.5;-1.57 /&#10;9.5;1.7;-1.57"/>
+      <NavToPose frame_id="base_link"
+                 goal="0;0;0"/>
+    </SequenceWithMemory>
+  </BehaviorTree>
+
   <!-- Description of Node Models (used by Groot) -->
   <TreeNodesModel>
     <Action ID="FindObject"
@@ -35,6 +46,16 @@
     </Action>
     <Action ID="GoToPose"
             editable="true">
+      <input_port name="goal"/>
+    </Action>
+    <Action ID="NavThroughPoses"
+            editable="true">
+      <input_port name="frame_id"/>
+      <input_port name="goals"/>
+    </Action>
+    <Action ID="NavToPose"
+            editable="true">
+      <input_port name="frame_id"/>
       <input_port name="goal"/>
     </Action>
     <Action ID="Spin"

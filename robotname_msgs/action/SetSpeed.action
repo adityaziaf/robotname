@@ -1,0 +1,7 @@
+float64 speed
+float64 angle
+string frame_id
+---
+int32 status
+---
+string current_reading

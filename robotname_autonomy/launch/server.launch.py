@@ -126,6 +126,20 @@ def generate_launch_description():
         output='screen'
     )
 
+    wait_button_server = Node(
+        package='robotname_autonomy',
+        executable='wait_button_server',
+        name='wait_button',
+        output='screen'
+    )
+
+    rotate_speed = Node(
+        package='robotname_autonomy',
+        executable='set_speed_server',
+        name='rotate_speed',
+        output='screen'
+    )
+
 
     return LaunchDescription([
         #get_intake_color,
@@ -143,5 +157,7 @@ def generate_launch_description():
         resetball,
         ball_grabbed_top,
         get_current_pose_server,
-        rotate_server
+        rotate_server,
+        wait_button_server,
+        rotate_speed
     ])

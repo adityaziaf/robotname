@@ -15,6 +15,9 @@
         <Condition ID="BallGrabbed" editable="true">
             <input_port name="color"/>
         </Condition>
+        <Condition ID="BallGrabbedTop" editable="true">
+            <input_port name="color"/>
+        </Condition>
         <Action ID="FindNearestBall" editable="true">
             <output_port name="id"/>
             <input_port name="color"/>
@@ -45,6 +48,9 @@
             <input_port name="parent_frame_id"/>
             <input_port name="child_frame_id"/>
             <output_port name="pose"/>
+            <output_port name="x"/>
+            <output_port name="y"/>
+            <output_port name="theta"/>
         </Action>
         <Action ID="GetIntakeColor" editable="true">
             <input_port name="color"/>
@@ -83,6 +89,10 @@
             <output_port name="rotated_pose"/>
             <input_port name="frame_id"/>
         </Action>
+        <Action ID="RotateSpeed" editable="true">
+            <input_port name="speed"/>
+            <input_port name="angle"/>
+        </Action>
         <Condition ID="SetIdFound" editable="true"/>
         <Condition ID="SetIntakeMechanism" editable="true">
             <input_port name="dribble"/>
@@ -104,5 +114,6 @@
             <input_port name="id"/>
             <output_port name="pose"/>
         </Action>
+        <Action ID="WaitButton" editable="true"/>
     </TreeNodesModel>
 </root>

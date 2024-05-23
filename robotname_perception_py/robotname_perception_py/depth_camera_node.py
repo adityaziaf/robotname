@@ -216,19 +216,22 @@ class DepthCameraNode(LifecycleNode):
             poseInSourceFrame.pose.position.x = depth_at * obj_coor[2]
             poseInSourceFrame.pose.position.y = -depth_at * obj_coor[0]
             poseInSourceFrame.pose.position.z = -depth_at * obj_coor [1]
+            poseInSourceFrame.pose.orientation.x = 0.0
+            poseInSourceFrame.pose.orientation.y = 0.0
+            poseInSourceFrame.pose.orientation.z = 0.0
+            poseInSourceFrame.pose.orientation.w = 1.0
             poseInSourceFrame.header.frame_id = "camera_link"
-
-            poseInTargetFrame = tf2_geometry_msgs.do_transform_pose_stamped(poseInSourceFrame, self.cam_transform)
-                        
-            quaternion = get_quaternion_from_euler(0.0, 0.0, math.atan2(poseInTargetFrame.pose.position.y, poseInTargetFrame.pose.position.x))
+            quaternion = get_quaternion_from_euler(0.0, 0.0, math.atan2(poseInSourceFrame.pose.position.y, poseInSourceFrame.pose.position.x))
             quat = Quaternion()
                         
             quat.x = quaternion[0]
             quat.y = quaternion[1]
             quat.z = quaternion[2]
             quat.w = quaternion[3]
-                        
-            poseInTargetFrame.pose.orientation = quat
+
+            poseInSourceFrame.pose.orientation = quat
+
+            poseInTargetFrame = tf2_geometry_msgs.do_transform_pose_stamped(poseInSourceFrame, self.cam_transform)
 
             boxes_list.append(poseInTargetFrame)
 

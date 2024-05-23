@@ -24,7 +24,7 @@ configurable_parameters = [{'name': 'camera_name',                  'default': '
                            {'name': 'device_type',                  'default': "''", 'description': 'choose device by type'},
                            {'name': 'config_file',                  'default': "''", 'description': 'yaml config file'},
                            {'name': 'json_file_path',               'default': [os.path.join(get_package_share_directory('robotname_perception'),'config'),'/realsense.json'], 'description': 'allows advanced configuration'},
-                           {'name': 'initial_reset',                'default': 'true', 'description': "''"},
+                           {'name': 'initial_reset',                'default': 'false', 'description': "''"},
                            {'name': 'accelerate_gpu_with_glsl',     'default': "false", 'description': 'enable GPU acceleration with GLSL'},
                            {'name': 'rosbag_filename',              'default': "''", 'description': 'A realsense bagfile to run from as a device'},
                            {'name': 'log_level',                    'default': 'info', 'description': 'debug log level [DEBUG|INFO|WARN|ERROR|FATAL]'},
@@ -203,5 +203,5 @@ def generate_launch_description():
             topcam,
             tracker,
             topprocessing,
-            #detector_node_cmd
+            detector_node_cmd
     ])

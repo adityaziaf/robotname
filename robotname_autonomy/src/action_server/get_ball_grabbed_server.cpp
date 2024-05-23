@@ -92,7 +92,6 @@ private:
 
       if(last_color_msg && last_prox_msg)
       {
-        
         if(last_color_msg->data == goal->color)
         {
             if(last_prox_msg->data.front() == 1)

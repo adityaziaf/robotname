@@ -66,11 +66,7 @@ def generate_launch_description():
     perception = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory('robotname_perception'),'launch'),'/composition.launch.py']
-        ),
-        launch_arguments={
-            'use_sim_time' : LaunchConfiguration('use_sim_time'),
-            'params_file': [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params_sim.yaml')]
-        }.items()
+        )
     )
     
     rviz_node = Node(
@@ -120,6 +116,15 @@ def generate_launch_description():
         )
     )
 
+    autonode = Node(
+        package='robotname_autonomy',
+        executable='auto',
+        name='autonode',
+        
+        arguments=['-d', LaunchConfiguration('rvizconfig')],
+    )
+
+
     return LaunchDescription([
         DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz_config_path,
                                             description='Absolute path to rviz config file'),
@@ -127,7 +132,7 @@ def generate_launch_description():
                                             description='Flag to enable use_sim_time'),
         hardware,
         #ballcounter,
-        lidar,
+        #lidar,
         robot_state_publisher_node,
         joint_state_publisher_node,
         perception,

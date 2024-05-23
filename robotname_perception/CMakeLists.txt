@@ -7,7 +7,7 @@ endif()
 
 # find dependencies
 find_package(ament_cmake_python REQUIRED)
-
+ 
 find_package(rcutils REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
@@ -141,7 +141,7 @@ install(TARGETS
   yolo_onnx_component
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+  RUNTIME DESTINATION bin 
 )
 
 ament_python_install_package(${PROJECT_NAME})

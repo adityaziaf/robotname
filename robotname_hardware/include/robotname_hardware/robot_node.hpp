@@ -28,6 +28,7 @@
 #include "tf2_ros/transform_broadcaster.h"
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/joy.hpp"
+#include "std_msgs/msg/u_int8.hpp"
 #include "std_msgs/msg/u_int8_multi_array.hpp"
 
 class robotNode : public rclcpp::Node { 
@@ -75,6 +76,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr v_bat_pub;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr proximity_pub;
     rclcpp::Publisher<std_msgs::msg::UInt8MultiArray>::SharedPtr proximityarray_pub;
+    rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr button_start_pub;
     /* Timer */
     rclcpp::TimerBase::SharedPtr udp_timer;
     rclcpp::TimerBase::SharedPtr joy_timer; 

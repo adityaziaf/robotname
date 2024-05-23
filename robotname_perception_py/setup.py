@@ -21,7 +21,9 @@ setup(
     entry_points={
         'console_scripts': [
             'yolov5_node = robotname_perception_py.yolov5_node:main',
-            'depth_camera_node = robotname_perception_py.depth_camera_node:main'
+            'depth_camera_node = robotname_perception_py.depth_camera_node:main',
+            'global_pos = robotname_perception_py.global_position:main',
+            'line_detection = robotname_perception_py.line_detection:main'
         ],
     },
 )

@@ -7,11 +7,13 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
 find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -61,35 +63,50 @@ set(THIS_PACKAGE_DEPS
     )
 
 set(THIS_PACKAGE_SOURCES
-    src/plugins/get_intake_color.cpp 
-    src/plugins/set_intake_mechanism.cpp
-    src/plugins/nav_to_pose.cpp 
-    src/plugins/nav_through_poses.cpp
-    src/plugins/find_nearest_ball.cpp
-    src/plugins/follow_path.cpp
-    src/plugins/ball_available.cpp
-    src/plugins/set_speed.cpp
-    src/plugins/get_intake_distance.cpp
-    src/plugins/get_intake_proximity_array.cpp
-    src/plugins/get_ball_grabbed.cpp
-    src/plugins/flush_intake.cpp
-    src/plugins/follow_ball.cpp
-    src/plugins/get_nearest_ball.cpp
-    src/plugins/grab_nearest_ball.cpp
-    src/plugins/ball_grabbed.cpp
-    src/plugins/amcl_update.cpp
-    src/plugins/reset_ball_grabbed.cpp
-    src/plugins/get_ball_grabbed_top.cpp
-    src/plugins/rotate.cpp
-    src/plugins/intake_color.cpp
-    src/plugins/id_found.cpp
-    src/plugins/get_current_pose.cpp
+    src/plugins/action/get_intake_color.cpp 
+    src/plugins/service/set_intake_mechanism.cpp
+    src/plugins/action/nav_to_pose.cpp 
+    src/plugins/action/nav_through_poses.cpp
+    src/plugins/action/find_nearest_ball.cpp
+    src/plugins/service/follow_path.cpp
+    src/plugins/service/ball_available.cpp
+    src/plugins/service/set_speed.cpp
+    src/plugins/action/get_intake_proximity_array.cpp
+    src/plugins/action/get_ball_grabbed.cpp
+    src/plugins/action/flush_intake.cpp
+    src/plugins/action/follow_ball.cpp
+    src/plugins/service/get_nearest_ball.cpp
+    src/plugins/subscriber/grab_nearest_ball.cpp
+    src/plugins/subscriber/ball_grabbed.cpp
+    src/plugins/subscriber/ball_grabbed_top.cpp
+    src/plugins/service/amcl_update.cpp
+    src/plugins/service/reset_ball_grabbed.cpp
+    src/plugins/action/get_ball_grabbed_top.cpp
+    src/plugins/service/rotate.cpp
+    src/plugins/subscriber/intake_color.cpp
+    src/plugins/subscriber/id_found.cpp
+    src/plugins/service/get_current_pose.cpp
+    src/plugins/action/wait_button.cpp
+    src/plugins/action/rotate_speed.cpp
     )
 
 include_directories(include)
 
+add_executable(set_speed_server src/action_server/set_speed_server.cpp)
+ament_target_dependencies(set_speed_server rclcpp ${TARGET_DEPENDS})
+
+install(TARGETS
+set_speed_server
+  DESTINATION lib/${PROJECT_NAME}) 
 
 #install server
+
+add_executable(wait_button_server src/action_server/wait_button_server.cpp)
+ament_target_dependencies(wait_button_server rclcpp ${TARGET_DEPENDS})
+
+install(TARGETS
+wait_button_server
+  DESTINATION lib/${PROJECT_NAME}) 
 
 add_executable(rotate_server src/server/rotate_server.cpp)
 ament_target_dependencies(rotate_server rclcpp ${TARGET_DEPENDS})
@@ -127,6 +144,13 @@ install(TARGETS
 set_intake_mechanism_server
   DESTINATION lib/${PROJECT_NAME})
 
+add_executable(ball_grabbed_server src/server/ball_grabbed_server.cpp)
+ament_target_dependencies(ball_grabbed_server rclcpp robotname_msgs std_msgs)
+
+install(TARGETS
+ball_grabbed_server
+DESTINATION lib/${PROJECT_NAME})  
+
 add_executable(get_intake_distance_server src/server/get_intake_distance_server.cpp)
 ament_target_dependencies(get_intake_distance_server rclcpp robotname_msgs std_srvs)
 
@@ -134,12 +158,12 @@ install(TARGETS
 get_intake_distance_server
   DESTINATION lib/${PROJECT_NAME})
 
-add_executable(set_speed_server src/server/set_speed_server.cpp)
-ament_target_dependencies(set_speed_server rclcpp robotname_msgs geometry_msgs)
+#add_executable(set_speed_server src/server/set_speed_server.cpp)
+#ament_target_dependencies(set_speed_server rclcpp robotname_msgs geometry_msgs)
 
-install(TARGETS
-set_speed_server
-  DESTINATION lib/${PROJECT_NAME})
+#install(TARGETS
+#set_speed_server
+#  DESTINATION lib/${PROJECT_NAME})
 
 add_executable(find_nearest_ball_server src/action_server/find_nearest_ball_server.cpp)
 ament_target_dependencies(find_nearest_ball_server rclcpp robotname_msgs ${TARGET_DEPENDS})
@@ -207,6 +231,15 @@ install(TARGETS
     DESTINATION lib/${PROJECT_NAME}
 )
 ament_target_dependencies(auto ${THIS_PACKAGE_DEPS})
+
+#install python node
+ament_python_install_package(${PROJECT_NAME})
+
+install(PROGRAMS
+  scripts/numpad_node.py
+  scripts/numpad_client_node.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(
   DIRECTORY launch

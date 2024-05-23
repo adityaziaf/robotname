@@ -168,6 +168,8 @@ robotNode::robotNode() : Node("robot_node") {
   proximity_pub = this->create_publisher<std_msgs::msg::Float32>("proximity",10);
 
   proximityarray_pub = this->create_publisher<std_msgs::msg::UInt8MultiArray>("proximity_array",10);
+
+  button_start_pub = this ->create_publisher<std_msgs::msg::UInt8>("button_start",10);
   /* Subscriber */
 
   // run_status_sub          = this->create_subscription<std_msgs::msg::Bool> (
@@ -383,6 +385,10 @@ int robotNode::udpLoop() {
     proximity_array_data.data.push_back(recv_data.ball_drib.proximity_array[1]);
     proximity_array_data.data.push_back(recv_data.ball_drib.proximity_array[2]);
     proximityarray_pub->publish(proximity_array_data);
+
+   std_msgs::msg::UInt8 button_state;
+    button_state.data = recv_data.start_button;
+    button_start_pub->publish(button_state);
   }
   //return 0;
 }

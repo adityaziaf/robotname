@@ -1,26 +1,28 @@
-#include "robotname_autonomy/plugins/get_intake_color.hpp"
-#include "robotname_autonomy/plugins/set_intake_mechanism.hpp"
-#include "robotname_autonomy/plugins/nav_to_pose.hpp"
-#include "robotname_autonomy/plugins/nav_through_poses.hpp"
-#include "robotname_autonomy/plugins/find_nearest_ball.hpp"
-#include "robotname_autonomy/plugins/follow_path.hpp"
-#include "robotname_autonomy/plugins/ball_available.hpp"
-#include "robotname_autonomy/plugins/set_speed.hpp"
-#include "robotname_autonomy/plugins/get_intake_distance.hpp"
-#include "robotname_autonomy/plugins/get_intake_proximity_array.hpp"
-#include "robotname_autonomy/plugins/get_ball_grabbed.hpp"
-#include "robotname_autonomy/plugins/flush_intake.hpp"
-#include "robotname_autonomy/plugins/follow_ball.hpp"
-#include "robotname_autonomy/plugins/get_nearest_ball.hpp"
-#include "robotname_autonomy/plugins/grab_nearest_ball.hpp"
-#include "robotname_autonomy/plugins/ball_grabbed.hpp"
-#include "robotname_autonomy/plugins/amcl_update.hpp"
-#include "robotname_autonomy/plugins/reset_ball_grabbed.hpp"
-#include "robotname_autonomy/plugins/get_ball_grabbed_top.hpp"
-#include "robotname_autonomy/plugins/rotate.hpp"
-#include "robotname_autonomy/plugins/intake_color.hpp"
-#include "robotname_autonomy/plugins/id_found.hpp"
-#include "robotname_autonomy/plugins/get_current_pose.hpp"
+#include "robotname_autonomy/plugins/action/get_intake_color.hpp"
+#include "robotname_autonomy/plugins/service/set_intake_mechanism.hpp"
+#include "robotname_autonomy/plugins/action/nav_to_pose.hpp"
+#include "robotname_autonomy/plugins/action/nav_through_poses.hpp"
+#include "robotname_autonomy/plugins/action/find_nearest_ball.hpp"
+#include "robotname_autonomy/plugins/service/follow_path.hpp"
+#include "robotname_autonomy/plugins/service/ball_available.hpp"
+#include "robotname_autonomy/plugins/service/set_speed.hpp"
+#include "robotname_autonomy/plugins/action/get_intake_proximity_array.hpp"
+#include "robotname_autonomy/plugins/action/get_ball_grabbed.hpp"
+#include "robotname_autonomy/plugins/action/flush_intake.hpp"
+#include "robotname_autonomy/plugins/action/follow_ball.hpp"
+#include "robotname_autonomy/plugins/service/get_nearest_ball.hpp"
+#include "robotname_autonomy/plugins/subscriber/grab_nearest_ball.hpp"
+#include "robotname_autonomy/plugins/subscriber/ball_grabbed.hpp"
+#include "robotname_autonomy/plugins/service/amcl_update.hpp"
+#include "robotname_autonomy/plugins/service/reset_ball_grabbed.hpp"
+#include "robotname_autonomy/plugins/action/get_ball_grabbed_top.hpp"
+#include "robotname_autonomy/plugins/service/rotate.hpp"
+#include "robotname_autonomy/plugins/subscriber/intake_color.hpp"
+#include "robotname_autonomy/plugins/subscriber/id_found.hpp"
+#include "robotname_autonomy/plugins/service/get_current_pose.hpp"
+#include "robotname_autonomy/plugins/subscriber/ball_grabbed_top.hpp"
+#include "robotname_autonomy/plugins/action/wait_button.hpp"
+#include "robotname_autonomy/plugins/action/rotate_speed.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -84,10 +86,10 @@ int main(int argc, char **argv)
   setspeed.default_port_value = "/set_speed";
   factory.registerNodeType<SetSpeed>("SetSpeed", setspeed);
 
-  RosNodeParams intakedis;
-  intakedis.nh = nh;
-  intakedis.default_port_value = "/get_intake_distance";
-  factory.registerNodeType<GetIntakeDistance>("GetIntakeDistance", intakedis);
+  // RosNodeParams intakedis;
+  // intakedis.nh = nh;
+  // intakedis.default_port_value = "/get_intake_distance";
+  // factory.registerNodeType<GetIntakeDistance>("GetIntakeDistance", intakedis);
 
   RosNodeParams proximityarrayconfig;
   proximityarrayconfig.nh = nh;
@@ -158,6 +160,21 @@ int main(int argc, char **argv)
   getcurrentpose.nh = nh;
   getcurrentpose.default_port_value = "/get_current_pose_server";
   factory.registerNodeType<GetCurrentPose>("GetCurrentPose", getcurrentpose);
+
+  RosNodeParams ballgrabbedtop;
+  ballgrabbedtop.nh = nh;
+  ballgrabbedtop.default_port_value = "/intake2/detectedcolor";
+  factory.registerNodeType<BallGrabbedTop>("BallGrabbedTop", ballgrabbedtop);
+
+  RosNodeParams waitbutton;
+  waitbutton.nh = nh;
+  waitbutton.default_port_value = "/wait_button";
+  factory.registerNodeType<WaitButton>("WaitButton", waitbutton);
+
+  RosNodeParams rotateconf;
+  rotateconf.nh = nh;
+  rotateconf.default_port_value = "/rotate_speed";
+  factory.registerNodeType<RotateSpeed>("RotateSpeed", rotateconf);
 
   auto tree = factory.createTreeFromFile(default_bt_xml_file);
 
