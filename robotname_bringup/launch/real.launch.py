@@ -50,6 +50,13 @@ def generate_launch_description():
         
     )
 
+    lidar_transform = Node(
+        package='robotname_localization',
+        executable='lidarreference',
+        name='lidarref',
+        output='screen'       
+    )
+
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -132,11 +139,12 @@ def generate_launch_description():
                                             description='Flag to enable use_sim_time'),
         hardware,
         #ballcounter,
-        #lidar,
+        lidar,
         robot_state_publisher_node,
         joint_state_publisher_node,
         perception,
         rviz_node,
+        lidar_transform,
         #odom_to_map,
         nav_localization,
         nav_navigation,

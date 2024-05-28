@@ -10,6 +10,9 @@
 #include "robotname_msgs/msg/detection.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include "tf2/utils.h"
+#include "tf2/LinearMath/Quaternion.h"
 
 class FollowServer : public rclcpp::Node
 {
@@ -30,7 +33,7 @@ public:
       std::bind(&FollowServer::handle_accepted, this, _1));
 
     _ball_sub = this->create_subscription<robotname_msgs::msg::DetectionArray>("/camera/objects/tracked", 1, std::bind(&FollowServer::handle_subscription, this,_1));
-    _goal_pub = this->create_publisher<geometry_msgs::msg::PoseStamped>("goal_pose",10);
+    _goal_pub = this->create_publisher<geometry_msgs::msg::PoseStamped>("goal_pose",1);
   }
 
 private:
@@ -66,7 +69,7 @@ private:
   void execute(const std::shared_ptr<GoalHandleFollow> goal_handle)
   {
     RCLCPP_INFO(this->get_logger(), "Executing goal");
-    rclcpp::Rate loop_rate(20);
+    rclcpp::Rate loop_rate(30);
     const auto goal = goal_handle->get_goal();
     auto feedback = std::make_shared<Follow::Feedback>();
     auto result = std::make_shared<Follow::Result>();
@@ -95,6 +98,12 @@ private:
               // geometry_msgs::msg::PoseStamped target;
               // target.set__header(object.pose.header);
               // target.pose.set__position(object.pose.pose.position);
+              // tf2::Quaternion q;
+              // q.setRPY(0, 0, -1.57);
+              // q.normalize();
+              // target.pose.orientation = tf2::toMsg(q);
+              // set y component to o to avoid instability
+              //object.pose.pose.position.y = 0;
               _goal_pub->publish(object.pose);
             }
           
@@ -150,6 +159,8 @@ int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<FollowServer>();
+
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "FollowServer Server Ready");
 
   rclcpp::spin(node);
 

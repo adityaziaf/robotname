@@ -49,6 +49,24 @@ from message_filters import TimeSynchronizer, Subscriber, ApproximateTimeSynchro
 
 from image_geometry import PinholeCameraModel
 
+
+# from norfair import (
+#     AbsolutePaths,
+#     Detection,
+#     FixedCamera,
+#     Tracker,
+#     Video,
+#     draw_absolute_grid,
+# )
+
+# from norfair.camera_motion import (
+#     HomographyTransformationGetter,
+#     MotionEstimator,
+#     TranslationTransformationGetter,
+# )
+
+# from norfair.drawing import draw_points, draw_boxes
+
 def get_quaternion_from_euler(roll, pitch, yaw):
   """
   Convert an Euler angle to a quaternion.
@@ -74,7 +92,7 @@ class DepthCameraNode(LifecycleNode):
         super().__init__("depth_camera_node", **kwargs)
 
         # params
-        self.declare_parameter("model", "omniomniomni.pt")
+        self.declare_parameter("model", "newyolo.pt")
         self.declare_parameter("device", "cuda:0")
         self.declare_parameter("threshold", 0.4)
         self.declare_parameter("enable", True)
@@ -146,6 +164,20 @@ class DepthCameraNode(LifecycleNode):
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
+        # motion_estimator = MotionEstimator(
+        #         max_points=900,
+        #         min_distance=14,
+        #         transformations_getter=HomographyTransformationGetter(),
+        #     )
+        
+        # tracker = Tracker(
+        #     distance_function="iou",
+        #     detection_threshold=0.5,
+        #     distance_threshold=200,
+        #     initialization_delay=3,
+        #     hit_counter_max=30,
+        # )
+
         super().on_activate(state)
 
         return TransitionCallbackReturn.SUCCESS
@@ -168,6 +200,33 @@ class DepthCameraNode(LifecycleNode):
         del self.image_qos_profile
 
         return TransitionCallbackReturn.SUCCESS
+
+
+    # def yolo_detections_to_norfair_detections(self, results: Results):
+    #     norfair_detections = []
+    #     boxes = []
+    #     box_data: Boxes
+    #     for box_data in results.boxes:
+    #         bbox = np.array(
+    #             [
+    #                 [box_data[0].item(), box_data[1].item()],
+    #                 [box_data[2].item(), box_data[3].item()],
+    #             ]
+    #         )
+    #         boxes.append(bbox)
+    #         # if track_boxes:
+    #         points = bbox
+    #         scores = np.array([box_data[4], box_data[4]])
+    #         # else:
+    #         #     points = bbox.mean(axis=0, keepdims=True)
+    #         #     scores = detection_as_xyxy[[4]]
+
+    #         norfair_detections.append(
+    #             Detection(points=points, scores=scores, label=box_data[-1].item())
+    #         )
+
+    #     return norfair_detections, boxes
+
 
     def parse_hypothesis(self, results: Results) -> List[Dict]:
 
@@ -231,6 +290,9 @@ class DepthCameraNode(LifecycleNode):
 
             poseInSourceFrame.pose.orientation = quat
 
+            #poseInSourceFrame.pose.position.x = math.hypot(poseInSourceFrame.pose.position.x, poseInSourceFrame.pose.position.y)
+            #poseInSourceFrame.pose.position.y = 0.0
+            
             poseInTargetFrame = tf2_geometry_msgs.do_transform_pose_stamped(poseInSourceFrame, self.cam_transform)
 
             boxes_list.append(poseInTargetFrame)
@@ -240,7 +302,7 @@ class DepthCameraNode(LifecycleNode):
 
     def image_cb(self, image: RGBD) -> None:
         if self.enable:
-            self.get_logger().info('blaba')
+            #self.get_logger().info('blaba')
             try:
                 self.cam_transform = self.tf_buffer.lookup_transform('map', 'camera_link', rclpy.time.Time(), rclpy.duration.Duration(nanoseconds=1000))
             #     # self.get_logger().info('Got transform from {} to {}: {}'.format(
@@ -258,18 +320,26 @@ class DepthCameraNode(LifecycleNode):
             cv_rgb_image = self.cv_bridge.imgmsg_to_cv2(image.rgb, desired_encoding='bgr8')
             cv_depth_image = self.cv_bridge.imgmsg_to_cv2(image.depth, desired_encoding="passthrough")
 
-            results = self.yolo.track(
+            results = self.yolo.predict(
                 source=cv_rgb_image,
                 verbose=False,
                 stream=False,
                 conf=0.5,
-                persist=False,
                 device=self.device,
                 iou=0.5,
                 imgsz=640
             )
             ann_results: Results = results[0].cpu()
 
+            # detections, boxes = self.yolo_detections_to_norfair_detections(ann_results)
+
+            # coord_transformations = self.motion_estimator.update(cv_rgb_image, None)
+
+            # tracked_objects = self.tracker.update(
+            #     detections= detections, coord_transformations=coord_transformations
+            # )
+
+            
             if ann_results.boxes:
                 hypothesis = self.parse_hypothesis(ann_results)
                 poses = self.parse_transformation(ann_results, cv_depth_image)
@@ -281,7 +351,7 @@ class DepthCameraNode(LifecycleNode):
 
             for i in range(len(ann_results)):
                 aux_msg = Detection()
-                
+
                 aux_msg.id = hypothesis[i]["class_id"]
                 aux_msg.classname = hypothesis[i]["class_name"]
                 aux_msg.score = hypothesis[i]["score"]

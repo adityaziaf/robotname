@@ -70,11 +70,11 @@ set(THIS_PACKAGE_SOURCES
     src/plugins/action/find_nearest_ball.cpp
     src/plugins/service/follow_path.cpp
     src/plugins/service/ball_available.cpp
-    src/plugins/service/set_speed.cpp
     src/plugins/action/get_intake_proximity_array.cpp
     src/plugins/action/get_ball_grabbed.cpp
     src/plugins/action/flush_intake.cpp
     src/plugins/action/follow_ball.cpp
+    src/plugins/action/move_with_lidar_reference.cpp
     src/plugins/service/get_nearest_ball.cpp
     src/plugins/subscriber/grab_nearest_ball.cpp
     src/plugins/subscriber/ball_grabbed.cpp
@@ -88,18 +88,50 @@ set(THIS_PACKAGE_SOURCES
     src/plugins/service/get_current_pose.cpp
     src/plugins/action/wait_button.cpp
     src/plugins/action/rotate_speed.cpp
+    src/plugins/action/set_speed.cpp
+    src/plugins/service/set_tail_position.cpp
+    src/plugins/action/setup_menu.cpp
+
     )
 
 include_directories(include)
 
+add_executable(setup_menu_server src/action_server/setup_menu_server.cpp)
+  ament_target_dependencies(setup_menu_server rclcpp ${TARGET_DEPENDS})
+  
+install(TARGETS
+    setup_menu_server
+    DESTINATION lib/${PROJECT_NAME})
+
 add_executable(set_speed_server src/action_server/set_speed_server.cpp)
 ament_target_dependencies(set_speed_server rclcpp ${TARGET_DEPENDS})
 
-install(TARGETS
-set_speed_server
+install(TARGETS 
+  set_speed_server
   DESTINATION lib/${PROJECT_NAME}) 
 
+add_executable(rotate_speed_server src/action_server/rotate_speed_server.cpp)
+  ament_target_dependencies(rotate_speed_server rclcpp ${TARGET_DEPENDS})
+  
+install(TARGETS
+    rotate_speed_server
+    DESTINATION lib/${PROJECT_NAME}) 
+
+add_executable(move_with_lidar_reference_server src/action_server/move_with_lidar_reference.cpp)
+  ament_target_dependencies(move_with_lidar_reference_server rclcpp ${TARGET_DEPENDS})
+  
+install(TARGETS
+    move_with_lidar_reference_server
+    DESTINATION lib/${PROJECT_NAME}) 
+
 #install server
+add_executable(set_tail_position_server src/server/set_tail_position_server.cpp)
+ament_target_dependencies(set_tail_position_server rclcpp ${TARGET_DEPENDS})
+
+install(TARGETS
+set_tail_position_server
+  DESTINATION lib/${PROJECT_NAME}) 
+
 
 add_executable(wait_button_server src/action_server/wait_button_server.cpp)
 ament_target_dependencies(wait_button_server rclcpp ${TARGET_DEPENDS})
@@ -158,12 +190,6 @@ install(TARGETS
 get_intake_distance_server
   DESTINATION lib/${PROJECT_NAME})
 
-#add_executable(set_speed_server src/server/set_speed_server.cpp)
-#ament_target_dependencies(set_speed_server rclcpp robotname_msgs geometry_msgs)
-
-#install(TARGETS
-#set_speed_server
-#  DESTINATION lib/${PROJECT_NAME})
 
 add_executable(find_nearest_ball_server src/action_server/find_nearest_ball_server.cpp)
 ament_target_dependencies(find_nearest_ball_server rclcpp robotname_msgs ${TARGET_DEPENDS})

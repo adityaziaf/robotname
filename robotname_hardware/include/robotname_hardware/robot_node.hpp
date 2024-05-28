@@ -48,6 +48,7 @@ private:
     // void gripper_callback(const std_msgs::msg::Float32MultiArray &msg);
     void joy_callback(const sensor_msgs::msg::Joy &msg);
 
+    void set_tail(const std_msgs::msg::Float32 &msg);
     void set_mekanism(const std_msgs::msg::Float32MultiArray &msg);
     int8_t joy_status;
     /* Subscriptor */
@@ -62,6 +63,8 @@ private:
 
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub;
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr mekanism_sub;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr tail_sub;
+
     // rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr seedling_sub;
 
     /* Publisher */

@@ -209,7 +209,7 @@ controller_server:
       translation_kp : 1.0 # dimensionless
       translation_ki : 0.2 # dimensionless
       translation_kd : 0.0 # dimensionless
-      rotation_kp : 3.0 #dimensionless
+      rotation_kp : 5.0 #dimensionless
       rotation_ki : 0.1 #dimensionless
       rotation_kd : 0.0 #dimensionless
       lookahead_distance : 0.4 #meter

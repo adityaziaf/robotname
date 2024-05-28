@@ -1,10 +1,10 @@
 amcl:
   ros__parameters:
-    alpha1: 0.1 # rotation from rotation
-    alpha2: 0.01 #0.001 # rotation from translation
-    alpha3: 0.1 # translation from translation
+    alpha1: 0.2 # rotation from rotation
+    alpha2: 0.1 #0.001 # rotation from translation
+    alpha3: 0.2 # translation from translation
     alpha4: 0.05 #0.05 # translation from rotation
-    alpha5: 0.1 # translation from translation
+    alpha5: 0.3 # translation from translation
     use_sim_time : False
     base_frame_id: "base_footprint"
     beam_skip_distance: 0.5
@@ -17,7 +17,7 @@ amcl:
     laser_max_range: 8.0
     laser_min_range: -1.0
     laser_model_type: "beam"
-    max_beams: 256
+    max_beams: 60
     max_particles: 5000
     min_particles: 500
     odom_frame_id: "odom"
@@ -36,9 +36,9 @@ amcl:
 
     # beam model use all of the z, while likelihood only use zhit and zrand
     # total z must be 1
-    z_hit: 0.7
+    z_hit: 0.6
     z_max: 0.05
-    z_rand: 0.3
+    z_rand: 0.4
     z_short: 0.05
 
     scan_topic: scan
@@ -252,8 +252,8 @@ controller_server:
       movement_time_allowance: 10.0
     goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.05
-      yaw_goal_tolerance: 0.05
+      xy_goal_tolerance: 0.1
+      yaw_goal_tolerance: 0.1
       stateful: True
     
     FollowPath:
@@ -281,7 +281,7 @@ controller_server:
       plugin: "nav2_omni_pure_pursuit_controller::OmniPurePursuitController"
       translation_kp : 5.0 # dimensionless
       translation_ki : 0.2 # dimensionless
-      translation_kd : 0.2 # dimensionless
+      translation_kd : 0.0 # dimensionless
       rotation_kp : 8.0 #dimensionless
       rotation_ki : 0.1 #dimensionless
       rotation_kd : 0.0 #dimensionless
@@ -292,7 +292,7 @@ controller_server:
       adaptive_gain_lookahead : 1.0 #dimensionless
       circle_interpolation : false
       rotate_to_heading : false 
-      rotate_to_heading_treshold : 0.1 #rad/sF
+      rotate_to_heading_treshold : 0.5 #rad/sF
       min_rotation_speed : -6.0 # m/s
       max_rotation_speed : 6.0 # m/s
       min_translation_speed : -6.0
@@ -343,7 +343,7 @@ velocity_smoother:
     min_velocity: [-6.0, -6.0, -15.0]
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 5.0
-    max_accel: [16.0, 16.0, 15.0]
-    max_decel: [-16.0, -16.0, -15.0]
+    max_accel: [12.0, 12.0, 12.0]
+    max_decel: [-12.0, -12.0, -12.0]
     use_realtime_priority: false
     enable_stamped_cmd_vel: false

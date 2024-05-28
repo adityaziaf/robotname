@@ -5,7 +5,7 @@
 BT::PortsList MoveWithLidarReference::providedPorts()
 {
     return { InputPort<std::string>("parent_frame"), InputPort<std::string>("child_frame"), 
-             InputPort<double>("x"), InputPort<double>("x") };
+             InputPort<double>("x"), InputPort<double>("y"), InputPort<double>("speed") };
 }
 
 bool MoveWithLidarReference::setGoal(RosActionNode::Goal &goal)
@@ -14,9 +14,10 @@ bool MoveWithLidarReference::setGoal(RosActionNode::Goal &goal)
   auto child_frame = getInput<std::string>("child_frame");
   auto x = getInput<double>("x");
   auto y = getInput<double>("y");
+  auto speed = getInput<double>("speed");
   goal.x = x.value();
   goal.y = y.value();
-
+  goal.speed = speed.value();
   return true;
 }
 

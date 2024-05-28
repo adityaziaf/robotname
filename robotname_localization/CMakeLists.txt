@@ -29,9 +29,21 @@ message_filters
 tf2
 tf2_geometry_msgs
 )
+add_executable(
+  lidarreference
+  src/lidarreference.cpp)
 
+ament_target_dependencies(lidarreference 
+rclcpp 
+sensor_msgs 
+nav_msgs 
+tf2
+tf2_geometry_msgs
+tf2_ros
+)
 install(TARGETS
   filterlidar
+  lidarreference
   DESTINATION lib/${PROJECT_NAME})
 
 install(

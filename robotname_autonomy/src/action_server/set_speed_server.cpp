@@ -4,7 +4,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
-#include "robotname_msgs/action/set_speed.hpp"
+#include "robotname_msgs/action/set_speed_server.hpp"
 #include "std_msgs/msg/u_int8.hpp"
 #include "std_msgs/msg/bool.hpp"
 #include "geometry_msgs/msg/twist.hpp"
@@ -20,34 +20,33 @@
 class SetSpeedServer : public rclcpp::Node
 {
 public:
-  using SetSpeed = robotname_msgs::action::SetSpeed;
-  using GoalHandleSetSpeed = rclcpp_action::ServerGoalHandle<SetSpeed>;
+  using SetSpeedMove = robotname_msgs::action::SetSpeedServer;
+  using GoalHandleSetSpeed = rclcpp_action::ServerGoalHandle<SetSpeedMove>;
 
   explicit SetSpeedServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
     : Node("SetSpeed_action_server", options)
   {
     using namespace std::placeholders;
 
-    this->action_server_ = rclcpp_action::create_server<SetSpeed>(
+    this->action_server_ = rclcpp_action::create_server<SetSpeedMove>(
       this,
-      "rotate_speed",
+      "set_speed",
       std::bind(&SetSpeedServer::handle_goal, this, _1, _2),
       std::bind(&SetSpeedServer::handle_cancel, this, _1),
       std::bind(&SetSpeedServer::handle_accepted, this, _1));
     
     twist_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel",10);
-    pose_sub = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/amcl_pose", 1, std::bind(&SetSpeedServer::handle_subscription, this,_1));
   }
 
 private:
-  rclcpp_action::Server<SetSpeed>::SharedPtr action_server_;
+  rclcpp_action::Server<SetSpeedMove>::SharedPtr action_server_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_pub;
-  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_sub;
-  geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr last_msg;
+  rclcpp::TimerBase::SharedPtr timer_;
+ 
 
   rclcpp_action::GoalResponse handle_goal(
     const rclcpp_action::GoalUUID &,
-    std::shared_ptr<const SetSpeed::Goal> goal)
+    std::shared_ptr<const SetSpeedMove::Goal> goal)
   {
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
   }
@@ -59,21 +58,6 @@ private:
     (void)goal_handle;
     return rclcpp_action::CancelResponse::ACCEPT;
   }
-
-  double angleWrap(double angle) {
-    
-    if(angle >= M_PI)
-    {
-      angle -= 2*M_PI;
-    }
-
-    else if(angle < -M_PI)
-    {
-      angle += 2*M_PI;
-    }
-
-    return angle;
-}
 
   void handle_accepted(const std::shared_ptr<GoalHandleSetSpeed> goal_handle)
   {
@@ -87,12 +71,14 @@ private:
     RCLCPP_INFO(this->get_logger(), "Executing goal");
     rclcpp::Rate loop_rate(100);
     const auto goal = goal_handle->get_goal();
-    auto feedback = std::make_shared<SetSpeed::Feedback>();
-    auto result = std::make_shared<SetSpeed::Result>();
+    auto feedback = std::make_shared<SetSpeedMove::Feedback>();
+    auto result = std::make_shared<SetSpeedMove::Result>();
 
-    bool state = true;
+    rclcpp::Time deadline = get_clock()->now() + rclcpp::Duration::from_seconds( double(goal->timeout) / 1000 );
 
-    while(rclcpp::ok() && state)
+    geometry_msgs::msg::Twist tw_msg;
+
+    while( get_clock()->now() < deadline && rclcpp::ok())
     {
       if (goal_handle->is_canceling())
       {
@@ -102,47 +88,23 @@ private:
         return;
       }
 
-      if(last_msg)
-      {
-        double theta = tf2::getYaw(last_msg->pose.pose.orientation);
-
-        double target = angleWrap(goal->angle - theta);
-
-        geometry_msgs::msg::Twist tw_msg;
-
-        if(target >= 0)
-        {   
-          tw_msg.angular.z = goal->speed;
-
-          if(target <= 0.1)
-          {
-            tw_msg.angular.z = 0;
-            state = false;
-          }
-        }
-
-        else if (target < 0)
-        {
-          tw_msg.angular.z = -goal->speed;
-
-          if(target >= -0.1)
-          {
-            tw_msg.angular.z = 0.0;
-            state = false;
-          }
-        }
-        
-        twist_pub->publish(tw_msg);
-
-      }
-      else
-      {
-        RCLCPP_INFO(this->get_logger(), "Empty Topic Value");
-      }
       
+      tw_msg.linear.x = goal->speed_x;
+      tw_msg.linear.y = goal->speed_y;
+      tw_msg.angular.z = goal->theta;
+
+      //feedback->current_readings = cycle++;
+      //goal_handle->publish_feedback(feedback);
+      //RCLCPP_INFO(this->get_logger(), "Publish feedback");
+      twist_pub->publish(tw_msg);
+
       loop_rate.sleep();
     }
+    tw_msg.linear.x = 0.0;
+    tw_msg.linear.y = 0.0;
+    tw_msg.angular.z = 0.0;
 
+    twist_pub->publish(tw_msg);
     // Check if goal is done
     if (rclcpp::ok())
     {
@@ -151,12 +113,6 @@ private:
       RCLCPP_INFO(this->get_logger(), "Goal succeeded");
     }
   }
-
-  void handle_subscription(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
-  {
-    last_msg = msg;
-  }
-
 };  // class SetSpeedServer
 
 
@@ -164,7 +120,7 @@ int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
   auto node = std::make_shared<SetSpeedServer>();
-
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Set Speed Server Ready");
   rclcpp::spin(node);
 
   return 0;

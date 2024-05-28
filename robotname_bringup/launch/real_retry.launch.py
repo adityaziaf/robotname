@@ -41,10 +41,20 @@ def generate_launch_description():
     #     output='screen'
     # )
 
-    lidar = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('urg_node2'),'launch'),'/urg_node2.launch.py']
-        )
+    lidar = Node(
+        package='urg_node',
+        executable='urg_node_driver',
+        name='urg_node',
+        output='screen',
+        parameters=[lidarconfig]
+        
+    )
+
+    lidar_transform = Node(
+        package='robotname_localization',
+        executable='lidarreference',
+        name='lidarref',
+        output='screen'       
     )
 
     robot_state_publisher_node = Node(
@@ -120,11 +130,12 @@ def generate_launch_description():
                                             description='Flag to enable use_sim_time'),
         hardware,
         #ballcounter,
-        #lidar,
+        lidar,
         robot_state_publisher_node,
         joint_state_publisher_node,
         perception,
         rviz_node,
+        lidar_transform,
         #odom_to_map,
         nav_localization,
         nav_navigation,

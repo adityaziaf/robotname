@@ -35,13 +35,6 @@ def generate_launch_description():
         name='ball_available_server',
         output='screen'
     )
-
-    set_speed = Node(
-        package='robotname_autonomy',
-        executable='set_speed_server',
-        name='set_speed_server',
-        output='screen'
-    )
     
     intake_distance = Node(
         package='robotname_autonomy',
@@ -135,29 +128,52 @@ def generate_launch_description():
 
     rotate_speed = Node(
         package='robotname_autonomy',
-        executable='set_speed_server',
+        executable='rotate_speed_server',
         name='rotate_speed',
+        output='screen'
+    )
+
+    move_with_lidar_reference = Node(
+        package='robotname_autonomy',
+        executable='move_with_lidar_reference_server',
+        name='move_with_lidar_reference',
+        output='screen'
+    )
+
+    set_tail_position = Node(
+        package='robotname_autonomy',
+        executable='set_tail_position_server',
+        name='set_tail_position',
+        output='screen'
+    )
+
+    set_speed = Node(
+        package='robotname_autonomy',
+        executable='set_speed_server',
+        name='set_speed_server',
         output='screen'
     )
 
 
     return LaunchDescription([
         #get_intake_color,
-        find_nearest_ball,
-        ball_available,
-        set_speed,
-        intake_distance,
+        #find_nearest_ball,
+        #ball_available,
+        #intake_distance,
         intake_proximity_array,
         set_intake_mechanism,
         ball_grabbed,
-        flush,
+        #flush,
         follow_ball,
         follow_path,
-        get_nearest_ball,
-        resetball,
+        #get_nearest_ball,
+        #resetball,
         ball_grabbed_top,
         get_current_pose_server,
         rotate_server,
         wait_button_server,
-        rotate_speed
+        rotate_speed,
+        move_with_lidar_reference,
+        set_tail_position,
+        set_speed
     ])

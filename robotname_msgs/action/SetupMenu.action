@@ -1,0 +1,7 @@
+
+---
+int32 silo2
+int32 silo3
+int32 silo4
+---
+string current_readings

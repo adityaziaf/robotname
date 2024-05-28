@@ -38,12 +38,17 @@ UDP n_udp(IP_SERVER, PORT);
 #define DRIB_SPEED_UP 40 //R1+KOTAK
 #define DRIB_SPEED_DOWN 36 //R1+SGTIGA
 #define DRIB_OFF 20 //L1+sgt
+#define ARM_CLOSE (BTN_R1 + BTN_UP)
+#define ARM_OPEN  (BTN_R1 + BTN_DOWN)
+#define ARM_CLOSE_INC (BTN_R1 + BTN_RIGHT)
+#define ARM_OPEN_INC (BTN_R1 + BTN_LEFT)
 
 #define LIFT_MAX_SPEED 5
 #define DRIB_MAX_SPEED 3
 
 uint8_t drib_flag = 0;
 uint8_t lift_flag = 0;
+uint8_t arm_flag = 0;
 
 typedef struct send_to_robot{
   uint32_t timestamp;
@@ -65,6 +70,7 @@ typedef struct send_to_robot{
   struct{
 	  float lift_speed;
 	  float drib_speed;
+    float arm_pos;
 	  union{
 		  uint8_t pnuematic : 1;
 	  };
@@ -170,6 +176,10 @@ robotNode::robotNode() : Node("robot_node") {
   proximityarray_pub = this->create_publisher<std_msgs::msg::UInt8MultiArray>("proximity_array",10);
 
   button_start_pub = this ->create_publisher<std_msgs::msg::UInt8>("button_start",10);
+
+  tail_sub = this->create_subscription<std_msgs::msg::Float32>(
+    "set_tail",10,std::bind(&robotNode::set_tail,this,std::placeholders::_1));
+
   /* Subscriber */
 
   // run_status_sub          = this->create_subscription<std_msgs::msg::Bool> (
@@ -198,6 +208,12 @@ void robotNode::set_mekanism(const std_msgs::msg::Float32MultiArray &msg)
   send_data.ball_drib.lift_speed = msg.data.at(0);
 
 }
+
+void robotNode::set_tail(const std_msgs::msg::Float32 &msg)
+{
+  send_data.ball_drib.arm_pos = msg.data;
+}
+
 void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     auto axes = msg.axes;
     auto buttons = msg.buttons;
@@ -270,6 +286,25 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     }
     else if(button_t == LIFT_OFF)send_data.ball_drib.lift_speed = 0;
     else if((button_t != LIFT_SPEED_DOWN) && (button_t != LIFT_SPEED_UP) && (lift_flag == 1))lift_flag = 0;
+
+    if(button_t == ARM_CLOSE_INC && arm_flag == 0){
+      send_data.ball_drib.arm_pos +=0.05;
+      arm_flag = 1;
+    }
+    else if(button_t == ARM_OPEN_INC && arm_flag == 0){
+      send_data.ball_drib.arm_pos -=0.05;
+      arm_flag = 1;
+    }
+    else if(button_t == ARM_CLOSE && arm_flag == 0){
+      send_data.ball_drib.arm_pos =0.05;
+      arm_flag = 1;
+    }
+    else if(button_t == ARM_OPEN && arm_flag == 0){
+      send_data.ball_drib.arm_pos = 0.7;
+      arm_flag = 1;
+    }
+
+    else if((button_t != ARM_OPEN) && (button_t != ARM_CLOSE) && (button_t != ARM_OPEN_INC) && (button_t != ARM_CLOSE_INC) && (arm_flag == 1))arm_flag = 0;
 
     if(send_data.ball_drib.drib_speed > DRIB_MAX_SPEED)send_data.ball_drib.drib_speed = DRIB_MAX_SPEED;
     if(send_data.ball_drib.drib_speed < -3)send_data.ball_drib.drib_speed = -5;

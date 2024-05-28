@@ -16,7 +16,7 @@ class SetSpeed : public rclcpp::Node {
         std::bind(&SetSpeed::handle_service, this, _1, _2),
         qos_profile);
       _publisher = this->create_publisher<geometry_msgs::msg::Twist>
-        ("/cmd_vel", rclcpp::QoS(10));
+        ("/cmd_vel", rclcpp::QoS(1));
     }
 
     void handle_service(const std::shared_ptr<robotname_msgs::srv::SetSpeed::Request> request, 

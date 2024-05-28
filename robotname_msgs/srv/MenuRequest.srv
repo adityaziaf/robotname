@@ -1,3 +1,4 @@
 bool request
 ---
-string status
+int8 menu_option
+int8 data

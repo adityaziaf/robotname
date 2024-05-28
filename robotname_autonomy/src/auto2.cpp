@@ -5,7 +5,6 @@
 #include "robotname_autonomy/plugins/action/find_nearest_ball.hpp"
 #include "robotname_autonomy/plugins/service/follow_path.hpp"
 #include "robotname_autonomy/plugins/service/ball_available.hpp"
-#include "robotname_autonomy/plugins/service/set_speed.hpp"
 #include "robotname_autonomy/plugins/action/get_intake_proximity_array.hpp"
 #include "robotname_autonomy/plugins/action/get_ball_grabbed.hpp"
 #include "robotname_autonomy/plugins/action/flush_intake.hpp"
@@ -23,6 +22,10 @@
 #include "robotname_autonomy/plugins/subscriber/ball_grabbed_top.hpp"
 #include "robotname_autonomy/plugins/action/wait_button.hpp"
 #include "robotname_autonomy/plugins/action/rotate_speed.hpp"
+#include "robotname_autonomy/plugins/action/move_with_lidar_reference.hpp"
+#include "robotname_autonomy/plugins/service/set_tail_position.hpp"
+#include "robotname_autonomy/plugins/action/setup_menu.hpp"
+#include "robotname_autonomy/plugins/action/set_speed.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -80,16 +83,6 @@ int main(int argc, char **argv)
   checkball.nh = nh;
   checkball.default_port_value = "/ball_available";
   factory.registerNodeType<BallAvailable>("BallAvailable", checkball);
-
-  RosNodeParams setspeed;
-  setspeed.nh = nh;
-  setspeed.default_port_value = "/set_speed";
-  factory.registerNodeType<SetSpeed>("SetSpeed", setspeed);
-
-  // RosNodeParams intakedis;
-  // intakedis.nh = nh;
-  // intakedis.default_port_value = "/get_intake_distance";
-  // factory.registerNodeType<GetIntakeDistance>("GetIntakeDistance", intakedis);
 
   RosNodeParams proximityarrayconfig;
   proximityarrayconfig.nh = nh;
@@ -176,9 +169,29 @@ int main(int argc, char **argv)
   rotateconf.default_port_value = "/rotate_speed";
   factory.registerNodeType<RotateSpeed>("RotateSpeed", rotateconf);
 
+  RosNodeParams movewithlidarconf;
+  movewithlidarconf.nh = nh;
+  movewithlidarconf.default_port_value = "/move_with_lidar_reference";
+  factory.registerNodeType<MoveWithLidarReference>("MoveWithLidarReference", movewithlidarconf);
+
+  RosNodeParams settailposition;
+  settailposition.nh = nh;
+  settailposition.default_port_value = "/set_tail_position";
+  factory.registerNodeType<SetTailPosition>("SetTailPosition", settailposition);
+
+  RosNodeParams menuconfig;
+  menuconfig.nh = nh;
+  menuconfig.default_port_value = "/setup_menu";
+  factory.registerNodeType<SetupMenu>("SetupMenu", menuconfig);
+
+  RosNodeParams setspeedconfig;
+  setspeedconfig.nh = nh;
+  setspeedconfig.default_port_value = "/set_speed";
+  factory.registerNodeType<SetSpeed>("SetSpeed", setspeedconfig);
+
   auto tree = factory.createTreeFromFile(default_bt_xml_file);
 
-  
+
 
   BT::NodeStatus status;
   while(!BT::isStatusCompleted(status)) 
