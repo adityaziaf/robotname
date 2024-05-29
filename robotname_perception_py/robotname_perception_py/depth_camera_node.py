@@ -92,7 +92,7 @@ class DepthCameraNode(LifecycleNode):
         super().__init__("depth_camera_node", **kwargs)
 
         # params
-        self.declare_parameter("model", "newyolo.pt")
+        self.declare_parameter("model", "regional.pt")
         self.declare_parameter("device", "cuda:0")
         self.declare_parameter("threshold", 0.4)
         self.declare_parameter("enable", True)

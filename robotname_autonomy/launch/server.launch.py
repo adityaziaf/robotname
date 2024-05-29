@@ -154,6 +154,14 @@ def generate_launch_description():
         output='screen'
     )
 
+    set_pneumatic = Node(
+        package='robotname_autonomy',
+        executable='set_pneumatic_server',
+        name='set_pneumatic_server',
+        output='screen'
+    )
+
+
 
     return LaunchDescription([
         #get_intake_color,
@@ -175,5 +183,6 @@ def generate_launch_description():
         rotate_speed,
         move_with_lidar_reference,
         set_tail_position,
-        set_speed
+        set_speed,
+        set_pneumatic
     ])

@@ -91,10 +91,17 @@ set(THIS_PACKAGE_SOURCES
     src/plugins/action/set_speed.cpp
     src/plugins/service/set_tail_position.cpp
     src/plugins/action/setup_menu.cpp
-
+    src/plugins/service/set_pneumatic.cpp
     )
 
 include_directories(include)
+
+add_executable(set_pneumatic_server src/server/set_pneumatic_server.cpp)
+  ament_target_dependencies(set_pneumatic_server rclcpp ${TARGET_DEPENDS})
+  
+install(TARGETS
+    set_pneumatic_server
+    DESTINATION lib/${PROJECT_NAME})
 
 add_executable(setup_menu_server src/action_server/setup_menu_server.cpp)
   ament_target_dependencies(setup_menu_server rclcpp ${TARGET_DEPENDS})
