@@ -92,9 +92,17 @@ set(THIS_PACKAGE_SOURCES
     src/plugins/service/set_tail_position.cpp
     src/plugins/action/setup_menu.cpp
     src/plugins/service/set_pneumatic.cpp
+    src/plugins/service/get_best_silo.cpp
     )
 
 include_directories(include)
+
+add_executable(get_best_silo_server src/server/get_best_silo_server.cpp)
+  ament_target_dependencies(get_best_silo_server rclcpp ${TARGET_DEPENDS})
+  
+install(TARGETS
+    get_best_silo_server
+    DESTINATION lib/${PROJECT_NAME})
 
 add_executable(set_pneumatic_server src/server/set_pneumatic_server.cpp)
   ament_target_dependencies(set_pneumatic_server rclcpp ${TARGET_DEPENDS})

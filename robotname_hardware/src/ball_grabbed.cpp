@@ -20,7 +20,7 @@ class BallGrabbed : public rclcpp::Node
       rclcpp::QoS qos(rclcpp::KeepLast(1), rmw_qos_profile_default);
 
       prox_sub.subscribe(this, "/proximity_array", qos.get_rmw_qos_profile());
-      color_sub.subscribe(this, "/camera/aligned_depth_to_color/image_raw", qos.get_rmw_qos_profile());
+      color_sub.subscribe(this, "/camera1/aligned_depth_to_color/image_raw", qos.get_rmw_qos_profile());
 
       sync_policies = std::make_shared<message_filters::TimeSynchronizer<std_msgs::msg::UInt8MultiArray,std_msgs::msg::String>>(prox_sub, color_sub, 1);
       sync_policies->registerCallback(&BallGrabbed::topic_callback, this);

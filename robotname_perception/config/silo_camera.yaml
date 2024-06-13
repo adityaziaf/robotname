@@ -1,0 +1,19 @@
+/**:
+    ros__parameters:
+      # Realsense
+      video_device: "/dev/v4l/by-id/usb-Intel_R__RealSense_TM__Depth_Camera_455_Intel_R__RealSense_TM__Depth_Camera_455-video-index0"
+      # video_device: "/dev/v4l/by-id/usb-Sunplus_IT_Co_NYK_NEMESIS-video-index0"
+      time_per_frame: 30.0
+      pixel_format: "YUYV"
+      image_size: [640, 480]
+      output_encoding: "rgb8"
+      # reusing same camera intrinsics only for demo, should really be unique for camera2"
+      # camera_info_url: "package://usb_cam/config/camera_info.yaml"
+      # brightness: 0
+      # contrast: 0
+      # saturation: 1
+      auto_white_balance: true
+      white_balance: 3000
+      autoexposure: true
+      exposure: 100
+      autofocus: true

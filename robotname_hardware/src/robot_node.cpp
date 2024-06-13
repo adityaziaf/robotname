@@ -256,9 +256,9 @@ void robotNode::joy_callback(const sensor_msgs::msg::Joy &msg){
     target_theta *= factor;
 
     
-    send_data.body_speed.x = target_x;
-    send_data.body_speed.y = target_y;
-    send_data.body_speed.theta = target_theta;
+    send_data.body_speed.x = target_y;
+    send_data.body_speed.y = -target_x;
+    send_data.body_speed.theta = -target_theta;
 
     // std::cout<<target_x<<std::endl;
     // std::cout<<target_y<<std::endl;
@@ -460,9 +460,9 @@ int robotNode::flagSub(const std_msgs::msg::UInt32 &msg) {
 int robotNode::speedSub(const geometry_msgs::msg::Twist &msg) {
   // need adjustment
   if (!joy_status){
-      send_data.body_speed.x = -msg.linear.y;
-      send_data.body_speed.y = msg.linear.x;
-       send_data.body_speed.theta = -msg.angular.z;
+      send_data.body_speed.x = msg.linear.x;
+      send_data.body_speed.y = msg.linear.y;
+      send_data.body_speed.theta = msg.angular.z;
   }
   // std::cout<<msg.linear.x<<std::endl;
   // std::cout<<msg.linear.y<<std::endl;

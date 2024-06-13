@@ -19,7 +19,7 @@ class BallGrabbedServer : public rclcpp::Node {
         std::bind(&BallGrabbedServer::handle_service, this, _1, _2),
         qos_profile);
       _subscriber = this->create_subscription<robotname_msgs::msg::DetectionArray>
-        ("/camera/objects/tracked", rclcpp::QoS(1),
+        ("/camera1/objects/tracked", rclcpp::QoS(1),
             std::bind(&BallGrabbedServer::detection_callback, this, _1));
 
       _intake_prox_sub = this->create_subscription<std_msgs::msg::UInt8MultiArray>("/proximity_array", 1, std::bind(&BallGrabbedServer::handle_prox_subscription, this,_1));

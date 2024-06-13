@@ -26,7 +26,12 @@ def generate_launch_description():
       'config',
       'lidarserial.yaml'
       )
-    
+    lidarconfig2 = os.path.join(
+      get_package_share_directory('robotname_localization'),
+      'config',
+      'lidarserial2.yaml'
+      )
+
     hardware = Node(
         package='robotname_hardware',
         executable='robot_node',
@@ -42,6 +47,14 @@ def generate_launch_description():
     # )
 
     lidar = Node(
+        package='urg_node',
+        executable='urg_node_driver',
+        name='urg_node',
+        output='screen',
+        parameters=[lidarconfig]
+        
+    )
+    lidar2 = Node(
         package='urg_node',
         executable='urg_node_driver',
         name='urg_node',
@@ -103,7 +116,7 @@ def generate_launch_description():
         launch_arguments={
             'use_sim_time' : LaunchConfiguration('use_sim_time'),
             'params_file' : [os.path.join(get_package_share_directory('robotname_navigation'),'config/nav2_params.yaml')],
-            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapku3.yaml')]
+            'map': [os.path.join(get_package_share_directory('robotname_navigation'),'maps/mapku2.yaml')]
         }.items()
     )
     
@@ -142,7 +155,7 @@ def generate_launch_description():
         lidar,
         robot_state_publisher_node,
         joint_state_publisher_node,
-        perception,
+        #perception,
         rviz_node,
         lidar_transform,
         #odom_to_map,

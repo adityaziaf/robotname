@@ -16,7 +16,7 @@ class FindNearestBall : public rclcpp::Node {
         std::bind(&FindNearestBall::handle_service, this, _1, _2),
         qos_profile);
       _subscriber = this->create_subscription<robotname_msgs::msg::DetectionArray>
-        ("/camera/objects/tracked", rclcpp::QoS(10),
+        ("/camera1/objects/tracked", rclcpp::QoS(10),
             std::bind(&FindNearestBall::detection_callback, this, _1));
     }
      ;

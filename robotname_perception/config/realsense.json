@@ -38,7 +38,7 @@
         "controls-color-white-balance-manual": "4600",
         "controls-depth-gain": "16",
         "controls-laserpower": "150",
-        "controls-laserstate": "off",
+        "controls-laserstate": "on",
         "ignoreSAD": "0",
         "param-amplitude-factor": "0",
         "param-autoexposure-setpoint": "1536",
@@ -97,8 +97,8 @@
     "schema version": 1,
     "viewer": {
         "stream-depth-format": "Z16",
-        "stream-fps": "30",
-        "stream-height": "720",
-        "stream-width": "1280"
+        "stream-fps": "15",
+        "stream-height": "480",
+        "stream-width": "640"
     }
 }

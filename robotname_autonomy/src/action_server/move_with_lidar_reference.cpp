@@ -108,7 +108,7 @@ private:
         //get the median from 5 measurements along x and y axis
         // assume 1.57 paralel to y axis
         // assume 3.14 - 0.2 paralel to - x axis
-        int index_along_y = round((M_PI/2.0 - last_msg->angle_min) / last_msg->angle_increment);
+        int index_along_y = round((-M_PI/2.0 - last_msg->angle_min) / last_msg->angle_increment);
         //int index_along_x = round((M_PI - 0.2 - last_msg->angle_min) / last_msg->angle_increment);
 
         //std::vector<double> x_container;
@@ -123,11 +123,11 @@ private:
 
         double target_position = goal->y - y_median;
         geometry_msgs::msg::Twist msg;
-        msg.linear.x = -0.2;
+        msg.linear.x = -0.4;
 
         if(target_position >= 0)
         {
-          msg.linear.y = -goal->speed;
+          msg.linear.y = goal->speed;
           if(target_position <= 0.05) 
           {
             msg.linear.y = 0.0; //goal tolerance
@@ -137,7 +137,7 @@ private:
         }
         else 
         {
-          msg.linear.y = goal->speed;
+          msg.linear.y = -goal->speed;
           if(target_position >= -0.05) 
           {
             msg.linear.y = 0.0; // goal tolerance

@@ -126,10 +126,10 @@ class DepthCameraNode(LifecycleNode):
             depth=1
         )
         self._pub = self.create_lifecycle_publisher(
-            DetectionArray, "/camera/objects/raw", 1)
+            DetectionArray, "/camera1/objects/raw", 1)
         
         self._pub_ann = self.create_lifecycle_publisher(
-            Image, "/camera/ann_image", 1) 
+            Image, "/camera1/ann_image", 1) 
         
         self._srv = self.create_service(
             SetBool, "enable", self.enable_cb
@@ -156,7 +156,7 @@ class DepthCameraNode(LifecycleNode):
         self.yolo.fuse()
         self._sub = self.create_subscription(
             RGBD,
-            "/camera/rgbd",
+            "/camera1/rgbd",
             self.image_cb,
             self.image_qos_profile
         )

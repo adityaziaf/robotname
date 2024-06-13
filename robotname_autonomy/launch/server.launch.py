@@ -161,7 +161,12 @@ def generate_launch_description():
         output='screen'
     )
 
-
+    get_best_silo = Node(
+        package='robotname_autonomy',
+        executable='get_best_silo_server',
+        name='get_best_silo_server',
+        output='screen'
+    )
 
     return LaunchDescription([
         #get_intake_color,
@@ -184,5 +189,6 @@ def generate_launch_description():
         move_with_lidar_reference,
         set_tail_position,
         set_speed,
-        set_pneumatic
+        set_pneumatic,
+        get_best_silo
     ])

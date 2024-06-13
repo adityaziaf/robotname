@@ -44,6 +44,11 @@
         <Action ID="GetBallGrabbedTop" editable="true">
             <input_port name="color"/>
         </Action>
+        <Action ID="GetBestSilo" editable="true">
+            <input_port name="team_color"/>
+            <input_port name="mode"/>
+            <output_port name="silo"/>
+        </Action>
         <Action ID="GetCurrentPose" editable="true">
             <input_port name="parent_frame_id"/>
             <input_port name="child_frame_id"/>

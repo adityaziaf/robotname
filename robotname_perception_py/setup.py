@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'silo_camera_node = robotname_perception_py.silo_camera:main',
             'yolov5_node = robotname_perception_py.yolov5_node:main',
             'depth_camera_node = robotname_perception_py.depth_camera_node:main',
             'global_pos = robotname_perception_py.global_position:main',

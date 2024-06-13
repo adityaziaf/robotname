@@ -63,6 +63,19 @@ ament_target_dependencies(
   std_msgs 
 )
 
+add_executable(
+  ballcountercolor 
+  src/ball_counter_color.cpp 
+)
+
+ament_target_dependencies(
+  ballcountercolor
+  rclcpp 
+  std_msgs
+  message_filters
+
+)
+
 install(TARGETS
   robot_node
   joy_node

@@ -1,0 +1,1 @@
+robotname_msgs/DetectSilo[] detections

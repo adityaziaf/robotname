@@ -15,8 +15,8 @@ class trackingComponent(Node):
 
           # Load parameters
         #norfair_setup = rclpy.get_param("norfair_setup")
-        self.tracked_obj_pub = self.create_publisher(dta, '/camera/objects/tracked',1)
-        self.detected_obj_subs = self.create_subscription(dta, '/camera/objects/raw',self.trackingCallback,1)
+        self.tracked_obj_pub = self.create_publisher(dta, '/camera1/objects/tracked',1)
+        self.detected_obj_subs = self.create_subscription(dta, '/camera1/objects/raw',self.trackingCallback,1)
 
         # Norfair tracker initialization
         self.tracker = Tracker(

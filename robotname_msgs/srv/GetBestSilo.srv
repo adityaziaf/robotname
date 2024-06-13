@@ -1,0 +1,5 @@
+string team_color
+int32 mode
+---
+bool status
+int32 silo

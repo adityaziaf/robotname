@@ -27,6 +27,7 @@
 #include "robotname_autonomy/plugins/action/setup_menu.hpp"
 #include "robotname_autonomy/plugins/action/set_speed.hpp"
 #include "robotname_autonomy/plugins/service/set_pneumatic.hpp"
+#include "robotname_autonomy/plugins/service/get_best_silo.hpp"
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
@@ -194,6 +195,11 @@ int main(int argc, char **argv)
   setpneumaticconfig.nh = nh;
   setpneumaticconfig.default_port_value = "/set_pneumatic";
   factory.registerNodeType<SetPneumatic>("SetPneumatic", setpneumaticconfig);
+
+  RosNodeParams getbestsiloconfig;
+  getbestsiloconfig.nh = nh;
+  getbestsiloconfig.default_port_value = "/get_best_silo";
+  factory.registerNodeType<GetBestSilo>("GetBestSilo", getbestsiloconfig);
 
   auto tree = factory.createTreeFromFile(default_bt_xml_file);
 
