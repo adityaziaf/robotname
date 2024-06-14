@@ -134,7 +134,7 @@ class LineDetection(LifecycleNode):
 
         self._sub = self.create_subscription(
             RGBD,
-            "/camera/rgbd",
+            "/camera1/rgbd",
             self.image_cb,
             self.image_qos_profile
         )

@@ -345,7 +345,7 @@
             </ReactiveFallback>
             <FollowPose frame_id="base_link"
                         goal="0;0;0"/>
-            <SetIntakeMechanism dribble="-1.0"
+            <SetIntakeMechanism dribble="-5.0"
                                 lift="1.0"/>
             <NavToPose frame_id="base_link"
                        goal="0;0;0"/>
@@ -392,6 +392,19 @@
     </ReactiveFallback>
   </BehaviorTree>
 
+  <BehaviorTree ID="red_coba_nasional">
+    <Sequence>
+      <WaitButton/>
+      <Repeat num_cycles="3">
+        <Sequence>
+          <SubTree ID="regional_find&amp;follow"/>
+          <SubTree ID="silo_testing"/>
+          <SubTree ID="outtake"/>
+        </Sequence>
+      </Repeat>
+    </Sequence>
+  </BehaviorTree>
+
   <BehaviorTree ID="red_nasional">
     <Sequence>
       <WaitButton/>
@@ -424,30 +437,42 @@
     </Sequence>
   </BehaviorTree>
 
-  <BehaviorTree ID="red_silo2">
+  <BehaviorTree ID="red_silo1">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="9.5;-2.0;1.57 /&#10;8.7;-4.7;1.57"/>
-      <NavToPose frame_id="map"
-                 goal="8.7;-4.7;1.57"/>
+                       goals="7.9;-4.7;1.57"/>
+      <MoveWithLidarReference parent_frame="map"
+                              child_frame="base_link"
+                              x="0.0"
+                              y="3.0"
+                              speed="0.4"/>
       <SetSpeed x="-0.8"
                 y="0.0"
                 theta="0.0"
                 timeout="1000"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="red_silo2">
+    <Sequence>
+      <NavThroughPoses frame_id="map"
+                       goals="8.7;-4.7;1.57"/>
       <MoveWithLidarReference parent_frame="map"
                               child_frame="base_link"
                               x="0.0"
                               y="2.78"
                               speed="0.4"/>
+      <SetSpeed x="-0.8"
+                y="0.0"
+                theta="0.0"
+                timeout="1000"/>
     </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="red_silo3">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="9.5;-2.0;1.57 /&#10;9.5;-4.7;1.57"/>
-      <NavToPose frame_id="map"
-                 goal="9.5;-4.7;1.57"/>
+                       goals="9.5;-4.7;1.57"/>
       <SetSpeed x="-0.8"
                 y="0.0"
                 theta="0.0"
@@ -463,9 +488,7 @@
   <BehaviorTree ID="red_silo4">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="9.5;-2.0;1.57 /&#10;10.25;-4.7;1.57"/>
-      <NavToPose frame_id="map"
-                 goal="10.25;-4.7;1.57"/>
+                       goals="10.25;-4.7;1.57"/>
       <SetSpeed x="-0.8"
                 y="0.0"
                 theta="0.0"
@@ -474,6 +497,22 @@
                               child_frame="base_link"
                               x="0.0"
                               y="1.25"
+                              speed="0.4"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="red_silo5">
+    <Sequence>
+      <NavThroughPoses frame_id="map"
+                       goals="11.0;-4.7;1.57"/>
+      <SetSpeed x="-0.8"
+                y="0.0"
+                theta="0.0"
+                timeout="1000"/>
+      <MoveWithLidarReference parent_frame="map"
+                              child_frame="base_link"
+                              x="0.0"
+                              y="0.5"
                               speed="0.4"/>
     </Sequence>
   </BehaviorTree>
@@ -516,7 +555,7 @@
     <Parallel failure_count="1"
               success_count="-1">
       <Sequence>
-        <SetIntakeMechanism dribble="3.0"
+        <SetIntakeMechanism dribble="5.0"
                             lift="1.0"/>
         <Sleep msec="1500"/>
         <SetTailPosition angle="0.7"/>
@@ -647,13 +686,17 @@
       <GetBestSilo team_color="blue"
                    mode="1"
                    silo="{silo_out}"/>
+      <SubTree ID="red_silo1"
+               _skipIf="silo_out != 5"/>
       <SubTree ID="red_silo2"
-               _skipIf="silo_out != 2"
+               _skipIf="silo_out != 4"
                _autoremap="false"/>
       <SubTree ID="red_silo3"
                _skipIf="silo_out != 3"/>
       <SubTree ID="red_silo4"
-               _skipIf="silo_out != 4"/>
+               _skipIf="silo_out != 2"/>
+      <SubTree ID="red_silo5"
+               _skipIf="silo_out != 1"/>
     </Sequence>
   </BehaviorTree>
 
@@ -679,9 +722,18 @@
   </BehaviorTree>
 
   <BehaviorTree ID="tailtest">
-    <Sequence>
-      <SetTailPosition angle="0.6"/>
-    </Sequence>
+    <Repeat num_cycles="1">
+      <Sequence>
+        <SetIntakeMechanism dribble="3"
+                            lift="1"/>
+        <SetTailPosition angle="0.0"/>
+        <Sleep msec="2000"/>
+        <SetTailPosition angle="0.7"/>
+        <Sleep msec="2000"/>
+        <SetIntakeMechanism dribble="0"
+                            lift="0"/>
+      </Sequence>
+    </Repeat>
   </BehaviorTree>
 
   <!-- Description of Node Models (used by Groot) -->
@@ -711,12 +763,12 @@
             editable="true">
       <input_port name="color"/>
     </Action>
-    <Action ID="GetBestSilo"
-            editable="true">
+    <Condition ID="GetBestSilo"
+               editable="true">
       <input_port name="team_color"/>
       <input_port name="mode"/>
       <output_port name="silo"/>
-    </Action>
+    </Condition>
     <Action ID="GetCurrentPose"
             editable="true">
       <input_port name="parent_frame_id"/>

@@ -291,7 +291,7 @@ class SiloCameraNode(LifecycleNode):
                 source=cv_rgb_image,
                 verbose=False,
                 stream=False,
-                conf=0.5,
+                conf=0.2,
                 persist=False,
                 device=self.device,
                 iou=0.5,
@@ -313,10 +313,10 @@ class SiloCameraNode(LifecycleNode):
                     if label == "silo": 
                         silo_coor = box.xyxy.tolist()
                         percent_depth = self.get_percent_area_under_threshold(silo_coor[0], cv_depth_image, 3)
-                        print(percent_depth)
+                        # print(percent_depth)
                         if(percent_depth<2):continue
                         x_min, y_min, x_max, y_max = silo_coor[0]
-                        cv2.rectangle(cv_rgb_image, (int(x_min),int(y_min)),(int(x_max),int(y_max)),(0,0,255),1.5)
+                        cv2.rectangle(cv_rgb_image, (int(x_min),int(y_min)),(int(x_max),int(y_max)),(0,0,255),2)
                         silo_boxes.append(box.xyxy.tolist())
                 if len(silo_boxes) == 5:  #check if all silo detected
                     silo_boxes.sort() #sort by x_min

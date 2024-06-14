@@ -279,7 +279,7 @@ class DepthCameraNode(LifecycleNode):
             poseInSourceFrame.pose.orientation.y = 0.0
             poseInSourceFrame.pose.orientation.z = 0.0
             poseInSourceFrame.pose.orientation.w = 1.0
-            poseInSourceFrame.header.frame_id = "camera_link"
+            poseInSourceFrame.header.frame_id = "camera1_link"
             quaternion = get_quaternion_from_euler(0.0, 0.0, math.atan2(poseInSourceFrame.pose.position.y, poseInSourceFrame.pose.position.x))
             quat = Quaternion()
                         
@@ -304,7 +304,7 @@ class DepthCameraNode(LifecycleNode):
         if self.enable:
             #self.get_logger().info('blaba')
             try:
-                self.cam_transform = self.tf_buffer.lookup_transform('map', 'camera_link', rclpy.time.Time(), rclpy.duration.Duration(nanoseconds=1000))
+                self.cam_transform = self.tf_buffer.lookup_transform('map', 'camera1_link', rclpy.time.Time(), rclpy.duration.Duration(nanoseconds=1000))
             #     # self.get_logger().info('Got transform from {} to {}: {}'.format(
             #     # self.cam_transform.header.frame_id, self.cam_transform.child_frame_id,
             #     # self.cam_transform.transform))

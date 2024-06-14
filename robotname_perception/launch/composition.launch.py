@@ -136,6 +136,5 @@ def generate_launch_description():
             topcam,
             tracker,
             topprocessing,
-            detector_node_cmd,
-            silo
-    ])
+            detector_node_cmd
+        ])
