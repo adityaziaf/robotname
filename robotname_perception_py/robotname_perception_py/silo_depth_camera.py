@@ -128,15 +128,15 @@ class SiloDepthCameraNode(LifecycleNode):
             poseInSourceFrame.pose.orientation.z = 0.0
             poseInSourceFrame.pose.orientation.w = 1.0
             poseInSourceFrame.header.frame_id = "camera2_link"
-            quaternion = get_quaternion_from_euler(0.0, 0.0, math.atan2(poseInSourceFrame.pose.position.y, poseInSourceFrame.pose.position.x))
-            quat = Quaternion()
+            # quaternion = get_quaternion_from_euler(0.0, 0.0, math.atan2(poseInSourceFrame.pose.position.y, poseInSourceFrame.pose.position.x))
+            # quat = Quaternion()
                         
-            quat.x = quaternion[0]
-            quat.y = quaternion[1]
-            quat.z = quaternion[2]
-            quat.w = quaternion[3]
+            # quat.x = quaternion[0]
+            # quat.y = quaternion[1]
+            # quat.z = quaternion[2]
+            # quat.w = quaternion[3]
 
-            poseInSourceFrame.pose.orientation = quat
+            # poseInSourceFrame.pose.orientation = quat
 
             #poseInSourceFrame.pose.position.x = math.hypot(poseInSourceFrame.pose.position.x, poseInSourceFrame.pose.position.y)
             #poseInSourceFrame.pose.position.y = 0.0
@@ -415,8 +415,8 @@ class SiloDepthCameraNode(LifecycleNode):
 
             for i in range(len(ann_results)):
                 silo_msg = DetectSilo()
-                silo_msg.ball = informations[i]["class_name"]
-                if silo_msg.ball == "silo": continue
+                # silo_msg.ball = informations[i]["class_name"]
+                if informations[i]["class_name"] == "silo": continue
                 silo_msg.pose = poses[i]
                 self.get_logger().info(f'{silo_msg.pose}')
                 silo_array.detections.append(silo_msg)
