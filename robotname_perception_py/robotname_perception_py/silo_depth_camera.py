@@ -52,28 +52,32 @@ from image_geometry import PinholeCameraModel
 
 def euclidean_distance(point1, point2):
     x_dif = (point2[0] - point1[0])**2
-    y_dif = (point2[1] - point1[1])**2
+    # y_dif = (point2[1] - point1[1])**2
     # z_dif = (point2[2] - point1[2])**2
-    return math.sqrt(x_dif + y_dif)
+    return math.sqrt(x_dif)
 
 def find_nearest_silo (ball_pos):
     silo_coor = [
-        [11, -5],
+        [11.0, -5],
         [10.18, -5],
         [9.45, -5],
         [8.5, -5],
-        [7.6, -5]
+        [8.0, -5]
     ]
     index = 0
     min_distance = 1000000
     min_distance_index = -1
+    ball_coor = [ball_pos.x, ball_pos.y]
     for i in silo_coor:
-        temp_distance = euclidean_distance(ball_pos, i)
+        temp_distance = euclidean_distance(ball_coor, i)
         if min_distance > temp_distance:
             min_distance = temp_distance
             min_distance_index = index
         index+=1
-    return min_distance_index
+   # print(f"{ball_coor}")
+    # self.get_logger().info(f'{min_distance}')
+    # self.get_logger().info('SiloDepthCameraNode created')
+    return min_distance, min_distance_index
 
 class SiloDepthCameraNode(LifecycleNode):
 
@@ -388,7 +392,6 @@ class SiloDepthCameraNode(LifecycleNode):
                 iou=0.5,
                 imgsz=640
             )
-            arr = ["blue","purple","red","silo"] #define detection label
             ann_results: Results = results[0].cpu()
             if ann_results.boxes:                
                 poses = self.parse_transformation(ann_results, cv_depth_image)
@@ -405,23 +408,29 @@ class SiloDepthCameraNode(LifecycleNode):
             silo_5 = []
 
             silos = [silo_1, silo_2, silo_3, silo_4, silo_5]
-            silo_1 = [], silo_2 = [], silo_3 = [], silo_4 = [], silo_5 = []
             for i in range(len(ann_results)):
                 # silo_msg.ball = informations[i]["class_name"]
-                if informations[i]["class_name"]=="silo" or informations[i]["size"]<500: continue
-                poses[i]
-                nearest_silo = find_nearest_silo(poses[i].position)
-                silos[nearest_silo].append((informations[i]["box_coor"][1], informations[i]["class_name"]))
+                if informations[i]["class_name"]=="silo": continue
+                distance_silo = find_nearest_silo(poses[i].pose.position)[0]
+                nearest_silo = find_nearest_silo(poses[i].pose.position)[1]
+                silos[nearest_silo].append((poses[i].pose.position.z, informations[i]["class_name"]))
                 # Sort each silo by the y-coordinate (first element of the tuple)
+            #print(silos)
             index = 1
             for silo in silos:
+
+                silo_msg = DetectSilo()
                 silo_msg.number = index
                 silo.sort(key=lambda x: x[0])
-                silo_msg = DetectSilo()
+                for y, color in silo:
+                    silo_msg.ball.append(color)
+                while len(silo_msg.ball)<3:
+                    silo_msg.ball.append("null")
                 silo_array.detections.append(silo_msg)
                 index+=1
             self.get_logger().info(f'{silo_array.detections}')
             self._pub.publish(silo_array)
+            #(silo_array.detections)
             newmsg = self.cv_bridge.cv2_to_imgmsg(cv_rgb_image)
             self._pub_ann.publish(newmsg)
             del results

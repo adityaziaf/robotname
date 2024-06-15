@@ -33,12 +33,12 @@ class GetBestSilo : public rclcpp::Node {
         for(auto & object : _last_msg->detections)
         {
             std::string team_color, enemy_color;
-            if(request->team_color == "red"){
-              team_color = "red";
-              enemy_color = "blue";
-            }else if(request->team_color == "blue"){
-              team_color = "blue";
-              enemy_color = "red";
+            if(request->team_color == "redball"){
+              team_color = "redball";
+              enemy_color = "blueball";
+            }else if(request->team_color == "blueball"){
+              team_color = "blueball";
+              enemy_color = "redball";
             }else{
               RCLCPP_INFO(this->get_logger(), "Invalid Team Color");
               response->status=false;

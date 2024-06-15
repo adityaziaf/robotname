@@ -48,7 +48,7 @@ public:
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
     twist_pub = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel",10);
-    pose_sub = this->create_subscription<sensor_msgs::msg::LaserScan>("/scan/transform", 1, std::bind(&MoveWithLidarReference::handle_subscription, this,_1));
+    pose_sub = this->create_subscription<sensor_msgs::msg::LaserScan>("/scan", 1, std::bind(&MoveWithLidarReference::handle_subscription, this,_1));
 
   }
 
