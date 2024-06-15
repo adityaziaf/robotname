@@ -127,7 +127,6 @@ class SiloDepthCameraNode(LifecycleNode):
             poseInSourceFrame.pose.orientation.z = 0.0
             poseInSourceFrame.pose.orientation.w = 1.0
             poseInSourceFrame.header.frame_id = "camera2_link"
-            
             poseInTargetFrame = tf2_geometry_msgs.do_transform_pose_stamped(poseInSourceFrame, self.cam_transform)
 
             boxes_list.append(poseInTargetFrame)
@@ -419,10 +418,6 @@ class SiloDepthCameraNode(LifecycleNode):
                 silo_msg.number = index
                 silo.sort(key=lambda x: x[0])
                 silo_msg = DetectSilo()
-                for y, color in silo:
-                    silo_msg.ball.append(color)
-                while len (silo_msg.ball) < 3:
-                    silo_msg.ball.append("null")
                 silo_array.detections.append(silo_msg)
                 index+=1
             self.get_logger().info(f'{silo_array.detections}')

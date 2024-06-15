@@ -24,14 +24,20 @@ def generate_launch_description():
     lidarconfig = os.path.join(
       get_package_share_directory('robotname_localization'),
       'config',
-      'lidarserial.yaml'
+      'lidarkanan.yaml'
       )
     lidarconfig2 = os.path.join(
       get_package_share_directory('robotname_localization'),
       'config',
-      'lidarserial2.yaml'
+      'lidarkiri.yaml'
       )
 
+    lidarmergerconfig = os.path.join(
+      get_package_share_directory('robotname_localization'),
+      'config',
+      'lidarmerger.yaml'
+      )
+    
     hardware = Node(
         package='robotname_hardware',
         executable='robot_node',
@@ -39,15 +45,10 @@ def generate_launch_description():
         output='screen'
     )
     
-    # ballcounter = Node(
-    #     package='robotname_hardware',
-    #     executable='ballcounter',
-    #     name='ballcounter',
-    #     output='screen'
-    # )
 
     lidar = Node(
         package='urg_node',
+        namespace='lidarkanan',
         executable='urg_node_driver',
         name='urg_node',
         output='screen',
@@ -56,20 +57,23 @@ def generate_launch_description():
     )
     lidar2 = Node(
         package='urg_node',
+        namespace='lidarkiri',
         executable='urg_node_driver',
         name='urg_node',
         output='screen',
-        parameters=[lidarconfig]
+        parameters=[lidarconfig2]
         
     )
 
-    lidar_transform = Node(
-        package='robotname_localization',
-        executable='lidarreference',
-        name='lidarref',
-        output='screen'       
+    lidarmerger = Node(
+        package='ira_laser_tools',
+        executable='laserscan_multi_merger',
+        name='laserscan_multi_merger',
+        output='screen',
+        parameters=[lidarmergerconfig]
+        
     )
-
+    
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -151,15 +155,17 @@ def generate_launch_description():
         DeclareLaunchArgument(name='use_sim_time', default_value='False',
                                             description='Flag to enable use_sim_time'),
         hardware,
-        #ballcounter,
         lidar,
+        lidar2,
+        
         robot_state_publisher_node,
         joint_state_publisher_node,
-        #perception,
         rviz_node,
-        lidar_transform,
+        lidarmerger,
+        # lidar_transform,
         #odom_to_map,
         nav_localization,
         nav_navigation,
-        autonomy
+        autonomy,
+        perception
     ])

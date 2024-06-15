@@ -42,10 +42,10 @@ class blobDetectorComponent : public rclcpp::Node {
 
     //rclcpp::QoS qos(rclcpp::KeepLast(1), rmw_qos_profile_default);
 
-    rgb_subs.subscribe(this, "/camera/color/image_raw"/*,qos.get_rmw_qos_profile()*/);
-    depth_subs.subscribe(this, "/camera/aligned_depth_to_color/image_raw"/*,
+    rgb_subs.subscribe(this, "/camera1/color/image_raw"/*,qos.get_rmw_qos_profile()*/);
+    depth_subs.subscribe(this, "/camera1/aligned_depth_to_color/image_raw"/*,
                          qos.get_rmw_qos_profile()*/);
-    rgb_cam_info_subs.subscribe(this, "/camera/color/camera_info"/*,
+    rgb_cam_info_subs.subscribe(this, "/camera1/color/camera_info"/*,
                                 qos.get_rmw_qos_profile()*/);
 
     my_sync_ = std::make_shared<approximate_synchronizer>(approximate_policy(1),rgb_subs , depth_subs, rgb_cam_info_subs);
