@@ -50,31 +50,30 @@ from norfair import Detection, Tracker
 
 from image_geometry import PinholeCameraModel
 
-
-def get_quaternion_from_euler(roll, pitch, yaw):
-  """
-  Convert an Euler angle to a quaternion.
-   
-  Input
-    :param roll: The roll (rotation around x-axis) angle in radians.
-    :param pitch: The pitch (rotation around y-axis) angle in radians.
-    :param yaw: The yaw (rotation around z-axis) angle in radians.
- 
-  Output
-    :return qx, qy, qz, qw: The orientation in quaternion [x,y,z,w] format
-  """
-  qx = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
-  qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
-  qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
-  qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
- 
-  return [qx, qy, qz, qw]
-
 def euclidean_distance(point1, point2):
     x_dif = (point2[0] - point1[0])**2
     y_dif = (point2[1] - point1[1])**2
-    z_dif = (point2[2] - point1[2])**2
+    # z_dif = (point2[2] - point1[2])**2
     return math.sqrt(x_dif + y_dif)
+
+def find_nearest_silo (ball_pos):
+    silo_coor = [
+        [11, -5],
+        [10.18, -5],
+        [9.45, -5],
+        [8.5, -5],
+        [7.6, -5]
+    ]
+    index = 0
+    min_distance = 1000000
+    min_distance_index = -1
+    for i in silo_coor:
+        temp_distance = euclidean_distance(ball_pos, i)
+        if min_distance > temp_distance:
+            min_distance = temp_distance
+            min_distance_index = index
+        index+=1
+    return min_distance_index
 
 class SiloDepthCameraNode(LifecycleNode):
 
@@ -128,19 +127,6 @@ class SiloDepthCameraNode(LifecycleNode):
             poseInSourceFrame.pose.orientation.z = 0.0
             poseInSourceFrame.pose.orientation.w = 1.0
             poseInSourceFrame.header.frame_id = "camera2_link"
-            # quaternion = get_quaternion_from_euler(0.0, 0.0, math.atan2(poseInSourceFrame.pose.position.y, poseInSourceFrame.pose.position.x))
-            # quat = Quaternion()
-                        
-            # quat.x = quaternion[0]
-            # quat.y = quaternion[1]
-            # quat.z = quaternion[2]
-            # quat.w = quaternion[3]
-
-            # poseInSourceFrame.pose.orientation = quat
-
-            #poseInSourceFrame.pose.position.x = math.hypot(poseInSourceFrame.pose.position.x, poseInSourceFrame.pose.position.y)
-            #poseInSourceFrame.pose.position.y = 0.0
-            
             poseInTargetFrame = tf2_geometry_msgs.do_transform_pose_stamped(poseInSourceFrame, self.cam_transform)
 
             boxes_list.append(poseInTargetFrame)
@@ -154,6 +140,7 @@ class SiloDepthCameraNode(LifecycleNode):
             information = {
                 "class_name": self.yolo.names[int(box.cls)],
                 "size": self.get_area(box_coor[0]),
+                "box_coor": box_coor[0]
             }
             information_list.append(information)
         return information_list
@@ -374,7 +361,6 @@ class SiloDepthCameraNode(LifecycleNode):
         return TransitionCallbackReturn.SUCCESS
 
     def image_cb(self, image: RGBD) -> None:
-
         if self.enable:
             try:
                 self.cam_transform = self.tf_buffer.lookup_transform('map', 'camera2_link', rclpy.time.Time(), rclpy.duration.Duration(nanoseconds=1000))
@@ -412,15 +398,29 @@ class SiloDepthCameraNode(LifecycleNode):
                 norfair.draw_points( cv_rgb_image, tracked_object )
             
             silo_array = DetectSiloArray()
+            silo_1 = []
+            silo_2 = []
+            silo_3 = []
+            silo_4 = []
+            silo_5 = []
 
+            silos = [silo_1, silo_2, silo_3, silo_4, silo_5]
+            silo_1 = [], silo_2 = [], silo_3 = [], silo_4 = [], silo_5 = []
             for i in range(len(ann_results)):
-                silo_msg = DetectSilo()
                 # silo_msg.ball = informations[i]["class_name"]
-                if informations[i]["class_name"] == "silo": continue
-                silo_msg.pose = poses[i]
-                self.get_logger().info(f'{silo_msg.pose}')
+                if informations[i]["class_name"]=="silo" or informations[i]["size"]<500: continue
+                poses[i]
+                nearest_silo = find_nearest_silo(poses[i].position)
+                silos[nearest_silo].append((informations[i]["box_coor"][1], informations[i]["class_name"]))
+                # Sort each silo by the y-coordinate (first element of the tuple)
+            index = 1
+            for silo in silos:
+                silo_msg.number = index
+                silo.sort(key=lambda x: x[0])
+                silo_msg = DetectSilo()
                 silo_array.detections.append(silo_msg)
-
+                index+=1
+            self.get_logger().info(f'{silo_array.detections}')
             self._pub.publish(silo_array)
             newmsg = self.cv_bridge.cv2_to_imgmsg(cv_rgb_image)
             self._pub_ann.publish(newmsg)
