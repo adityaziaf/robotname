@@ -23,6 +23,7 @@ setup(
             'silo_camera_node = robotname_perception_py.silo_camera:main',
             'yolov5_node = robotname_perception_py.yolov5_node:main',
             'depth_camera_node = robotname_perception_py.depth_camera_node:main',
+            'silo_visualizer = robotname_perception_py.silo_visualizer:main',
             'global_pos = robotname_perception_py.global_position:main',
             'line_detection = robotname_perception_py.line_detection:main',
             'silo_depth_camera_node = robotname_perception_py.silo_depth_camera:main'
