@@ -53,7 +53,8 @@ class GetBestSilo : public rclcpp::Node {
             // object.ball.clear
         }
         response->silo=index;
-        std::cout<<"Response: "<<response->silo<<std::endl;
+        RCLCPP_INFO(this->get_logger(), "Response best silo %d with score: %d", index, max_score);
+        // std::cout<<"Response: "<<response->silo<<std::endl;
         response->status=true;
         return;
       }

@@ -155,11 +155,11 @@ def generate_launch_description():
         lidar,
         robot_state_publisher_node,
         joint_state_publisher_node,
-        #perception,
         rviz_node,
         lidar_transform,
         #odom_to_map,
         nav_localization,
         nav_navigation,
-        autonomy
+        autonomy,
+        perception
     ])

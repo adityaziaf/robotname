@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 
   RosNodeParams grabnearestballconfig;
   grabnearestballconfig.nh = nh;
-  grabnearestballconfig.default_port_value = "/camera/objects/tracked";
+  grabnearestballconfig.default_port_value = "/camera1/objects/tracked";
   factory.registerNodeType<GrabNearestBall>("GrabNearestBall", grabnearestballconfig);
 
   RosNodeParams ballgrabbed;

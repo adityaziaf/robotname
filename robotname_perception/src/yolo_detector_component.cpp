@@ -55,9 +55,9 @@ namespace robotname_perception
 
             rclcpp::QoS qos(rclcpp::KeepLast(1), rmw_qos_profile_default);
 
-            rgb_subs.subscribe(this, "/camera/color/image_raw", qos.get_rmw_qos_profile());
-            depth_subs.subscribe(this, "/camera/aligned_depth_to_color/image_raw", qos.get_rmw_qos_profile());
-            rgb_cam_info_subs.subscribe(this, "/camera/color/camera_info", qos.get_rmw_qos_profile());
+            rgb_subs.subscribe(this, "/camera1/color/image_raw", qos.get_rmw_qos_profile());
+            depth_subs.subscribe(this, "/camera1/aligned_depth_to_color/image_raw", qos.get_rmw_qos_profile());
+            rgb_cam_info_subs.subscribe(this, "/camera1/color/camera_info", qos.get_rmw_qos_profile());
 
             sync_policies = std::make_shared<message_filters::TimeSynchronizer<sensor_msgs::msg::Image, sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo>>(rgb_subs, depth_subs, rgb_cam_info_subs, 1);
             sync_policies->registerCallback(&yoloDetectorComponent::rgbd_callback, this);
