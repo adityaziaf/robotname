@@ -38,13 +38,28 @@
 
   </link>
   
+  <link name="laser2">
+
+  </link>
+
   <link name="camera1_link">
   </link>
+
+  
+   <link name="camera2_link">
+  </link>
+  
 
   <joint name="camera_joint" type="fixed">
     <parent link = "base_link"/>
     <child link = "camera1_link"/>
     <origin xyz="0.15 0.0 0.692" rpy="0.0 0.261799 0.0" />
+  </joint>
+
+  <joint name="camera2_joint" type="fixed">
+    <parent link = "base_link"/>
+    <child link = "camera2_link"/>
+    <origin xyz="-0.15 0.0 0.2" rpy="0.0 0.0 0.0" />
   </joint>
 
   <joint
@@ -54,4 +69,13 @@
     <!-- <origin xyz="-0.40 0.20 0" rpy="3.14 0 2.0944" /> -->
     <origin xyz="-0.25 -0.195 0" rpy="3.14 0 -2.09" />
   </joint>
+
+   <joint
+    name="lidar_joint2" type="fixed">
+    <parent link="base_link" />
+    <child link="laser2" />
+    <!-- <origin xyz="-0.40 0.20 0" rpy="3.14 0 2.0944" /> -->
+    <origin xyz="-0.25 0.195 0" rpy="3.14 0 2.09" />
+  </joint>
+
 </robot>

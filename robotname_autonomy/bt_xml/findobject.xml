@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4"
-      main_tree_to_execute="silo_testing">
+      main_tree_to_execute="red_coba_nasional">
   <BehaviorTree ID="blue_silo2">
     <Sequence>
       <NavThroughPoses frame_id="map"
