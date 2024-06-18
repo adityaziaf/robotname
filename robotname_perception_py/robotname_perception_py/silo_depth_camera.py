@@ -1,5 +1,6 @@
 
 from typing import List, Dict
+import collections
 
 import rclpy
 from rclpy.qos import QoSProfile
@@ -249,6 +250,14 @@ class SiloDepthCameraNode(LifecycleNode):
         return width * height
     
     def get_percent_area_under_threshold (self, box, image_source, threshold):
+        """Get percentage area that is below the threshold.
+        box: List or tuple of four integers [x1, y1, x2, y2] for the bounding box.
+        image_source: the image with depth value
+        threshold: the farthest valid area (int meter)
+            
+        Returns:
+            number: percentage area that is valid under the threshold
+        """
         x_min, y_min, x_max, y_max = box
         x = range(int (x_min), int(x_max))
         y = range(int(y_min), int(y_max))
@@ -304,6 +313,8 @@ class SiloDepthCameraNode(LifecycleNode):
 
         self.cam_transform = None
         self.base_transform = None
+
+        self.deq_pub = collections.deque([])
 
         return TransitionCallbackReturn.SUCCESS
 
@@ -409,16 +420,18 @@ class SiloDepthCameraNode(LifecycleNode):
 
             silos = [silo_1, silo_2, silo_3, silo_4, silo_5]
             for i in range(len(ann_results)):
-                # silo_msg.ball = informations[i]["class_name"]
-                if informations[i]["class_name"]=="silo": continue
-                distance_silo = find_nearest_silo(poses[i].pose.position)[0]
-                nearest_silo = find_nearest_silo(poses[i].pose.position)[1]
-                silos[nearest_silo].append((poses[i].pose.position.z, informations[i]["class_name"]))
-                # Sort each silo by the y-coordinate (first element of the tuple)
+                if informations[i]["class_name"]=="silo" or informations[i]["class_name"] == "purpleball": continue
+                percentage_far = self.get_percent_area_under_threshold(informations[i]["box_coor"], image_source=cv_depth_image, threshold=4)
+                bounding_box_area = informations[i]["size"]
+                if bounding_box_area < 50: continue #perlu tuning
+                if percentage_far < 50: continue #perlu tuning
+                distance_silo, nearest_silo = find_nearest_silo(poses[i].pose.position)
+                if distance_silo < 0.5: #perlu tuning
+                    silos[nearest_silo].append((poses[i].pose.position.z, informations[i]["class_name"]))
             #print(silos)
             index = 1
             for silo in silos:
-
+                # Sort each silo by the z-coordinate
                 silo_msg = DetectSilo()
                 silo_msg.number = index
                 silo.sort(key=lambda x: x[0])
@@ -429,8 +442,23 @@ class SiloDepthCameraNode(LifecycleNode):
                 silo_array.detections.append(silo_msg)
                 index+=1
             self.get_logger().info(f'{silo_array.detections}')
-            self._pub.publish(silo_array)
-            #(silo_array.detections)
+            if len(self.deq_pub) >= 10:
+                self.deq_pub.popleft()
+                self.deq_pub.append(silo_array)
+            else:
+                self.deq_pub.append(silo_array)
+
+            silo_dict = {}
+
+            for i in self.deq_pub:
+                if i in silo_dict.keys():
+                    silo_dict[i] += 1
+                else:
+                    silo_dict[i] = 0
+
+            best_silo = sorted(silo_dict.items(), key = lambda x: x[1], reverse=True)[0][0]
+
+            self._pub.publish(best_silo)
             newmsg = self.cv_bridge.cv2_to_imgmsg(cv_rgb_image)
             self._pub_ann.publish(newmsg)
             del results
