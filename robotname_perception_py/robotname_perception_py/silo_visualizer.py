@@ -75,19 +75,19 @@ class SiloVisualizer(LifecycleNode):
                 [4, 5]
             ]
             if len(msg.detections) == 5:
-                for object in msg.detections:
+                for i, object in enumerate(msg.detections):
                     markarray_ = MarkerArray()
-                    x, y = silo_coor[object]
-                    for ball in msg.detections.ball:
+                    x, y = silo_coor[i]
+                    for ball_index, ball in enumerate(msg.detections.ball):
                         marker_ = Marker()
                         marker_.type = marker_.CUBE
                         marker_.action = marker_.ADD
                         marker_.header.frame_id = object.header
-                        marker_.id = ball
-                        marker_.ns = f'{object.classname}_{ball}'
+                        marker_.id = ball_index
+                        marker_.ns = f'{object.classname}_{ball_index}'
                         
-                        marker_.pose.position.x = x + ball * 0.5
-                        marker_.pose.position.y = y + ball * 0.5
+                        marker_.pose.position.x = x + ball_index * 0.5
+                        marker_.pose.position.y = y + ball_index * 0.5
                         marker_.pose.position.z = 0.0
                         marker_.pose.orientation.x = 0.0
                         marker_.pose.orientation.y = 0.0
@@ -99,11 +99,11 @@ class SiloVisualizer(LifecycleNode):
                         marker_.scale.z = 0.2
                         marker_.color.a = 1.0
 
-                        if object.classname == "red":
+                        if ball == "redball":
                             marker_.color.r = 1.0
                             marker_.color.g = 0.0
                             marker_.color.b = 0.0
-                        elif object.classname == "blue":
+                        elif ball == "blueball":
                             marker_.color.r = 0.0
                             marker_.color.g = 0.0
                             marker_.color.b = 1.0
