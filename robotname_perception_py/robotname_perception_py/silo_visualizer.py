@@ -86,7 +86,7 @@ class SiloVisualizer(LifecycleNode):
                         marker_.id = ball_index
                         marker_.ns = f'{object.classname}_{ball_index}'
                         
-                        marker_.pose.position.x = x + ball_index * 0.5
+                        marker_.pose.position.x = x 
                         marker_.pose.position.y = y + ball_index * 0.5
                         marker_.pose.position.z = 0.0
                         marker_.pose.orientation.x = 0.0
