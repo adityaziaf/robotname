@@ -1,5 +1,6 @@
 
 from typing import List, Dict
+import collections
 
 import rclpy
 from rclpy.qos import QoSProfile
@@ -313,6 +314,8 @@ class SiloDepthCameraNode(LifecycleNode):
         self.cam_transform = None
         self.base_transform = None
 
+        self.deq_pub = collections.deque([])
+
         return TransitionCallbackReturn.SUCCESS
 
     def enable_cb(self, request, response):
@@ -439,7 +442,23 @@ class SiloDepthCameraNode(LifecycleNode):
                 silo_array.detections.append(silo_msg)
                 index+=1
             self.get_logger().info(f'{silo_array.detections}')
-            self._pub.publish(silo_array)
+            if len(self.deq_pub) >= 10:
+                self.deq_pub.popleft()
+                self.deq_pub.append(silo_array)
+            else:
+                self.deq_pub.append(silo_array)
+
+            silo_dict = {}
+
+            for i in self.deq_pub:
+                if i in silo_dict.keys():
+                    silo_dict[i] += 1
+                else:
+                    silo_dict[i] = 0
+
+            best_silo = sorted(silo_dict.items(), key = lambda x: x[1], reverse=True)[0][0]
+
+            self._pub.publish(best_silo)
             newmsg = self.cv_bridge.cv2_to_imgmsg(cv_rgb_image)
             self._pub_ann.publish(newmsg)
             del results
