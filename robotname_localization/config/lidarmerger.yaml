@@ -6,8 +6,9 @@ laserscan_multi_merger:
     laserscan_topics: "/lidarkanan/scan /lidarkiri/scan"
     angle_min: -3.14
     angle_max: 3.14
-    angle_increment: 0.013
-    scan_time: 0.025
-    range_min: 0.1
-    range_max: 10.0
+    angle_increment: 0.013089969754219055
+    scan_time: 0.02500000037252903
+    range_min: 0.023000000044703484
+    range_max: 60.0
+
 

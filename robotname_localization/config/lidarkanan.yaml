@@ -4,8 +4,8 @@ lidarkanan:
       #angle_max: 2.0944 
       #angle_min: -2.0944 
 
-      angle_max: 1.7
-      angle_min: -1.7
+      angle_max: 1.57
+      angle_min: -1.57
 
       ip_address: "192.168.0.10"
       ip_port: 10940

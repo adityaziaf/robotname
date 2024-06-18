@@ -39,16 +39,16 @@ def generate_launch_description():
     container_name_full = (namespace, '/', container_name)
     use_respawn = LaunchConfiguration('use_respawn')
     log_level = LaunchConfiguration('log_level')
-    mask_yaml_file = LaunchConfiguration('mask')
+    # mask_yaml_file = LaunchConfiguration('mask')
 
     lifecycle_nodes = ['controller_server',
                        'planner_server',
                        'behavior_server',
                        'bt_navigator',
                        'velocity_smoother',
-                       'filter_mask_server', 
-                       'costmap_filter_info_server']
-
+                    #    'filter_mask_server', 
+                    #    'costmap_filter_info_server'
+                    ]
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
     # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
     # https://github.com/ros/geometry2/issues/32
@@ -61,7 +61,9 @@ def generate_launch_description():
     # Create our own temporary YAML files that include substitutions
     param_substitutions = {
         'use_sim_time': use_sim_time,
-        'autostart': autostart}
+        'autostart': autostart,
+        # 'yaml_filename': mask_yaml_file
+        }
 
     configured_params = ParameterFile(
         RewrittenYaml(
@@ -109,10 +111,10 @@ def generate_launch_description():
         'log_level', default_value='info',
         description='log level')
 
-    declare_mask_yaml_file_cmd = DeclareLaunchArgument(
-        'mask',
-        default_value=os.path.join(costmap_filters_demo_dir, 'maps', 'mapku2_mask.yaml'),
-        description='Full path to filter mask yaml file to load')
+    # declare_mask_yaml_file_cmd = DeclareLaunchArgument(
+    #     'mask',
+    #     default_value=os.path.join(bringup_dir, 'maps', 'mapku2_mask.yaml'),
+    #     description='Full path to filter mask yaml file to load')
 
     load_nodes = GroupAction(
         condition=IfCondition(PythonExpression(['not ', use_composition])),
@@ -183,75 +185,75 @@ def generate_launch_description():
                             {'autostart': autostart},
                             {'node_names': lifecycle_nodes}]),
 
-            Node(
-                package='nav2_map_server',
-                executable='map_server',
-                name='filter_mask_server',
-                namespace=namespace,
-                output='screen',
-                emulate_tty=True,  # https://github.com/ros2/launch/issues/188
-                parameters=[configured_params],
-                arguments=['--ros-args', '--log-level', log_level]),
+            # Node(
+            #     package='nav2_map_server',
+            #     executable='map_server',
+            #     name='filter_mask_server',
+            #     namespace=namespace,
+            #     output='screen',
+            #     emulate_tty=True,  # https://github.com/ros2/launch/issues/188
+            #     parameters=[configured_params],
+            #     arguments=['--ros-args', '--log-level', log_level]),
 
-            Node(
-                package='nav2_map_server',
-                executable='costmap_filter_info_server',
-                name='costmap_filter_info_server',
-                namespace=namespace,
-                output='screen',
-                emulate_tty=True,  # https://github.com/ros2/launch/issues/188
-                parameters=[configured_params],
-                arguments=['--ros-args', '--log-level', log_level])
+            # Node(
+            #     package='nav2_map_server',
+            #     executable='costmap_filter_info_server',
+            #     name='costmap_filter_info_server',
+            #     namespace=namespace,
+            #     output='screen',
+            #     emulate_tty=True,  # https://github.com/ros2/launch/issues/188
+            #     parameters=[configured_params],
+            #     arguments=['--ros-args', '--log-level', log_level])
 
         ]
     )
 
-    load_composable_nodes = LoadComposableNodes(
-        condition=IfCondition(use_composition),
-        target_container=container_name_full,
-        composable_node_descriptions=[
-            ComposableNode(
-                package='nav2_controller',
-                plugin='nav2_controller::ControllerServer',
-                name='controller_server',
-                parameters=[configured_params],
-                remappings=remappings + [('cmd_vel', 'cmd_vel_nav')]),
-                #remappings=remappings
-            ComposableNode(
-                package='nav2_planner',
-                plugin='nav2_planner::PlannerServer',
-                name='planner_server',
-                parameters=[configured_params],
-                remappings=remappings),
-            ComposableNode(
-                package='nav2_behaviors',
-                plugin='behavior_server::BehaviorServer',
-                name='behavior_server',
-                parameters=[configured_params],
-                remappings=remappings),
-            ComposableNode(
-                package='nav2_bt_navigator',
-                plugin='nav2_bt_navigator::BtNavigator',
-                name='bt_navigator',
-                parameters=[configured_params],
-                remappings=remappings),
+    # load_composable_nodes = LoadComposableNodes(
+    #     condition=IfCondition(use_composition),
+    #     target_container=container_name_full,
+    #     composable_node_descriptions=[
+    #         ComposableNode(
+    #             package='nav2_controller',
+    #             plugin='nav2_controller::ControllerServer',
+    #             name='controller_server',
+    #             parameters=[configured_params],
+    #             remappings=remappings + [('cmd_vel', 'cmd_vel_nav')]),
+    #             #remappings=remappings
+    #         ComposableNode(
+    #             package='nav2_planner',
+    #             plugin='nav2_planner::PlannerServer',
+    #             name='planner_server',
+    #             parameters=[configured_params],
+    #             remappings=remappings),
+    #         ComposableNode(
+    #             package='nav2_behaviors',
+    #             plugin='behavior_server::BehaviorServer',
+    #             name='behavior_server',
+    #             parameters=[configured_params],
+    #             remappings=remappings),
+    #         ComposableNode(
+    #             package='nav2_bt_navigator',
+    #             plugin='nav2_bt_navigator::BtNavigator',
+    #             name='bt_navigator',
+    #             parameters=[configured_params],
+    #             remappings=remappings),
             
-            ComposableNode(
-                package='nav2_velocity_smoother',
-                plugin='nav2_velocity_smoother::VelocitySmoother',
-                name='velocity_smoother',
-                parameters=[configured_params],
-                remappings=remappings +
-                           [('cmd_vel', 'cmd_vel_nav'), ('cmd_vel_smoothed', 'cmd_vel')]),
-            ComposableNode(
-                package='nav2_lifecycle_manager',
-                plugin='nav2_lifecycle_manager::LifecycleManager',
-                name='lifecycle_manager_navigation',
-                parameters=[{'use_sim_time': use_sim_time,
-                             'autostart': autostart,
-                             'node_names': lifecycle_nodes}]),
-        ],
-    )
+    #         ComposableNode(
+    #             package='nav2_velocity_smoother',
+    #             plugin='nav2_velocity_smoother::VelocitySmoother',
+    #             name='velocity_smoother',
+    #             parameters=[configured_params],
+    #             remappings=remappings +
+    #                        [('cmd_vel', 'cmd_vel_nav'), ('cmd_vel_smoothed', 'cmd_vel')]),
+    #         ComposableNode(
+    #             package='nav2_lifecycle_manager',
+    #             plugin='nav2_lifecycle_manager::LifecycleManager',
+    #             name='lifecycle_manager_navigation',
+    #             parameters=[{'use_sim_time': use_sim_time,
+    #                          'autostart': autostart,
+    #                          'node_names': lifecycle_nodes}]),
+    #     ],
+    # )
 
     # Create the launch description and populate
     ld = LaunchDescription()
@@ -268,10 +270,10 @@ def generate_launch_description():
     ld.add_action(declare_container_name_cmd)
     ld.add_action(declare_use_respawn_cmd)
     ld.add_action(declare_log_level_cmd)
-    ld.add_action(declare_mask_yaml_file_cmd)
+    # ld.add_action(declare_mask_yaml_file_cmd)
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(load_nodes)
-    ld.add_action(load_composable_nodes)
+    #ld.add_action(load_composable_nodes)
 
     return ld

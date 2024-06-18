@@ -1,111 +1,193 @@
+costmap_filter_info_server:
+  ros__parameters:
+    use_sim_time: False
+    type: 1
+    filter_info_topic: "/costmap_filter_info"
+    mask_topic: "/speed_filter_mask"
+    base: 100.0
+    multiplier: -1.0
+filter_mask_server:
+  ros__parameters:
+    use_sim_time: False
+    frame_id: "map"
+    topic_name: "/speed_filter_mask"
+    yaml_filename: ""
+
 amcl:
   ros__parameters:
-    use_sim_time: True
-    alpha1: 0.2
-    alpha2: 0.2
-    alpha3: 0.2
-    alpha4: 0.2
-    alpha5: 0.2
-    base_frame_id: "base_footprint"
+    alpha1: 0.005 # rotation from rotation
+    alpha2: 0.1 #0.001 # rotation from translation
+    alpha3: 0.2 # translation from translation
+    alpha4: 0.05 #0.05 # translation from rotation
+    alpha5: 0.2 # translation from translation
+    use_sim_time : False
+    base_frame_id: "base_link"
     beam_skip_distance: 0.5
     beam_skip_error_threshold: 0.9
     beam_skip_threshold: 0.3
-    do_beamskip: true
+    do_beamskip: false
     global_frame_id: "map"
     lambda_short: 0.1
     laser_likelihood_max_dist: 2.0
-    laser_max_range: 6.5
+    laser_max_range: 8.0
     laser_min_range: -1.0
     laser_model_type: "beam"
-    max_beams: 60
+    max_beams: 128
     max_particles: 5000
     min_particles: 500
     odom_frame_id: "odom"
-    pf_err: 0.05
-    pf_z: 0.99
-    recovery_alpha_fast: 0.01
-    recovery_alpha_slow: 0.01
+    pf_err: 0.1
+    pf_z: 0.9
+    recovery_alpha_fast: 0.0
+    recovery_alpha_slow: 0.0
     resample_interval: 1
     robot_model_type: "nav2_amcl::OmniMotionModel"
-    save_pose_rate: 0.5
-    sigma_hit: 0.2
+    save_pose_rate: 0.1
+    sigma_hit: 0.7
     tf_broadcast: true
-    transform_tolerance: 1.0
-    update_min_a: 0.1 #radian
-    update_min_d: 0.1 #meter
-    z_hit: 0.5
+    transform_tolerance: 0.1
+    update_min_a: 0.05 # rotational movement before update
+    update_min_d: 0.05 # trnaslation movement before update
+
+    # beam model use all of the z, while likelihood only use zhit and zrand
+    # total z must be 1
+    z_hit: 0.7
     z_max: 0.05
-    z_rand: 0.5
+    z_rand: 0.3
     z_short: 0.05
+
     scan_topic: scan
     set_initial_pose: true
     initial_pose:
       x: 0.0
       y: 0.0
       z: 0.0
-      yaw: 0.0
+      yaw: 3.14
 
+# amcl:
+#   ros__parameters:
+#     use_sim_time: True
+#     alpha1: 0.1
+#     alpha2: 0.1
+#     alpha3: 0.2
+#     alpha4: 0.2
+#     alpha5: 0.2
+#     base_frame_id: "base_footprint"
+#     beam_skip_distance: 0.5
+#     beam_skip_error_threshold: 0.9
+#     beam_skip_threshold: 0.3
+#     do_beamskip: true
+#     global_frame_id: "map"
+#     lambda_short: 0.1
+#     laser_likelihood_max_dist: 2.0
+#     laser_max_range: 6.5
+#     laser_min_range: -1.0
+#     laser_model_type: "beam"
+#     max_beams: 60
+#     max_particles: 5000
+#     min_particles: 500
+#     odom_frame_id: "odom"
+#     pf_err: 0.05
+#     pf_z: 0.99
+#     recovery_alpha_fast: 0.01
+#     recovery_alpha_slow: 0.01
+#     resample_interval: 1
+#     robot_model_type: "nav2_amcl::OmniMotionModel"
+#     save_pose_rate: 0.5
+#     sigma_hit: 0.2
+#     tf_broadcast: true
+#     transform_tolerance: 0.1
+#     update_min_a: 0.1 #radian
+#     update_min_d: 0.1 #meter
+#     z_hit: 0.5
+#     z_max: 0.05
+#     z_rand: 0.5
+#     z_short: 0.05
+#     scan_topic: scan
+#     set_initial_pose: true
+#     initial_pose:
+#       x: 0.0
+#       y: 0.0
+#       z: 0.0
+#       yaw: 0.0
+      
 global_costmap:
   global_costmap:
     ros__parameters:
       update_frequency: 1.0
       publish_frequency: 1.0
       global_frame: map
-      robot_base_frame: base_footprint
-      use_sim_time: True
+      robot_base_frame: base_link
+      use_sim_time: False
       robot_radius: 0.35
       resolution: 0.05
       track_unknown_space: true
-      plugins: ["static_layer","inflation_layer"]
+      plugins: ["static_layer", "inflation_layer"]
+      filters: ["speed_filter"]
+
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        enabled: true
         inflation_radius: 0.2
         cost_scaling_factor: 1.0
         inflate_unknown: false
         inflate_around_unknown: true
+      speed_filter:
+        plugin: "nav2_costmap_2d::SpeedFilter"
+        filter_info_topic: "/costmap_filter_info"
+        speed_limit_topic: "/speed_limit"
       always_send_full_costmap: True
-
 
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0
-      publish_frequency: 2.0
+      update_frequency: 1.0
+      publish_frequency: 1.0
       global_frame: odom
-      robot_base_frame: base_footprint
-      use_sim_time: True
+      robot_base_frame: base_link
+      use_sim_time: False
       rolling_window: true
-      width: 5
-      height: 5
+      width: 3
+      height: 3
       resolution: 0.05
-      robot_radius: 0.35
-      plugins: ["static_layer","inflation_layer"]
-      static_layer:
-        plugin: "nav2_costmap_2d::StaticLayer"
-        map_subscribe_transient_local: True
-        enabled: true
-        subscribe_to_updates: true
-        transform_tolerance: 0.1
-      inflation_layer:
-        plugin: "nav2_costmap_2d::InflationLayer"
-        enabled: true
-        inflation_radius: 0.2
-        cost_scaling_factor: 1.0
-        inflate_unknown: false
-        inflate_around_unknown: true
-      always_send_full_costmap: True
+# local_costmap:
+#   local_costmap:
+#     ros__parameters:
+#       update_frequency: 1.0
+#       publish_frequency: 1.0
+#       global_frame: odom
+#       robot_base_frame: base_link
+#       use_sim_time: False
+#       rolling_window: true
+#       width: 5
+#       height: 5
+#       resolution: 0.05
+#       robot_radius: 0.35
+#       plugins: ["static_layer","inflation_layer"]
+#       static_layer:
+#         plugin: "nav2_costmap_2d::StaticLayer"
+#         map_subscribe_transient_local: True
+#         enabled: true
+#         subscribe_to_updates: true
+#         transform_tolerance: 1.0
+#       inflation_layer:
+#         plugin: "nav2_costmap_2d::InflationLayer"
+#         enabled: true
+#         inflation_radius: 0.2
+#         cost_scaling_factor: 1.0
+#         inflate_unknown: false
+#         inflate_around_unknown: true
+#       always_send_full_costmap: True
 
 bt_navigator:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     global_frame: map
-    robot_base_frame: base_footprint
+    robot_base_frame: base_link
     odom_topic: /odom
-    bt_loop_duration: 10
+    bt_loop_duration: 5
     default_server_timeout: 20
     default_nav_to_pose_bt_xml: $(find-pkg-share robotname_navigation)/config/navigate_to_pose.xml
     default_nav_through_poses_bt_xml: $(find-pkg-share robotname_navigation)/config/navigate_through_pose.xml
@@ -162,22 +244,22 @@ bt_navigator:
 
 bt_navigator_navigate_through_poses_rclcpp_node:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
 
 bt_navigator_navigate_to_pose_rclcpp_node:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
 
 map_server:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     # Overridden in launch by the "map" launch configuration or provided default value.
     # To use in yaml, remove the default "map" value in the tb3_simulation_launch.py file & provide full path to map below.
     yaml_filename: ""
 
 map_saver:
   ros__parameters:
-    use_sim_time: True
+    use_sim_time: False
     save_map_timeout: 5.0
     free_thresh_default: 0.25
     occupied_thresh_default: 0.65
@@ -185,85 +267,77 @@ map_saver:
 
 controller_server:
   ros__parameters:
-    use_sim_time: True
-    controller_frequency: 50.0
-    controller_plugins: ["FollowBall", "FollowPath"]
+    use_sim_time: False
+    controller_frequency: 20.0
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.001
     min_theta_velocity_threshold: 0.001
+    #speed_limit_topic: "/speed_limit"
+    transform_tolerance : 1.0
     progress_checker_plugins: ["progress_checker"] # progress_checker_plugin: "progress_checker" For Humble and older
     goal_checker_plugins: ["goal_checker"]
-    
+    controller_plugins: ["FollowPath","FollowBall"]
+
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"
-      required_movement_radius: 0.5
-      movement_time_allowance: 10.0
+      required_movement_radius: 0.1
+      movement_time_allowance: 3.0
     goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.05
-      yaw_goal_tolerance: 0.05
+      xy_goal_tolerance: 0.1
+      yaw_goal_tolerance: 0.1
       stateful: True
     
-    FollowBall:
+    FollowPath:
       plugin: "nav2_omni_pure_pursuit_controller::OmniPurePursuitController"
-      translation_kp : 1.0 # dimensionless
-      translation_ki : 0.2 # dimensionless
+      translation_kp : 3.5 # dimensionless
+      translation_ki : 0.0 # dimensionless
       translation_kd : 0.0 # dimensionless
-      rotation_kp : 5.0 #dimensionless
-      rotation_ki : 0.1 #dimensionless
+      rotation_kp : 0.5 #dimensionless
+      rotation_ki : 0.0 #dimensionless
       rotation_kd : 0.0 #dimensionless
-      lookahead_distance : 0.4 #meter
+      lookahead_distance : 1.0 #meter
       adaptive_lookahead_distance : false
-      adaptive_min_speed_lookahead : 0.1 #meter
+      adaptive_min_speed_lookahead : 0.2 #meter
       adaptive_max_speed_lookahead : 1.0 #meter
       adaptive_gain_lookahead : 1.0 #dimensionless
       circle_interpolation : false
       rotate_to_heading : false 
-      rotate_to_heading_treshold : 0.1 #rad/s
-      min_rotation_speed : -3.0 # m/s
-      max_rotation_speed : 3.0 # m/s
+      rotate_to_heading_treshold : 0.3 #rad/sF
+      min_rotation_speed : -1.0 # m/s
+      max_rotation_speed : 1.0 # m/s
       min_translation_speed : -3.0
       max_translation_speed : 3.0
 
-    FollowPath:
+    FollowBall:
       plugin: "nav2_omni_pure_pursuit_controller::OmniPurePursuitController"
-      translation_kp : 3.0 # dimensionless
-      translation_ki : 0.2 # dimensionless
+      translation_kp : 2.8 # dimensionless
+      translation_ki : 0.0 # dimensionless
       translation_kd : 0.0 # dimensionless
-      rotation_kp : 3.0 #dimensionless
-      rotation_ki : 0.1 #dimensionless
+      rotation_kp : 1.0 #dimensionless
+      rotation_ki : 0.0 #dimensionless
       rotation_kd : 0.0 #dimensionless
-      lookahead_distance : 0.4 #meter
+      lookahead_distance : 1.0 #meter
       adaptive_lookahead_distance : false
-      adaptive_min_speed_lookahead : 0.1 #meter
+      adaptive_min_speed_lookahead : 0.2 #meter
       adaptive_max_speed_lookahead : 1.0 #meter
       adaptive_gain_lookahead : 1.0 #dimensionless
       circle_interpolation : false
       rotate_to_heading : false 
-      rotate_to_heading_treshold : 0.1 #rad/s
-      min_rotation_speed : -3.0 # m/s
-      max_rotation_speed : 3.0 # m/s
+      rotate_to_heading_treshold : 0.5 #rad/sF
+      min_rotation_speed : -1.0 # m/s
+      max_rotation_speed : 1.0 # m/s
       min_translation_speed : -3.0
       max_translation_speed : 3.0
 
 planner_server:
   ros__parameters:
     expected_planner_frequency: 20.0
-    use_sim_time: True
+    use_sim_time: False
     planner_plugins: ["GridBased"]
     GridBased:
       plugin: "nav2_straightline_planner/StraightLine"
       interpolation_resolution: 0.05
-
-smoother_server:
-  ros__parameters:
-    use_sim_time: True
-    smoother_plugins: ["simple_smoother"]
-    simple_smoother:
-      plugin: "nav2_smoother::SimpleSmoother"
-      tolerance: 1.0e-10
-      max_its: 100
-      do_refinement: True
 
 behavior_server:
   ros__parameters:
@@ -282,36 +356,26 @@ behavior_server:
     assisted_teleop:
       plugin: "nav2_behaviors/AssistedTeleop"
     global_frame: map
-    robot_base_frame: base_footprint
-    transform_tolerance: 0.1
-    use_sim_time: true
+    robot_base_frame: base_link
+    transform_tolerance: 1.0
+    use_sim_time: False
     simulate_ahead_time: 2.0
     max_rotational_vel: 6.0
     min_rotational_vel: 0.4
     rotational_acc_lim: 6.0
 
-waypoint_follower:
-  ros__parameters:
-    use_sim_time: True
-    loop_rate: 20
-    stop_on_failure: false
-    waypoint_task_executor_plugin: "wait_at_waypoint"
-    wait_at_waypoint:
-      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
-      enabled: True
-      waypoint_pause_duration: 200
 
+    
 velocity_smoother:
   ros__parameters:
-    use_sim_time: True
-    smoothing_frequency: 100.0
-    scale_velocities: False
+    smoothing_frequency: 40.0
+    scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [3.0, 3.0, 3.0]
-    min_velocity: [-3.0, -3.0, -3.0]
-    max_accel: [3.0, 3.0, 3.0]
-    max_decel: [-3.0, -3.0, -3.0]
-    odom_topic: "/odom"
-    odom_duration: 0.1
+    max_velocity: [3.0, 3.0, 1.0]
+    min_velocity: [-3.0, -3.0, -1.0]
     deadband_velocity: [0.0, 0.0, 0.0]
-    velocity_timeout: 1.0
+    velocity_timeout: 0.1
+    max_accel: [4.0, 6.0, 1.0]
+    max_decel: [-6.0, -6.0, -1.0]
+    use_realtime_priority: false
+    enable_stamped_cmd_vel: false

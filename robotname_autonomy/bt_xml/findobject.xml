@@ -398,8 +398,10 @@
       <Repeat num_cycles="-1">
         <Sequence>
           <SubTree ID="regional_find&amp;follow"/>
-          <SubTree ID="silo_testing"/>
-          <SubTree ID="outtake"/>
+          <SubTree ID="silo_testing"
+                   _autoremap="false"/>
+          <SubTree ID="outtake"
+                   _autoremap="false"/>
         </Sequence>
       </Repeat>
     </Sequence>
@@ -440,45 +442,30 @@
   <BehaviorTree ID="red_silo1">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="7.9;-4.7;1.57"/>
-      <SetSpeed x="-0.8"
+                       goals="7.9;-4.9;1.57"/>
+      <SetSpeed x="-0.5"
                 y="0.0"
                 theta="0.0"
                 timeout="1000"/>
-      <MoveWithLidarReference parent_frame="map"
-                              child_frame="base_link"
-                              x="0.0"
-                              y="3.0"
-                              speed="0.4"/>
     </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="red_silo2">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="8.7;-4.7;1.57"/>
-      <SetSpeed x="-0.8"
+                       goals="8.7;-4.9;1.57"/>
+      <SetSpeed x="-0.5"
                 y="0.0"
                 theta="0.0"
                 timeout="1000"/>
-      <MoveWithLidarReference parent_frame="map"
-                              child_frame="base_link"
-                              x="0.0"
-                              y="2.78"
-                              speed="0.4"/>
     </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="red_silo3">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="9.5;-4.7;1.57"/>
-      <MoveWithLidarReference parent_frame="map"
-                              child_frame="base_link"
-                              x="0.0"
-                              y="2.02"
-                              speed="0.4"/>
-      <SetSpeed x="-0.8"
+                       goals="9.48;-4.9;1.57"/>
+      <SetSpeed x="-0.5"
                 y="0.0"
                 theta="0.0"
                 timeout="1000"/>
@@ -488,13 +475,8 @@
   <BehaviorTree ID="red_silo4">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="10.25;-4.7;1.57"/>
-      <MoveWithLidarReference parent_frame="map"
-                              child_frame="base_link"
-                              x="0.0"
-                              y="1.25"
-                              speed="0.4"/>
-      <SetSpeed x="-0.8"
+                       goals="10.2;-4.9;1.57"/>
+      <SetSpeed x="-0.5"
                 y="0.0"
                 theta="0.0"
                 timeout="1000"/>
@@ -504,13 +486,8 @@
   <BehaviorTree ID="red_silo5">
     <Sequence>
       <NavThroughPoses frame_id="map"
-                       goals="11.0;-4.7;1.57"/>
-      <MoveWithLidarReference parent_frame="map"
-                              child_frame="base_link"
-                              x="0.0"
-                              y="0.6"
-                              speed="0.4"/>
-      <SetSpeed x="-0.8"
+                       goals="11.0;-4.9;1.57"/>
+      <SetSpeed x="-0.5"
                 y="0.0"
                 theta="0.0"
                 timeout="1000"/>
@@ -684,7 +661,7 @@
   <BehaviorTree ID="silo_testing">
     <Sequence>
       <NavToPose frame_id="map"
-                 goal="9.5;-2.5;1.57"/>
+                 goal="9.5;-2.0;1.57"/>
       <GetBestSilo team_color="blueball"
                    mode="1"
                    silo="{silo_out}"/>

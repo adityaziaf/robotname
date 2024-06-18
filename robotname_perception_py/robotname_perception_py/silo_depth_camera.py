@@ -58,11 +58,11 @@ def euclidean_distance(point1, point2):
 
 def find_nearest_silo (ball_pos):
     silo_coor = [
-        [11.0, -5],
-        [10.18, -5],
-        [9.45, -5],
-        [8.5, -5],
-        [8.0, -5]
+        [10.8, -5],
+        [10.2, -5],
+        [9.5, -5],
+        [8.8, -5],
+        [8.2, -5]
     ]
     index = 0
     min_distance = 1000000
@@ -74,7 +74,7 @@ def find_nearest_silo (ball_pos):
             min_distance = temp_distance
             min_distance_index = index
         index+=1
-   # print(f"{ball_coor}")
+    print(f"{ball_coor}")
     # self.get_logger().info(f'{min_distance}')
     # self.get_logger().info('SiloDepthCameraNode created')
     return min_distance, min_distance_index
@@ -85,7 +85,7 @@ class SiloDepthCameraNode(LifecycleNode):
         super().__init__("yolov8_node", **kwargs)
 
         # params
-        self.declare_parameter("model", "silo7Jun.pt")
+        self.declare_parameter("model", "silo18Jun.pt")
         self.declare_parameter("device", "cuda:0")
         self.declare_parameter("threshold", 0.4)
         self.declare_parameter("enable", True)
