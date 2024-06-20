@@ -85,7 +85,7 @@ private:
       if(last_msg)
       {
         
-        if(last_msg->data == 0)
+        if(last_msg->data == 1)
         {
           state = false; 
         }

@@ -11,7 +11,7 @@
 
 BT::PortsList GetBestSilo::providedPorts()
 {
-    return {OutputPort<int32_t>("silo"),
+    return {OutputPort<int32_t>("silo"), OutputPort<int32_t>("silo2"),
     InputPort<std::string>("team_color"), InputPort<int32_t>("mode")};
 }
 
@@ -29,8 +29,9 @@ NodeStatus GetBestSilo::onResponseReceived(const robotname_msgs::srv::GetBestSil
     if(response->status)
     {
       
-      RCLCPP_INFO(node_->get_logger(), "[%s] Best Silo found %d", name().c_str(), response->silo);
+      RCLCPP_INFO(node_->get_logger(), "[%s] Best Silo found %d\n[%s] 2nd Silo found %d", name().c_str(), response->silo, name().c_str(), response->silo2);
       setOutput("silo",response->silo);
+      setOutput("silo2",response->silo2);
       //RCLCPP_INFO(node_->get_logger(), "Sum: %ld", response->sum);
       return NodeStatus::SUCCESS;
     }

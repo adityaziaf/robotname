@@ -3,3 +3,4 @@ int32 mode
 ---
 bool status
 int32 silo
+int32 silo2

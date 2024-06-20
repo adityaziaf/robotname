@@ -115,7 +115,7 @@ private:
         std::vector<double> y_container;
 
         //std::copy(last_msg->ranges.begin() + index_along_x, last_msg->ranges.begin() + index_along_x + 5, std::back_inserter(x_container));
-        std::copy(last_msg->ranges.begin() + index_along_y, last_msg->ranges.begin() + index_along_y + 5, std::back_inserter(y_container));
+        std::copy(last_msg->ranges.begin() + index_along_y, last_msg->ranges.begin() + index_along_y + 10, std::back_inserter(y_container));
 
         //double x_median = calculateMedian(x_container);
         double y_median = calculateMedian(y_container);

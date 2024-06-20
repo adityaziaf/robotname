@@ -28,8 +28,8 @@ class GetBestSilo : public rclcpp::Node {
   
       if(_last_msg)
       {
-        int i = 1, index = -1;
-        int max_score = -10; // Initialize with a low score
+        int i = 1, index = 1, index2 = 3;
+        int max_score = -10, max_score2 = -10; // Initialize with a low score
         for(auto & object : _last_msg->detections)
         {
             std::string team_color, enemy_color;
@@ -46,14 +46,19 @@ class GetBestSilo : public rclcpp::Node {
             int score = silo_score(object.ball, team_color, enemy_color, request->mode);
             std::cout<<i<<" score: "<<score<<std::endl;
             if (score > max_score) {
+              if(index!= 1){ // agar nilai index dan index2 tidak pernah sama
+                index2 = index;
+              }
                 index = i;
+                max_score2 = max_score;
                 max_score = score;
             }
             i++;
             // object.ball.clear
         }
-        response->silo=index;
-        RCLCPP_INFO(this->get_logger(), "Response best silo %d with score: %d", index, max_score);
+        response->silo = index;
+        response->silo2 = index2;
+        RCLCPP_INFO(this->get_logger(), "Response best silo %d with score: %d, 2nd best silo %d with score: %d", index, max_score, index2, max_score2);
         // std::cout<<"Response: "<<response->silo<<std::endl;
         response->status=true;
         return;

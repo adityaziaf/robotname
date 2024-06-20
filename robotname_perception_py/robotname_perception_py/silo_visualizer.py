@@ -78,15 +78,16 @@ class SiloVisualizer(LifecycleNode):
                 for i, object in enumerate(msg.detections):
                     markarray_ = MarkerArray()
                     x, y = silo_coor[i]
-                    for ball_index, ball in enumerate(msg.detections.ball):
+                    for ball_index, ball in enumerate(object.ball):
                         marker_ = Marker()
                         marker_.type = marker_.CUBE
                         marker_.action = marker_.ADD
-                        marker_.header.frame_id = object.header
-                        marker_.id = ball_index
-                        marker_.ns = f'{object.classname}_{ball_index}'
+                        marker_.header.frame_id = "map"
+                        # marker_.id = ball_index
+                        # marker_.ns = ball_index
+                     
                         
-                        marker_.pose.position.x = x 
+                        marker_.pose.position.x = float(x) 
                         marker_.pose.position.y = y + ball_index * 0.5
                         marker_.pose.position.z = 0.0
                         marker_.pose.orientation.x = 0.0
@@ -110,8 +111,8 @@ class SiloVisualizer(LifecycleNode):
 
                         marker_.lifetime = rclpy.duration.Duration(seconds=1).to_msg()
                         markarray_.markers.append(marker_)
-                    self.viz_pub.publish(markarray_)
-                    del markarray_
+                self._pub.publish(markarray_)
+                del markarray_
 
 def main():
     rclpy.init()

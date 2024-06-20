@@ -75,7 +75,7 @@ def find_nearest_silo (ball_pos):
             min_distance = temp_distance
             min_distance_index = index
         index+=1
-    print(f"{ball_coor}")
+    # print(f"{ball_coor}")
     # self.get_logger().info(f'{min_distance}')
     # self.get_logger().info('SiloDepthCameraNode created')
     return min_distance, min_distance_index
@@ -86,7 +86,7 @@ class SiloDepthCameraNode(LifecycleNode):
         super().__init__("yolov8_node", **kwargs)
 
         # params
-        self.declare_parameter("model", "silo18Jun.pt")
+        self.declare_parameter("model", "silo21Jun.pt")
         self.declare_parameter("device", "cuda:0")
         self.declare_parameter("threshold", 0.4)
         self.declare_parameter("enable", True)
@@ -388,16 +388,21 @@ class SiloDepthCameraNode(LifecycleNode):
             except tf2_ros.ExtrapolationException as e:
                 self.get_logger().error('Failed to extrapolate transform: {}'.format(e))
                 return 
+
             # convert image + predict
             self.realsense_cam_model.fromCameraInfo(image.rgb_camera_info)
             cv_rgb_image = self.cv_bridge.imgmsg_to_cv2(image.rgb, desired_encoding='bgr8')
             cv_depth_image = self.cv_bridge.imgmsg_to_cv2(image.depth, desired_encoding="passthrough")
 
+            # Assuming depth_frame holds the depth data
+            depth_mask = cv2.inRange(cv_depth_image, 0, 7000)  # Threshold for depth range
+            masked_color = cv2.bitwise_and(cv_rgb_image, cv_rgb_image, mask=depth_mask)
+
             results = self.yolo.track(
-                source=cv_rgb_image,
+                source=masked_color,
                 verbose=False,
                 stream=False,
-                conf=0.5,
+                conf=0.3,
                 persist=False,
                 device=self.device,
                 iou=0.5,
@@ -409,7 +414,7 @@ class SiloDepthCameraNode(LifecycleNode):
                 informations = self.parse_information(ann_results)
                 detectedobj = self.yolo_detections_to_norfair_detections( ann_results, track_points="bbox")
                 tracked_object = self.tracker.update( detections = detectedobj )
-                norfair.draw_points( cv_rgb_image, tracked_object )
+                norfair.draw_points( masked_color, tracked_object )
             
             silo_array = DetectSiloArray()
             silo_1 = []
@@ -421,11 +426,12 @@ class SiloDepthCameraNode(LifecycleNode):
             silos = [silo_1, silo_2, silo_3, silo_4, silo_5]
             for i in range(len(ann_results)):
                 if informations[i]["class_name"]=="silo" or informations[i]["class_name"] == "purpleball": continue
-                percentage_far = self.get_percent_area_under_threshold(informations[i]["box_coor"], image_source=cv_depth_image, threshold=4)
-                bounding_box_area = informations[i]["size"]
-                if bounding_box_area < 50: continue #perlu tuning
-                if percentage_far < 50: continue #perlu tuning
+                # percentage_far = self.get_percent_area_under_threshold(informations[i]["box_coor"], image_source=cv_depth_image, threshold=4)
+                # bounding_box_area = informations[i]["size"]
+                # if bounding_box_area < 50: continue #perlu tuning
+                # if percentage_far < 50: continue #perlu tuning
                 distance_silo, nearest_silo = find_nearest_silo(poses[i].pose.position)
+                self.get_logger().info(f'{distance_silo}')
                 if distance_silo < 0.5: #perlu tuning
                     silos[nearest_silo].append((poses[i].pose.position.z, informations[i]["class_name"]))
             #print(silos)
@@ -441,25 +447,32 @@ class SiloDepthCameraNode(LifecycleNode):
                     silo_msg.ball.append("null")
                 silo_array.detections.append(silo_msg)
                 index+=1
-            self.get_logger().info(f'{silo_array.detections}')
-            if len(self.deq_pub) >= 10:
+            if len(self.deq_pub) >= 30:
                 self.deq_pub.popleft()
                 self.deq_pub.append(silo_array)
             else:
                 self.deq_pub.append(silo_array)
 
             silo_dict = {}
+            silo_detect_dict = {}
 
             for i in self.deq_pub:
-                if i in silo_dict.keys():
-                    silo_dict[i] += 1
+
+                if str(i) not in silo_detect_dict.keys():
+                    silo_detect_dict[str(i)] = i
+
+                if str(i) in silo_dict.keys():
+                    silo_dict[str(i)] += 1
                 else:
-                    silo_dict[i] = 0
+                    silo_dict[str(i)] = 0
 
             best_silo = sorted(silo_dict.items(), key = lambda x: x[1], reverse=True)[0][0]
 
-            self._pub.publish(best_silo)
-            newmsg = self.cv_bridge.cv2_to_imgmsg(cv_rgb_image)
+            self._pub.publish(silo_detect_dict[best_silo])
+            self.get_logger().info(f'{silo_detect_dict[best_silo]}')
+
+
+            newmsg = self.cv_bridge.cv2_to_imgmsg(masked_color)
             self._pub_ann.publish(newmsg)
             del results
             del cv_rgb_image

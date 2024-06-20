@@ -48,6 +48,7 @@
             <input_port name="team_color"/>
             <input_port name="mode"/>
             <output_port name="silo"/>
+            <output_port name="silo2"/>
         </Condition>
         <Action ID="GetCurrentPose" editable="true">
             <input_port name="parent_frame_id"/>
