@@ -79,6 +79,7 @@ set(THIS_PACKAGE_SOURCES
     src/plugins/subscriber/grab_nearest_ball.cpp
     src/plugins/subscriber/ball_grabbed.cpp
     src/plugins/subscriber/ball_grabbed_top.cpp
+    src/plugins/subscriber/check_if_silo_full.cpp
     src/plugins/service/amcl_update.cpp
     src/plugins/service/reset_ball_grabbed.cpp
     src/plugins/action/get_ball_grabbed_top.cpp
