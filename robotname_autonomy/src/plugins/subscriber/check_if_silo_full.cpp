@@ -9,8 +9,7 @@ NodeStatus CheckIfSiloFull::onTick(const std::shared_ptr<std_msgs::msg::String>&
       if(last_msg->data != "null")
       {
           return NodeStatus::SUCCESS;
-      }
-      
+      }   
   }
       //RCLCPP_INFO(logger(), "[%s] new message: %s", name().c_str(), last_msg->data.c_str());      
   return NodeStatus::FAILURE;

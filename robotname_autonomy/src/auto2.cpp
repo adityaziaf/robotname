@@ -20,6 +20,7 @@
 #include "robotname_autonomy/plugins/subscriber/id_found.hpp"
 #include "robotname_autonomy/plugins/service/get_current_pose.hpp"
 #include "robotname_autonomy/plugins/subscriber/ball_grabbed_top.hpp"
+#include "robotname_autonomy/plugins/subscriber/check_if_silo_full.hpp"
 #include "robotname_autonomy/plugins/action/wait_button.hpp"
 #include "robotname_autonomy/plugins/action/rotate_speed.hpp"
 #include "robotname_autonomy/plugins/action/move_with_lidar_reference.hpp"
@@ -200,6 +201,11 @@ int main(int argc, char **argv)
   getbestsiloconfig.nh = nh;
   getbestsiloconfig.default_port_value = "/get_best_silo";
   factory.registerNodeType<GetBestSilo>("GetBestSilo", getbestsiloconfig);
+
+  RosNodeParams checkifsilofull;
+  checkifsilofull.nh = nh;
+  checkifsilofull.default_port_value = "/check_if_silo_full";
+  factory.registerNodeType<CheckIfSiloFull>("CheckIfSiloFull", checkifsilofull);
 
   auto tree = factory.createTreeFromFile(default_bt_xml_file);
 
